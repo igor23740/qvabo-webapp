@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>QVABO Studio - AI Image Generator</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #1f2544;
+            --accent: #7c3aed;
+            --accent-hover: #8b5cf6;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --border: #2d2d44;
+            --success: #22c55e;
+            --error: #ef4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 16px;
+            padding-bottom: 100px;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Sections */
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        /* Model Selector */
+        .model-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .model-card:hover {
+            border-color: var(--accent);
+        }
+
+        .model-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #4285f4, #34a853, #fbbc05, #ea4335);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .model-info {
+            flex: 1;
+        }
+
+        .model-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .model-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .model-arrow {
+            color: var(--text-secondary);
+            font-size: 20px;
+        }
+
+        /* Textarea */
+        .textarea-wrapper {
+            position: relative;
+        }
+
+        .textarea-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .improve-btn {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .improve-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            color: var(--text-primary);
+            font-size: 14px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        textarea::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent);
+            background: rgba(124, 58, 237, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--accent);
+            background: rgba(124, 58, 237, 0.1);
+        }
+
+        .upload-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--bg-card);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 24px;
+        }
+
+        .upload-text {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .upload-text span {
+            color: var(--accent);
+        }
+
+        .upload-count {
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* Image Previews */
+        .image-previews {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .preview-item {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        /* Aspect Ratio Chips */
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .chip {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chip:hover {
+            border-color: var(--accent);
+        }
+
+        .chip.active {
+            border-color: var(--accent);
+            background: rgba(124, 58, 237, 0.2);
+            color: var(--accent);
+        }
+
+        .chip-icon {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        /* Dropdown */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-selected {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .dropdown-selected:hover {
+            border-color: var(--accent);
+        }
+
+        .dropdown-arrow {
+            transition: transform 0.2s;
+        }
+
+        .dropdown.open .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-options {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            z-index: 100;
+            display: none;
+        }
+
+        .dropdown.open .dropdown-options {
+            display: block;
+        }
+
+        .dropdown-option {
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .dropdown-option:hover {
+            background: rgba(124, 58, 237, 0.1);
+        }
+
+        .dropdown-option.active {
+            background: rgba(124, 58, 237, 0.2);
+            color: var(--accent);
+        }
+
+        /* Generate Button */
+        .generate-btn {
+            width: 100%;
+            background: var(--accent);
+            border: none;
+            border-radius: 12px;
+            padding: 18px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            position: fixed;
+            bottom: 16px;
+            left: 16px;
+            right: 16px;
+            max-width: 448px;
+            margin: 0 auto;
+        }
+
+        .generate-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .generate-btn.loading {
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Validation message */
+        .validation-message {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #60a5fa;
+        }
+
+        .validation-message.show {
+            display: flex;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 20px;
+            z-index: 1000;
+            transition: transform 0.3s;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.success {
+            border-color: var(--success);
+        }
+
+        .toast.error {
+            border-color: var(--error);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎨 AI Image Generator</h1>
+            <p>Create stunning images using advanced AI technology. Transform your ideas into visual masterpieces.</p>
+        </div>
+
+        <!-- AI Model -->
+        <div class="section">
+            <div class="section-title">AI Model</div>
+            <div class="model-card">
+                <div class="model-icon">G</div>
+                <div class="model-info">
+                    <div class="model-name">Nano-Banana Pro</div>
+                    <div class="model-desc">Google's state-of-the-art model with text rendering</div>
+                </div>
+                <div class="model-arrow">›</div>
+            </div>
+        </div>
+
+        <!-- Image Description -->
+        <div class="section">
+            <div class="textarea-header">
+                <div class="section-title">Image description</div>
+                <button class="improve-btn" id="improveBtn">
+                    ✨ Improve Prompt
+                </button>
+            </div>
+            <div class="textarea-wrapper">
+                <textarea 
+                    id="promptInput" 
+                    placeholder="Describe the scene you want...
+
+Example: On a beach at sunset with waves in the background, professional product photography"
+                    maxlength="5000"
+                ></textarea>
+                <div class="char-count"><span id="charCount">0</span>/5000</div>
+            </div>
+        </div>
+
+        <!-- Upload Images -->
+        <div class="section">
+            <div class="section-title">Upload Images (Optional)</div>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+                Upload up to 10 images to add them as references with your prompt
+            </p>
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">☁️</div>
+                <div class="upload-text"><span>Click here</span> to upload images</div>
+                <div class="upload-count">Images (<span id="imageCount">0</span>/10)</div>
+            </div>
+            <input type="file" id="fileInput" accept="image/*" multiple>
+            <div class="image-previews" id="imagePreviews"></div>
+        </div>
+
+        <!-- Aspect Ratio -->
+        <div class="section">
+            <div class="section-title">Aspect Ratio</div>
+            <div class="chips-container" id="aspectRatioChips">
+                <div class="chip" data-value="auto"><span class="chip-icon">▢</span> auto</div>
+                <div class="chip" data-value="21:9"><span class="chip-icon">▬</span> 21:9</div>
+                <div class="chip" data-value="16:9"><span class="chip-icon">▬</span> 16:9</div>
+                <div class="chip" data-value="3:2"><span class="chip-icon">▬</span> 3:2</div>
+                <div class="chip" data-value="4:3"><span class="chip-icon">▬</span> 4:3</div>
+                <div class="chip" data-value="5:4"><span class="chip-icon">▢</span> 5:4</div>
+                <div class="chip active" data-value="1:1"><span class="chip-icon">▢</span> 1:1</div>
+                <div class="chip" data-value="4:5"><span class="chip-icon">▯</span> 4:5</div>
+                <div class="chip" data-value="3:4"><span class="chip-icon">▯</span> 3:4</div>
+                <div class="chip" data-value="2:3"><span class="chip-icon">▯</span> 2:3</div>
+                <div class="chip" data-value="9:16"><span class="chip-icon">▯</span> 9:16</div>
+            </div>
+        </div>
+
+        <!-- Resolution -->
+        <div class="section">
+            <div class="section-title">Resolution</div>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+                The resolution of the image to generate
+            </p>
+            <div class="dropdown" id="resolutionDropdown">
+                <div class="dropdown-selected">
+                    <span id="resolutionValue">1K</span>
+                    <span class="dropdown-arrow">▼</span>
+                </div>
+                <div class="dropdown-options">
+                    <div class="dropdown-option active" data-value="1K">1K</div>
+                    <div class="dropdown-option" data-value="2K">2K</div>
+                    <div class="dropdown-option" data-value="4K">4K</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Number of Images -->
+        <div class="section">
+            <div class="section-title">Number of Images</div>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+                Generate multiple variations (model dependent)
+            </p>
+            <div class="dropdown" id="countDropdown">
+                <div class="dropdown-selected">
+                    <span id="countValue">1</span>
+                    <span class="dropdown-arrow">▼</span>
+                </div>
+                <div class="dropdown-options">
+                    <div class="dropdown-option active" data-value="1">1</div>
+                    <div class="dropdown-option" data-value="2">2</div>
+                    <div class="dropdown-option" data-value="3">3</div>
+                    <div class="dropdown-option" data-value="4">4</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Validation Message -->
+        <div class="validation-message" id="validationMessage">
+            <span>ℹ️</span>
+            <span id="validationText">Please provide image description to generate</span>
+        </div>
+
+        <!-- Generate Button -->
+        <button class="generate-btn" id="generateBtn">
+            <span>✨</span>
+            <span>Generate</span>
+        </button>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Initialize Telegram WebApp
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.expand();
+            tg.ready();
+        }
+
+        // State
+        let uploadedImages = [];
+        let selectedAspectRatio = '1:1';
+        let selectedResolution = '1K';
+        let selectedCount = '1';
+
+        // Elements
+        const promptInput = document.getElementById('promptInput');
+        const charCount = document.getElementById('charCount');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreviews = document.getElementById('imagePreviews');
+        const imageCount = document.getElementById('imageCount');
+        const generateBtn = document.getElementById('generateBtn');
+        const validationMessage = document.getElementById('validationMessage');
+        const improveBtn = document.getElementById('improveBtn');
+        const toast = document.getElementById('toast');
+
+        // Character counter
+        promptInput.addEventListener('input', () => {
+            charCount.textContent = promptInput.value.length;
+            updateValidation();
+        });
+
+        // Upload area
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            const remaining = 10 - uploadedImages.length;
+            const toAdd = Array.from(files).slice(0, remaining);
+
+            toAdd.forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        uploadedImages.push({
+                            file: file,
+                            dataUrl: e.target.result
+                        });
+                        updateImagePreviews();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        function updateImagePreviews() {
+            imagePreviews.innerHTML = uploadedImages.map((img, index) => `
+                <div class="preview-item">
+                    <img src="${img.dataUrl}" alt="Preview">
+                    <button class="preview-remove" onclick="removeImage(${index})">×</button>
+                </div>
+            `).join('');
+            imageCount.textContent = uploadedImages.length;
+        }
+
+        function removeImage(index) {
+            uploadedImages.splice(index, 1);
+            updateImagePreviews();
+        }
+
+        // Aspect Ratio chips
+        document.querySelectorAll('#aspectRatioChips .chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('#aspectRatioChips .chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                selectedAspectRatio = chip.dataset.value;
+            });
+        });
+
+        // Dropdowns
+        function setupDropdown(dropdownId, valueId, onSelect) {
+            const dropdown = document.getElementById(dropdownId);
+            const selected = dropdown.querySelector('.dropdown-selected');
+            const options = dropdown.querySelectorAll('.dropdown-option');
+            const valueSpan = document.getElementById(valueId);
+
+            selected.addEventListener('click', () => {
+                // Close other dropdowns
+                document.querySelectorAll('.dropdown').forEach(d => {
+                    if (d !== dropdown) d.classList.remove('open');
+                });
+                dropdown.classList.toggle('open');
+            });
+
+            options.forEach(option => {
+                option.addEventListener('click', () => {
+                    options.forEach(o => o.classList.remove('active'));
+                    option.classList.add('active');
+                    valueSpan.textContent = option.dataset.value;
+                    onSelect(option.dataset.value);
+                    dropdown.classList.remove('open');
+                });
+            });
+        }
+
+        setupDropdown('resolutionDropdown', 'resolutionValue', (val) => selectedResolution = val);
+        setupDropdown('countDropdown', 'countValue', (val) => selectedCount = val);
+
+        // Close dropdowns on outside click
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('open'));
+            }
+        });
+
+        // Validation
+        function updateValidation() {
+            const hasPrompt = promptInput.value.trim().length > 0;
+            validationMessage.classList.toggle('show', !hasPrompt);
+            generateBtn.disabled = !hasPrompt;
+        }
+
+        // Improve Prompt button
+        improveBtn.addEventListener('click', () => {
+            if (!promptInput.value.trim()) {
+                showToast('Please enter a prompt first', 'error');
+                return;
+            }
+            // Send to bot for improvement
+            sendData({ action: 'improve_prompt', prompt: promptInput.value });
+        });
+
+        // Generate button
+        generateBtn.addEventListener('click', async () => {
+            if (!promptInput.value.trim()) {
+                showToast('Please enter a description', 'error');
+                return;
+            }
+
+            generateBtn.disabled = true;
+            generateBtn.classList.add('loading');
+            generateBtn.innerHTML = '<div class="spinner"></div><span>Generating...</span>';
+
+            try {
+                const data = {
+                    action: 'generate',
+                    prompt: promptInput.value,
+                    aspectRatio: selectedAspectRatio,
+                    resolution: selectedResolution,
+                    count: selectedCount,
+                    images: uploadedImages.map(img => img.dataUrl)
+                };
+
+                sendData(data);
+            } catch (error) {
+                showToast('Error: ' + error.message, 'error');
+                resetButton();
+            }
+        });
+
+        function sendData(data) {
+            if (tg) {
+                tg.sendData(JSON.stringify(data));
+            } else {
+                // For testing outside Telegram
+                console.log('Data to send:', data);
+                showToast('Data logged to console (test mode)', 'success');
+                setTimeout(resetButton, 1000);
+            }
+        }
+
+        function resetButton() {
+            generateBtn.disabled = false;
+            generateBtn.classList.remove('loading');
+            generateBtn.innerHTML = '<span>✨</span><span>Generate</span>';
+            updateValidation();
+        }
+
+        function showToast(message, type = 'success') {
+            toast.textContent = message;
+            toast.className = 'toast ' + type + ' show';
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Initial validation
+        updateValidation();
+    </script>
+</body>
+</html>
