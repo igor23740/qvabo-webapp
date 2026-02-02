@@ -885,6 +885,7 @@
         function sendData(data) {
             if (tg) {
                 tg.sendData(JSON.stringify(data));
+                tg.close();
             } else {
                 // For testing outside Telegram
                 console.log('Data to send:', data);
