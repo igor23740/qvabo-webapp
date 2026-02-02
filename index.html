@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>QVABO Studio - AI Image Generator</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script type="text/javascript" nonce="49c43f3b76f44f449596d3007c6" src="//local.adguard.org?ts=1770032236979&amp;type=content-script&amp;dmn=ppl-ai-code-interpreter-files.s3.amazonaws.com&amp;url=https%3A%2F%2Fppl-ai-code-interpreter-files.s3.amazonaws.com%2Fweb%2Fdirect-files%2F6a0577285a35d187c51841f4e7f14bd6%2F5e24818a-b831-4271-a33d-829423e5d37f%2F94012b36.html%3Fresponse-content-disposition%3Dattachment%253B%2520filename%253Dindex_fixed.html%253B%2520filename%252A%253DUTF-8%2527%2527index_fixed.html%26AWSAccessKeyId%3DASIA2F3EMEYE3AOE4ZJ3%26Signature%3DzKSdspJL%252BnY3HxLQ60iRbmuFdBU%253D%26x-amz-security-token%3DIQoJb3JpZ2luX2VjEBwaCXVzLWVhc3QtMSJHMEUCIQDNvV13nGx83zvwzecLMDB5cIeSCumQ%252By6X3kEI2fs2twIgbETrDUVhTGC7p%252Bd3WnI1V%252FX5YQn0F%252B8BjXbfQdVXyOIq%252FAQI5f%252F%252F%252F%252F%252F%252F%252F%252F%252F%252FARABGgw2OTk3NTMzMDk3MDUiDKFV6oRMu759jROx6irQBILVO%252FYyOXzxZXSwq%252BoTbBrLoEPj7ktAihMjBmSfiqyIbkYK8yNxL5xmC5hTefp%252F69AC3Y%252Fr2x%252F6WWK4DBmSW7CO%252FRwQ0KY7KRvIpJW5y6ZScg1BkcMCJNgUtZ7Hwqvl9%252FFdC0jqas%252FYoMzNFGtGqTC3U%252BzDMB7OiyY4OnYfWhhHxix3eAcuB1GxXbj8ORHR%252Bjgzm1dfHiaCTZ7zoM27P%252F28des1t8JTNzSHhwDkram8cIB5mGe55knZphjsSg4yBsxRLTQGf82EGV6UvD7yn%252FK5l8tuP%252FARRlDYpFCvfnT%252BW0TohwGTuAkIm%252BpkkXbi%252Bv4wp0ytVa9pjq8w7r5xOXWUA%252FF3DFuUn8yROtzVDrErtI7OgB9NW88PQp8o%252BJLa1CqMYmxV7wWJJJtW5A4pIFWF%252BRKLAi82glxioskpoMuhbMXUJ9jc6YSE6L9XUYREggCAMG9gOTgn9fRRJH7LOcSRgBnoYycunmC4r8p8kz2cp3Jm%252FxADMFG4JL8hRqewdTSRSYTIr4UABskndHPL0%252BX3cY14enNEuySCI6ad3GJRSvfCQ6moRSzvVFVOoQlCQDfAveZZqJ5S6T21rVbQi6hGO6qI0irCGXwJ%252FxKI1wCmfbKjG3rGIv%252BY%252FzuAUttIw00i0Q5fJBNPSir604HRpm9nUeBtSajlo1x5ibRuxi7JNfMf53XYFjtYEdymeCSkyON7q6mZo9A%252BofbN1rsUn%252FcSLzcxH09SsGuWiOLJ5uInuHhCDoZNWld40EVZ4ucgamLyo7ds4fdVPFKQL%252F6eosEwrZOCzAY6mAGVwDnGhaYhtJDcQIYp%252BvPJPZty0pvsaLlaE6Ul%252BUZAg%252BFWIZ%252BGBNyx0dTWr7%252B%252BOSuYjXBejLqbbQvxk38tpr8JTIMMidQSqs4eOnxGfRMEHgQa1atfj%252BglSbMEVPhwfFnJuT0kH6v3Gi%252BLwuHeKW7gQGbrumViLem2j0cuHf%252FC44UKNTBOqpbD9WG3GUOaGLp8jy37YHqMVQ%253D%253D%26Expires%3D1770033605&amp;app=comet.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=0&amp;stealth=1&amp;st-wrtc&amp;st-loc&amp;st-ref=aHR0cHM6Ly9wcGwtYWktY29kZS1pbnRlcnByZXRlci1maWxlcy5zMy5hbWF6b25hd3MuY29tLw==&amp;st-dnt"></script><script type="text/javascript" nonce="49c43f3b76f44f449596d3007c6" src="//local.adguard.org?ts=1770032236979&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
@@ -885,6 +885,7 @@
         function sendData(data) {
             if (tg) {
                 tg.sendData(JSON.stringify(data));
+                tg.close(); // Закрываем Web App и отправляем данные боту
             } else {
                 // For testing outside Telegram
                 console.log('Data to send:', data);
