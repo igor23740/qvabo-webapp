@@ -883,8 +883,33 @@
         });
 
         function sendData(data) {
-            if (tg) {
-                tg.sendData(JSON.stringify(data));
+            if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                // Добавляем chat_id для ответа бота
+                const payload = {
+                    ...data,
+                    chat_id: tg.initDataUnsafe.user.id,
+                    user: tg.initDataUnsafe.user
+                };
+                
+                fetch('https://5773171-do48756.twc1.net/webhook/qvabo-webapp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        showToast('🚀 Генерация запущена!', 'success');
+                        setTimeout(() => tg.close(), 1500);
+                    } else {
+                        throw new Error('Ошибка сервера');
+                    }
+                })
+                .catch(error => {
+                    showToast('Ошибка: ' + error.message, 'error');
+                    resetButton();
+                });
             } else {
                 // For testing outside Telegram
                 console.log('Data to send:', data);
