@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>QVABO Studio - AI Image Generator</title>
-    <script type="text/javascript" nonce="49c43f3b76f44f449596d3007c6" src="//local.adguard.org?ts=1770048437391&amp;type=content-script&amp;dmn=ppl-ai-code-interpreter-files.s3.amazonaws.com&amp;url=https%3A%2F%2Fppl-ai-code-interpreter-files.s3.amazonaws.com%2Fweb%2Fdirect-files%2F346b18a933b8ee0e8ffe195bf7156d73%2Fea7d4228-217a-4a68-967e-6a7310df1781%2F1f483729.html%3Fresponse-content-disposition%3Dattachment%253B%2520filename%253Dindex_ABS_FINAL.html%253B%2520filename%252A%253DUTF-8%2527%2527index_ABS_FINAL.html%26AWSAccessKeyId%3DASIA2F3EMEYE5QII62B2%26Signature%3DqxkHhzYmlJTOtitQFUqqkDDhsEY%253D%26x-amz-security-token%3DIQoJb3JpZ2luX2VjECEaCXVzLWVhc3QtMSJGMEQCIFtSrReFGfBobymiuTaR%252BSt6%252Fkdx%252FFC3Yq7ze22%252BKYfDAiATASEHt%252BY22f2iikN5zYdcaVZc9Vy5EpRqLwcCuWzrdyr8BAjq%252F%252F%252F%252F%252F%252F%252F%252F%252F%252F8BEAEaDDY5OTc1MzMwOTcwNSIMm2%252B%252FjwZef5L0U8NlKtAErJTk90FKD8IG%252FY1%252BPkOQWrKGQCc1WaHXHSupYInI6jEqmRFNhn%252BEtahqb5lvwJf09J6XTp0D%252F%252F68gz7OOUviJhB3FSSXJ3afUALwHCjoZEJkazSRPv8qgup6pKlwTQz5gKGS4tJu2LdyvBdzXEjZ82qG3o6rIkm%252FPTlXAITQoomBtYzWC3S2kHSfNU8CbXgTXo3tOWKHN%252FVkgYDuowoX8QLps7MAQzBFd6%252Fguj4iRYmYM1a1%252FLmUg5N%252Bqnpzxbt7%252Bcq8AD0mmFVSDftWC1R9WXdafmPRtbtFAt3LNlTY09UfCIcaRlBjY7P%252Fe172jXqDE3vqVuIBOX27Chj6%252FTf4LfWLXv3yhKRRM43MfC3HUyoXBY%252FyZnxlSQW6d5AV7EKXO8jz5weS43HQKPowtBWOqV8oCJRzhTyMd8W1lTsc%252B7zqs%252BPb0I4UyQXGtzG60A%252BPVCLpni3CEs7sbO%252BMYuOsuFkQ5YGpo%252BuKHY2kC%252BGd9Mq0%252F8Rvz2rMObo7r%252FHNFatDuh%252FV0JnO21nUR4ONXIPLVoyEwjAqDXJCMmsTGg6%252BYLKkQbpuoAFVEYpY8AoORY6cXqeLiT7epsBYwzsMYQoOSH%252Blt9pUxn5Ys0dCYQlZjnws2SNBP1AYY047aAflE4SaNStr%252BiN%252BtHsjVE7y%252Fff2fDgb%252FNAq%252FmBrdoi9sTHVgXKVnhzwqqDW%252Fwjk40HnM%252BVsiabGcCayvYFRVFo%252F2Y1NBoB%252F%252B%252FS7TD8JCMvt94QGHxzZPtMoZdmmz9YDY5kKKgnk8Cj0rEqHjwBCqCOGY1yI1zDapYPMBjqZAfBrw9YB8aT3Ngu%252FLKsFqqTAjekCrg0vs53QTj9ctnzxQn2%252Bulxqx1UQxrt0cj84FtpxE9W8x9RArkzPedTUpEr3Ma4v1lxNomllOcKAvYplWaJImttPAeTpH63ir6xCWCb3fH%252FEHFGVWUbJS%252BXy%252FplOCLuEdQZAAjalrgBPDryyZhNqEHWvRpmM4nPg%252Bhcj7MMTQrCbzIIlhw%253D%253D%26Expires%3D1770051528&amp;app=comet.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=0&amp;stealth=1&amp;st-wrtc&amp;st-loc&amp;st-ref=aHR0cHM6Ly9wcGwtYWktY29kZS1pbnRlcnByZXRlci1maWxlcy5zMy5hbWF6b25hd3MuY29tLw==&amp;st-dnt"></script><script type="text/javascript" nonce="49c43f3b76f44f449596d3007c6" src="//local.adguard.org?ts=1770048437391&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             margin: 0;
@@ -883,33 +883,12 @@
         });
 
         function sendData(data) {
-            if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                const payload = {
-                    ...data,
-                    chat_id: tg.initDataUnsafe.user.id,
-                    user: tg.initDataUnsafe.user
-                };
-
-                fetch('https://5773171-do48756.twc1.net/webhook/4082f67d-b8ec-40d3-b740-59dfd055c535/webhook', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                })
-                .then(response => {
-                    if (response.ok) {
-                        showToast('✨ Генерация началась!', 'success');
-                        setTimeout(() => tg.close(), 1000);
-                    } else {
-                        throw new Error('Ошибка сервера');
-                    }
-                })
-                .catch(err => {
-                    showToast('❌ ' + err.message, 'error');
-                    resetButton();
-                });
+            if (tg) {
+                tg.sendData(JSON.stringify(data));
             } else {
-                console.log('Тест:', data);
-                showToast('Тестовый режим', 'success');
+                // For testing outside Telegram
+                console.log('Data to send:', data);
+                showToast('Data logged to console (test mode)', 'success');
                 setTimeout(resetButton, 1000);
             }
         }
