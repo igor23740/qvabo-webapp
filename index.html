@@ -883,13 +883,31 @@
         });
 
         function sendData(data) {
-            if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                // Добавляем chat_id для ответа бота
+            // Диагностика - что есть в initData
+            console.log('tg object:', tg);
+            console.log('initData:', tg ? tg.initData : 'no tg');
+            console.log('initDataUnsafe:', tg ? tg.initDataUnsafe : 'no tg');
+            
+            // Получаем chat_id из разных источников
+            let chatId = null;
+            if (tg && tg.initDataUnsafe) {
+                if (tg.initDataUnsafe.user) {
+                    chatId = tg.initDataUnsafe.user.id;
+                } else if (tg.initDataUnsafe.chat) {
+                    chatId = tg.initDataUnsafe.chat.id;
+                }
+            }
+            
+            if (tg && tg.initData) {
+                // Добавляем все доступные данные
                 const payload = {
                     ...data,
-                    chat_id: tg.initDataUnsafe.user.id,
-                    user: tg.initDataUnsafe.user
+                    chat_id: chatId,
+                    initData: tg.initData,
+                    initDataUnsafe: tg.initDataUnsafe
                 };
+                
+                console.log('Sending payload:', payload);
                 
                 fetch('https://5773171-do48756.twc1.net/webhook/qvabo-webapp', {
                     method: 'POST',
@@ -899,22 +917,24 @@
                     body: JSON.stringify(payload)
                 })
                 .then(response => {
+                    console.log('Response status:', response.status);
                     if (response.ok) {
                         showToast('🚀 Генерация запущена!', 'success');
                         setTimeout(() => tg.close(), 1500);
                     } else {
-                        throw new Error('Ошибка сервера');
+                        throw new Error('Сервер: ' + response.status);
                     }
                 })
                 .catch(error => {
+                    console.error('Fetch error:', error);
                     showToast('Ошибка: ' + error.message, 'error');
                     resetButton();
                 });
             } else {
-                // For testing outside Telegram
-                console.log('Data to send:', data);
-                showToast('Data logged to console (test mode)', 'success');
-                setTimeout(resetButton, 1000);
+                // For testing outside Telegram OR no initData
+                console.log('No tg.initData, data:', data);
+                showToast('Нет данных Telegram', 'error');
+                resetButton();
             }
         }
 
