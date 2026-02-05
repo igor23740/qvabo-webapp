@@ -452,56 +452,6 @@
             color: #c4b5fd;
         }
 
-        /* Model dropdown specific */
-        .model-option-content {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .dropdown-selected .model-option-content {
-            flex: 1;
-        }
-
-        .dropdown .model-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-
-        .model-icon.google {
-            background: linear-gradient(135deg, #4285f4 0%, #34a853 25%, #fbbc05 50%, #ea4335 100%);
-            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
-        }
-
-        .model-icon.flux {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            border: 1px solid #3d3d5c;
-            color: #fff;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .dropdown-option .model-info {
-            flex: 1;
-        }
-
-        .dropdown-option .model-name {
-            font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 2px;
-        }
-
-        .dropdown-option .model-desc {
-            font-size: 12px;
-            color: var(--text-secondary);
-        }
-
         /* Generate Button */
         .generate-btn {
             width: 100%;
@@ -638,32 +588,28 @@
             <div class="section-title">AI Model</div>
             <div class="dropdown" id="modelDropdown">
                 <div class="dropdown-selected">
-                    <div class="model-option-content">
-                        <div class="model-icon google">G</div>
-                        <div class="model-info">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="model-icon" id="modelIcon">G</div>
+                        <div>
                             <div class="model-name" id="modelName">Nano-Banana Pro</div>
-                            <div class="model-desc" id="modelDesc">Google Gemini · Рендеринг текста</div>
+                            <div class="model-desc" id="modelDesc">Google Gemini 3 Pro</div>
                         </div>
                     </div>
                     <span class="dropdown-arrow">▼</span>
                 </div>
                 <div class="dropdown-options">
-                    <div class="dropdown-option active" data-value="nano-banana-pro" data-name="Nano-Banana Pro" data-desc="Google Gemini · Рендеринг текста" data-icon="google">
-                        <div class="model-option-content">
-                            <div class="model-icon google">G</div>
-                            <div class="model-info">
-                                <div class="model-name">Nano-Banana Pro</div>
-                                <div class="model-desc">Google Gemini · Рендеринг текста</div>
-                            </div>
+                    <div class="dropdown-option active" data-value="nano-banana-pro" data-icon="G" data-name="Nano-Banana Pro" data-desc="Google Gemini 3 Pro">
+                        <div class="model-icon" style="width: 32px; height: 32px; font-size: 14px;">G</div>
+                        <div>
+                            <div class="model-name">Nano-Banana Pro</div>
+                            <div class="model-desc">Google Gemini 3 Pro</div>
                         </div>
                     </div>
-                    <div class="dropdown-option" data-value="flux-2-flex" data-name="FLUX.2 flex" data-desc="Black Forest Labs · До 4MP" data-icon="flux">
-                        <div class="model-option-content">
-                            <div class="model-icon flux">F</div>
-                            <div class="model-info">
-                                <div class="model-name">FLUX.2 flex</div>
-                                <div class="model-desc">Black Forest Labs · До 4MP</div>
-                            </div>
+                    <div class="dropdown-option" data-value="flux-2-pro" data-icon="F" data-name="FLUX 2 Pro" data-desc="Black Forest Labs">
+                        <div class="model-icon" style="width: 32px; height: 32px; font-size: 14px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);">F</div>
+                        <div>
+                            <div class="model-name">FLUX 2 Pro</div>
+                            <div class="model-desc">Black Forest Labs</div>
                         </div>
                     </div>
                 </div>
@@ -905,37 +851,39 @@
         setupDropdown('resolutionDropdown', 'resolutionValue', (val) => selectedResolution = val);
         setupDropdown('countDropdown', 'countValue', (val) => selectedCount = val);
 
-        // Model dropdown (custom handler for complex options)
-        const modelDropdown = document.getElementById('modelDropdown');
-        const modelSelected = modelDropdown.querySelector('.dropdown-selected');
-        const modelOptions = modelDropdown.querySelectorAll('.dropdown-option');
-        const modelNameEl = document.getElementById('modelName');
-        const modelDescEl = document.getElementById('modelDesc');
-        const modelIconEl = modelDropdown.querySelector('.dropdown-selected .model-icon');
+        // Model dropdown (специальный обработчик)
+        (function() {
+            const dropdown = document.getElementById('modelDropdown');
+            const selected = dropdown.querySelector('.dropdown-selected');
+            const options = dropdown.querySelectorAll('.dropdown-option');
+            const modelIcon = document.getElementById('modelIcon');
+            const modelName = document.getElementById('modelName');
+            const modelDesc = document.getElementById('modelDesc');
 
-        modelSelected.addEventListener('click', () => {
-            document.querySelectorAll('.dropdown').forEach(d => {
-                if (d !== modelDropdown) d.classList.remove('open');
+            selected.addEventListener('click', () => {
+                document.querySelectorAll('.dropdown').forEach(d => {
+                    if (d !== dropdown) d.classList.remove('open');
+                });
+                dropdown.classList.toggle('open');
             });
-            modelDropdown.classList.toggle('open');
-        });
 
-        modelOptions.forEach(option => {
-            option.addEventListener('click', () => {
-                modelOptions.forEach(o => o.classList.remove('active'));
-                option.classList.add('active');
-                
-                selectedModel = option.dataset.value;
-                modelNameEl.textContent = option.dataset.name;
-                modelDescEl.textContent = option.dataset.desc;
-                
-                // Update icon
-                modelIconEl.className = 'model-icon ' + option.dataset.icon;
-                modelIconEl.textContent = option.dataset.icon === 'google' ? 'G' : 'F';
-                
-                modelDropdown.classList.remove('open');
+            options.forEach(option => {
+                option.addEventListener('click', () => {
+                    options.forEach(o => o.classList.remove('active'));
+                    option.classList.add('active');
+                    selectedModel = option.dataset.value;
+                    modelIcon.textContent = option.dataset.icon;
+                    modelName.textContent = option.dataset.name;
+                    modelDesc.textContent = option.dataset.desc;
+                    if (option.dataset.value === 'flux-2-pro') {
+                        modelIcon.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)';
+                    } else {
+                        modelIcon.style.background = 'linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%)';
+                    }
+                    dropdown.classList.remove('open');
+                });
             });
-        });
+        })();
 
         // Close dropdowns on outside click
         document.addEventListener('click', (e) => {
@@ -952,59 +900,13 @@
         }
 
         // Improve Prompt button
-        improveBtn.addEventListener('click', async () => {
+        improveBtn.addEventListener('click', () => {
             if (!promptInput.value.trim()) {
-                showToast('Сначала введите промпт', 'error');
+                showToast('Please enter a prompt first', 'error');
                 return;
             }
-            
-            // Визуальная индикация — кнопка в состоянии loading
-            improveBtn.disabled = true;
-            improveBtn.innerHTML = '⏳ Улучшаю...';
-            improveBtn.style.opacity = '0.7';
-            
-            // Собираем chat_id
-            let chatId = null;
-            if (tg && tg.initDataUnsafe) {
-                chatId = tg.initDataUnsafe.user?.id || tg.initDataUnsafe.chat?.id;
-            }
-            
-            if (tg && tg.initData) {
-                try {
-                    await fetch('https://5773171-do48756.twc1.net/webhook/qvabo-webapp', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: 'improve_prompt',
-                            prompt: promptInput.value,
-                            chat_id: chatId,
-                            initData: tg.initData,
-                            initDataUnsafe: tg.initDataUnsafe
-                        })
-                    });
-                    
-                    // Успех — показываем галочку
-                    improveBtn.innerHTML = '✅ Принято';
-                    
-                    // Через 2 сек возвращаем кнопку
-                    setTimeout(() => {
-                        improveBtn.disabled = false;
-                        improveBtn.innerHTML = '✨ Улучшить Prompt';
-                        improveBtn.style.opacity = '1';
-                    }, 2000);
-                    
-                } catch (error) {
-                    showToast('Ошибка: ' + error.message, 'error');
-                    improveBtn.disabled = false;
-                    improveBtn.innerHTML = '✨ Улучшить Prompt';
-                    improveBtn.style.opacity = '1';
-                }
-            } else {
-                showToast('Нет данных Telegram', 'error');
-                improveBtn.disabled = false;
-                improveBtn.innerHTML = '✨ Улучшить Prompt';
-                improveBtn.style.opacity = '1';
-            }
+            // Send to bot for improvement
+            sendData({ action: 'improve_prompt', prompt: promptInput.value });
         });
 
         // Generate button
@@ -1022,10 +924,10 @@
                 const data = {
                     action: 'generate',
                     prompt: promptInput.value,
-                    model: selectedModel,
                     aspectRatio: selectedAspectRatio,
                     resolution: selectedResolution,
                     count: selectedCount,
+                    model: selectedModel,
                     images: uploadedImages.map(img => img.dataUrl)
                 };
 
