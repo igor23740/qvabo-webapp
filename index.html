@@ -487,6 +487,13 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
+        .model-icon.seedream {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%);
+            border: 1px solid #4a7ab5;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(45, 106, 159, 0.3);
+        }
+
         .dropdown-option .model-info {
             flex: 1;
         }
@@ -663,6 +670,15 @@
                             <div class="model-info">
                                 <div class="model-name">FLUX 2 Pro</div>
                                 <div class="model-desc">Fal.ai · Премиум качество</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-option" data-value="seedream-4.5" data-name="Seedream 4.5" data-desc="ByteDance · До 4MP" data-icon="seedream">
+                        <div class="model-option-content">
+                            <div class="model-icon seedream">S</div>
+                            <div class="model-info">
+                                <div class="model-name">Seedream 4.5</div>
+                                <div class="model-desc">ByteDance · До 4MP</div>
                             </div>
                         </div>
                     </div>
@@ -899,6 +915,21 @@
                 ],
                 defaultAspect: '1:1',
                 defaultRes: '1K'
+            },
+            'seedream-4.5': {
+                aspectRatios: [
+                    {value:'auto',icon:'▢'}, {value:'21:9',icon:'▬'}, {value:'16:9',icon:'▬'},
+                    {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'5:4',icon:'▢'},
+                    {value:'1:1',icon:'▢'}, {value:'4:5',icon:'▯'}, {value:'3:4',icon:'▯'},
+                    {value:'2:3',icon:'▯'}, {value:'9:16',icon:'▯'}
+                ],
+                resolutions: [
+                    {value:'1K', label:'1K'},
+                    {value:'2K', label:'2K'},
+                    {value:'4K', label:'4K'}
+                ],
+                defaultAspect: '1:1',
+                defaultRes: '1K'
             }
         };
 
@@ -1008,7 +1039,7 @@
                 
                 // Update icon
                 modelIconEl.className = 'model-icon ' + option.dataset.icon;
-                modelIconEl.textContent = option.dataset.icon === 'google' ? 'G' : 'F';
+                modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S'}[option.dataset.icon] || 'S';
                 
                 modelDropdown.classList.remove('open');
                 updateModelParams(selectedModel);
