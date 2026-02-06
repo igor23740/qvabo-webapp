@@ -867,6 +867,83 @@
             updateImagePreviews();
         }
 
+
+        // === Model-dependent parameter switching ===
+        const modelConfigs = {
+            'nano-banana-pro': {
+                aspectRatios: [
+                    {value:'auto',icon:'▢'}, {value:'21:9',icon:'▬'}, {value:'16:9',icon:'▬'},
+                    {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'5:4',icon:'▢'},
+                    {value:'1:1',icon:'▢'}, {value:'4:5',icon:'▯'}, {value:'3:4',icon:'▯'},
+                    {value:'2:3',icon:'▯'}, {value:'9:16',icon:'▯'}
+                ],
+                resolutions: [
+                    {value:'1K', label:'1K'},
+                    {value:'2K', label:'2K'},
+                    {value:'4K', label:'4K'}
+                ],
+                defaultAspect: '1:1',
+                defaultRes: '1K'
+            },
+            'flux-2-pro': {
+                aspectRatios: [
+                    {value:'auto',icon:'▢'}, {value:'21:9',icon:'▬'}, {value:'16:9',icon:'▬'},
+                    {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'5:4',icon:'▢'},
+                    {value:'1:1',icon:'▢'}, {value:'4:5',icon:'▯'}, {value:'3:4',icon:'▯'},
+                    {value:'2:3',icon:'▯'}, {value:'9:16',icon:'▯'}
+                ],
+                resolutions: [
+                    {value:'1K', label:'1K'},
+                    {value:'2K', label:'2K'},
+                    {value:'4K', label:'4K'}
+                ],
+                defaultAspect: '1:1',
+                defaultRes: '1K'
+            }
+        };
+
+        function updateModelParams(model) {
+            const config = modelConfigs[model] || modelConfigs['nano-banana-pro'];
+
+            // --- Update Aspect Ratio chips ---
+            const chipsContainer = document.getElementById('aspectRatioChips');
+            chipsContainer.innerHTML = '';
+            config.aspectRatios.forEach(ar => {
+                const chip = document.createElement('div');
+                chip.className = 'chip' + (ar.value === config.defaultAspect ? ' active' : '');
+                chip.dataset.value = ar.value;
+                chip.innerHTML = '<span class="chip-icon">' + ar.icon + '</span> ' + ar.value;
+                chip.addEventListener('click', () => {
+                    chipsContainer.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                    selectedAspectRatio = chip.dataset.value;
+                });
+                chipsContainer.appendChild(chip);
+            });
+            selectedAspectRatio = config.defaultAspect;
+
+            // --- Update Resolution dropdown ---
+            const resOptions = document.querySelector('#resolutionDropdown .dropdown-options');
+            const resValue = document.getElementById('resolutionValue');
+            resOptions.innerHTML = '';
+            config.resolutions.forEach(res => {
+                const opt = document.createElement('div');
+                opt.className = 'dropdown-option' + (res.value === config.defaultRes ? ' active' : '');
+                opt.dataset.value = res.value;
+                opt.textContent = res.label;
+                opt.addEventListener('click', () => {
+                    resOptions.querySelectorAll('.dropdown-option').forEach(o => o.classList.remove('active'));
+                    opt.classList.add('active');
+                    resValue.textContent = res.label;
+                    selectedResolution = res.value;
+                    document.getElementById('resolutionDropdown').classList.remove('open');
+                });
+                resOptions.appendChild(opt);
+            });
+            resValue.textContent = config.resolutions.find(r => r.value === config.defaultRes)?.label || config.defaultRes;
+            selectedResolution = config.defaultRes;
+        }
+
         // Aspect Ratio chips
         document.querySelectorAll('#aspectRatioChips .chip').forEach(chip => {
             chip.addEventListener('click', () => {
@@ -934,6 +1011,7 @@
                 modelIconEl.textContent = option.dataset.icon === 'google' ? 'G' : 'F';
                 
                 modelDropdown.classList.remove('open');
+                updateModelParams(selectedModel);
             });
         });
 
