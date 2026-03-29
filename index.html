@@ -237,6 +237,99 @@
             transform: scale(1.01);
         }
 
+        /* Mode Tabs */
+        .mode-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 24px;
+            background: var(--bg-card);
+            border-radius: 14px;
+            padding: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .mode-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 11px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+            user-select: none;
+        }
+
+        .mode-tab.active {
+            background: linear-gradient(135deg, var(--accent) 0%, #6d28d9 100%);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+        }
+
+        .mode-tab:not(.active):hover {
+            color: var(--text-primary);
+            background: rgba(124, 58, 237, 0.1);
+        }
+
+        /* Disabled chips (video mode) */
+        .chip.disabled {
+            opacity: 0.3;
+            pointer-events: none;
+            filter: grayscale(1);
+        }
+
+        /* Toggle switch */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(145deg, var(--bg-card) 0%, #1f1f38 100%);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 16px;
+        }
+
+        .toggle-label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 26px;
+            background: var(--border);
+            border-radius: 13px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: var(--accent);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(22px);
+        }
+
+        /* Hidden sections */
+        .section.hidden {
+            display: none;
+        }
+
         .upload-icon {
             width: 56px;
             height: 56px;
@@ -636,8 +729,14 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>🎨 AI Image Generator</h1>
-            <p>Создавайте потрясающие изображения с помощью передовых технологий искусственного интеллекта. Превращайте свои идеи в визуальные шедевры.</p>
+            <h1 id="headerTitle">🎨 AI Image Generator</h1>
+            <p id="headerDesc">Создавайте потрясающие изображения с помощью передовых технологий искусственного интеллекта. Превращайте свои идеи в визуальные шедевры.</p>
+        </div>
+
+        <!-- Mode Tabs -->
+        <div class="mode-tabs">
+            <div class="mode-tab active" data-mode="image">🖼 Image</div>
+            <div class="mode-tab" data-mode="video">🎬 Video</div>
         </div>
 
         <!-- AI Model -->
@@ -655,7 +754,7 @@
                     <span class="dropdown-arrow">▼</span>
                 </div>
                 <div class="dropdown-options">
-                    <div class="dropdown-option active" data-value="nano-banana-pro" data-name="Nano-Banana 2" data-desc="Google Gemini · Рендеринг текста" data-icon="google">
+                    <div class="dropdown-option active" data-value="nano-banana-pro" data-name="Nano-Banana 2" data-desc="Google Gemini · Рендеринг текста" data-icon="google" data-mode="image">
                         <div class="model-option-content">
                             <div class="model-icon google">G</div>
                             <div class="model-info">
@@ -664,7 +763,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="dropdown-option" data-value="flux-2-pro" data-name="FLUX 2 Pro" data-desc="Fal.ai · Премиум качество" data-icon="flux">
+                    <div class="dropdown-option" data-value="flux-2-pro" data-name="FLUX 2 Pro" data-desc="Fal.ai · Премиум качество" data-icon="flux" data-mode="image">
                         <div class="model-option-content">
                             <div class="model-icon flux">F</div>
                             <div class="model-info">
@@ -673,12 +772,21 @@
                             </div>
                         </div>
                     </div>
-                    <div class="dropdown-option" data-value="seedream-5" data-name="Seedream 5" data-desc="ByteDance · До 4MP" data-icon="seedream">
+                    <div class="dropdown-option" data-value="seedream-5" data-name="Seedream 5" data-desc="ByteDance · До 4MP" data-icon="seedream" data-mode="image">
                         <div class="model-option-content">
                             <div class="model-icon seedream">S</div>
                             <div class="model-info">
                                 <div class="model-name">Seedream 5</div>
                                 <div class="model-desc">ByteDance · До 4MP</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-option" data-value="veo-3.1" data-name="Veo 3.1" data-desc="Google · Video Generation" data-icon="google" data-mode="video" style="display:none;">
+                        <div class="model-option-content">
+                            <div class="model-icon google">G</div>
+                            <div class="model-info">
+                                <div class="model-name">Veo 3.1</div>
+                                <div class="model-desc">Google · Video Generation</div>
                             </div>
                         </div>
                     </div>
@@ -707,7 +815,7 @@
         </div>
 
         <!-- Upload Images -->
-        <div class="section">
+        <div class="section" id="uploadSection">
             <div class="section-title">Загрузить изображения (Optional)</div>
             <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
                 Можно загрузить до 10 изображений.
@@ -759,7 +867,7 @@
         </div>
 
         <!-- Number of Images -->
-        <div class="section">
+        <div class="section" id="countSection">
             <div class="section-title">Number of Images</div>
             <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
                 Генерировать несколько вариантов (в зависимости от модели)
@@ -775,6 +883,34 @@
                     <div class="dropdown-option" data-value="3">3</div>
                     <div class="dropdown-option" data-value="4">4</div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Duration (Video only) -->
+        <div class="section hidden" id="durationSection">
+            <div class="section-title">Duration</div>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+                Длительность видео
+            </p>
+            <div class="dropdown" id="durationDropdown">
+                <div class="dropdown-selected">
+                    <span id="durationValue">8s</span>
+                    <span class="dropdown-arrow">▼</span>
+                </div>
+                <div class="dropdown-options">
+                    <div class="dropdown-option" data-value="4s">4s</div>
+                    <div class="dropdown-option" data-value="6s">6s</div>
+                    <div class="dropdown-option active" data-value="8s">8s</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Audio (Video only) -->
+        <div class="section hidden" id="audioSection">
+            <div class="section-title">Audio</div>
+            <div class="toggle-row">
+                <span class="toggle-label">Generate Audio</span>
+                <div class="toggle-switch active" id="audioToggle"></div>
             </div>
         </div>
 
@@ -808,6 +944,9 @@
         let selectedResolution = '1K';
         let selectedCount = '1';
         let selectedModel = 'nano-banana-pro';
+        let currentMode = 'image';
+        let selectedDuration = '8s';
+        let generateAudio = true;
 
         // Elements
         const promptInput = document.getElementById('promptInput');
@@ -930,8 +1069,92 @@
                 ],
                 defaultAspect: '1:1',
                 defaultRes: '1K'
+            },
+            'veo-3.1': {
+                aspectRatios: [
+                    {value:'1:1',icon:'▢'}, {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'}
+                ],
+                resolutions: [
+                    {value:'720p', label:'720p'},
+                    {value:'1080p', label:'1080p'},
+                    {value:'4k', label:'4K'}
+                ],
+                defaultAspect: '16:9',
+                defaultRes: '720p'
             }
         };
+
+        // Video aspect ratios (only these 3 active in video mode)
+        const videoAspectRatios = ['1:1', '16:9', '9:16'];
+
+        // Mode switching
+        function switchMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+
+            const isVideo = mode === 'video';
+
+            // Header
+            document.getElementById('headerTitle').textContent = isVideo ? '🎬 AI Video Generator' : '🎨 AI Image Generator';
+            document.getElementById('headerDesc').textContent = isVideo
+                ? 'Генерируйте видео с помощью Google Veo 3.1. Text-to-video и Image-to-video.'
+                : 'Создавайте потрясающие изображения с помощью передовых технологий искусственного интеллекта. Превращайте свои идеи в визуальные шедевры.';
+
+            // Show/hide sections
+            document.getElementById('countSection').classList.toggle('hidden', isVideo);
+            document.getElementById('durationSection').classList.toggle('hidden', !isVideo);
+            document.getElementById('audioSection').classList.toggle('hidden', !isVideo);
+
+            // Upload label
+            const uploadTitle = document.querySelector('#uploadSection .section-title');
+            if (uploadTitle) {
+                uploadTitle.textContent = isVideo ? 'Загрузить изображение (Optional)' : 'Загрузить изображения (Optional)';
+            }
+            const uploadHint = document.querySelector('#uploadSection p');
+            if (uploadHint) {
+                uploadHint.textContent = isVideo ? 'Загрузите 1 изображение для Image-to-Video.' : 'Можно загрузить до 10 изображений.';
+            }
+
+            // Model dropdown — show/hide options by mode
+            document.querySelectorAll('#modelDropdown .dropdown-option').forEach(opt => {
+                const optMode = opt.dataset.mode || 'image';
+                opt.style.display = (optMode === mode || optMode === 'both') ? '' : 'none';
+            });
+
+            // Auto-select first visible model
+            if (isVideo) {
+                selectedModel = 'veo-3.1';
+                document.getElementById('modelName').textContent = 'Veo 3.1';
+                document.getElementById('modelDesc').textContent = 'Google · Video Generation';
+                const iconEl = document.querySelector('#modelDropdown .dropdown-selected .model-icon');
+                iconEl.className = 'model-icon google';
+                iconEl.textContent = 'G';
+            } else {
+                selectedModel = 'nano-banana-pro';
+                document.getElementById('modelName').textContent = 'Nano-Banana 2';
+                document.getElementById('modelDesc').textContent = 'Google Gemini · Рендеринг текста';
+                const iconEl = document.querySelector('#modelDropdown .dropdown-selected .model-icon');
+                iconEl.className = 'model-icon google';
+                iconEl.textContent = 'G';
+            }
+
+            updateModelParams(selectedModel);
+
+            // Generate button text
+            generateBtn.innerHTML = isVideo
+                ? '<span>🎬</span><span>Generate Video</span>'
+                : '<span>✨</span><span>Generate</span>';
+
+            // Validation text
+            document.getElementById('validationText').textContent = isVideo
+                ? 'Пожалуйста, предоставьте описание видео для генерации'
+                : 'Пожалуйста, предоставьте описание изображения для генерации';
+        }
+
+        // Tab click handlers
+        document.querySelectorAll('.mode-tab').forEach(tab => {
+            tab.addEventListener('click', () => switchMode(tab.dataset.mode));
+        });
 
         function updateModelParams(model) {
             const config = modelConfigs[model] || modelConfigs['nano-banana-pro'];
@@ -1012,6 +1235,13 @@
 
         setupDropdown('resolutionDropdown', 'resolutionValue', (val) => selectedResolution = val);
         setupDropdown('countDropdown', 'countValue', (val) => selectedCount = val);
+        setupDropdown('durationDropdown', 'durationValue', (val) => selectedDuration = val);
+
+        // Audio toggle
+        document.getElementById('audioToggle').addEventListener('click', function() {
+            this.classList.toggle('active');
+            generateAudio = this.classList.contains('active');
+        });
 
         // Model dropdown (custom handler for complex options)
         const modelDropdown = document.getElementById('modelDropdown');
@@ -1128,15 +1358,30 @@
             generateBtn.innerHTML = '<div class="spinner"></div><span>Generating...</span>';
 
             try {
-                const data = {
-                    action: 'generate',
-                    prompt: promptInput.value,
-                    model: selectedModel,
-                    aspectRatio: selectedAspectRatio,
-                    resolution: selectedResolution,
-                    count: selectedCount,
-                    images: uploadedImages.map(img => img.dataUrl)
-                };
+                let data;
+                if (currentMode === 'video') {
+                    data = {
+                        action: 'generate_video',
+                        prompt: promptInput.value,
+                        model: 'veo-3.1',
+                        aspectRatio: selectedAspectRatio,
+                        resolution: selectedResolution,
+                        duration: selectedDuration,
+                        generateAudio: generateAudio,
+                        count: 1,
+                        images: uploadedImages.slice(0, 1).map(img => img.dataUrl)
+                    };
+                } else {
+                    data = {
+                        action: 'generate',
+                        prompt: promptInput.value,
+                        model: selectedModel,
+                        aspectRatio: selectedAspectRatio,
+                        resolution: selectedResolution,
+                        count: selectedCount,
+                        images: uploadedImages.map(img => img.dataUrl)
+                    };
+                }
 
                 sendData(data);
             } catch (error) {
@@ -1204,7 +1449,9 @@
         function resetButton() {
             generateBtn.disabled = false;
             generateBtn.classList.remove('loading');
-            generateBtn.innerHTML = '<span>✨</span><span>Generate</span>';
+            generateBtn.innerHTML = currentMode === 'video'
+                ? '<span>🎬</span><span>Generate Video</span>'
+                : '<span>✨</span><span>Generate</span>';
             updateValidation();
         }
 
