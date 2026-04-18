@@ -1,0 +1,3 @@
+# Локальная папка Claude Code: скиллы, настройки сессии.
+# gsap-skills внутри — отдельный git repo, требует submodule-setup для публикации.
+.claude/

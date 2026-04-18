@@ -790,6 +790,15 @@
                             </div>
                         </div>
                     </div>
+                    <div class="dropdown-option" data-value="seedance-2-fast" data-name="Seedance 2.0 Fast" data-desc="ByteDance · OpenRouter Video" data-icon="seedream" data-mode="video" style="display:none;">
+                        <div class="model-option-content">
+                            <div class="model-icon seedream">S</div>
+                            <div class="model-info">
+                                <div class="model-name">Seedance 2.0 Fast</div>
+                                <div class="model-desc">ByteDance · OpenRouter Video</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1071,6 +1080,9 @@
                 defaultRes: '1K'
             },
             'veo-3.1': {
+                apiSlug: 'veo-3.1',
+                provider: 'google',
+                audioToggle: false,
                 aspectRatios: [
                     {value:'1:1',icon:'▢'}, {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'}
                 ],
@@ -1079,8 +1091,34 @@
                     {value:'1080p', label:'1080p'},
                     {value:'4k', label:'4K'}
                 ],
+                durations: [
+                    {value:'4s', label:'4s'},
+                    {value:'6s', label:'6s'},
+                    {value:'8s', label:'8s'}
+                ],
                 defaultAspect: '16:9',
-                defaultRes: '720p'
+                defaultRes: '720p',
+                defaultDuration: '8s'
+            },
+            'seedance-2-fast': {
+                apiSlug: 'bytedance/seedance-2.0-fast',
+                provider: 'openrouter',
+                audioToggle: true,
+                aspectRatios: [
+                    {value:'1:1',icon:'▢'}, {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'}
+                ],
+                resolutions: [
+                    {value:'480p', label:'480p'},
+                    {value:'720p', label:'720p'}
+                ],
+                durations: [
+                    {value:'5s', label:'5s'},
+                    {value:'10s', label:'10s'},
+                    {value:'15s', label:'15s'}
+                ],
+                defaultAspect: '16:9',
+                defaultRes: '720p',
+                defaultDuration: '15s'
             }
         };
 
@@ -1097,13 +1135,13 @@
             // Header
             document.getElementById('headerTitle').textContent = isVideo ? '🎬 AI Video Generator' : '🎨 AI Image Generator';
             document.getElementById('headerDesc').textContent = isVideo
-                ? 'Генерируйте видео с помощью Google Veo 3.1. Text-to-video и Image-to-video.'
+                ? 'Генерируйте видео с помощью AI. Text-to-video и Image-to-video.'
                 : 'Создавайте потрясающие изображения с помощью передовых технологий искусственного интеллекта. Превращайте свои идеи в визуальные шедевры.';
 
             // Show/hide sections
             document.getElementById('countSection').classList.toggle('hidden', isVideo);
             document.getElementById('durationSection').classList.toggle('hidden', !isVideo);
-            document.getElementById('audioSection').classList.toggle('hidden', !isVideo);
+            // audioSection visibility is now driven by per-model config.audioToggle in updateModelParams()
 
             // Upload label
             const uploadTitle = document.querySelector('#uploadSection .section-title');
@@ -1159,6 +1197,9 @@
         function updateModelParams(model) {
             const config = modelConfigs[model] || modelConfigs['nano-banana-pro'];
 
+            // --- Audio toggle visibility (only for models that support audio on/off) ---
+            document.getElementById('audioSection').classList.toggle('hidden', !config.audioToggle);
+
             // --- Update Aspect Ratio chips ---
             const chipsContainer = document.getElementById('aspectRatioChips');
             chipsContainer.innerHTML = '';
@@ -1196,6 +1237,29 @@
             });
             resValue.textContent = config.resolutions.find(r => r.value === config.defaultRes)?.label || config.defaultRes;
             selectedResolution = config.defaultRes;
+
+            // --- Update Duration dropdown (video only) ---
+            if (config.durations && config.durations.length) {
+                const durOptions = document.querySelector('#durationDropdown .dropdown-options');
+                const durValue = document.getElementById('durationValue');
+                durOptions.innerHTML = '';
+                config.durations.forEach(dur => {
+                    const opt = document.createElement('div');
+                    opt.className = 'dropdown-option' + (dur.value === config.defaultDuration ? ' active' : '');
+                    opt.dataset.value = dur.value;
+                    opt.textContent = dur.label;
+                    opt.addEventListener('click', () => {
+                        durOptions.querySelectorAll('.dropdown-option').forEach(o => o.classList.remove('active'));
+                        opt.classList.add('active');
+                        durValue.textContent = dur.label;
+                        selectedDuration = dur.value;
+                        document.getElementById('durationDropdown').classList.remove('open');
+                    });
+                    durOptions.appendChild(opt);
+                });
+                durValue.textContent = config.durations.find(d => d.value === config.defaultDuration)?.label || config.defaultDuration;
+                selectedDuration = config.defaultDuration;
+            }
         }
 
         // Aspect Ratio chips
@@ -1360,14 +1424,16 @@
             try {
                 let data;
                 if (currentMode === 'video') {
+                    const videoConfig = modelConfigs[selectedModel] || {};
                     data = {
                         action: 'generate_video',
                         prompt: promptInput.value,
-                        model: 'veo-3.1',
+                        model: videoConfig.apiSlug || selectedModel,
+                        provider: videoConfig.provider || 'google',
                         aspectRatio: selectedAspectRatio,
                         resolution: selectedResolution,
                         duration: selectedDuration,
-                        generateAudio: generateAudio,
+                        generateAudio: videoConfig.audioToggle ? generateAudio : true,
                         count: 1,
                         images: uploadedImages.slice(0, 1).map(img => img.dataUrl)
                     };
