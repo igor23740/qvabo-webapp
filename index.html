@@ -594,6 +594,13 @@
             box-shadow: 0 4px 12px rgba(16, 163, 127, 0.3);
         }
 
+        .model-icon.grok {
+            background: linear-gradient(135deg, #0a0a0a 0%, #3a3a3a 100%);
+            border: 1px solid #555;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
         .dropdown-option .model-info {
             flex: 1;
         }
@@ -797,6 +804,15 @@
                             </div>
                         </div>
                     </div>
+                    <div class="dropdown-option" data-value="grok" data-name="Grok Imagine" data-desc="xAI · Стиль и фотореализм" data-icon="grok" data-mode="image">
+                        <div class="model-option-content">
+                            <div class="model-icon grok">X</div>
+                            <div class="model-info">
+                                <div class="model-name">Grok Imagine</div>
+                                <div class="model-desc">xAI · Стиль и фотореализм</div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="dropdown-option" data-value="veo-3.1" data-name="Veo 3.1" data-desc="Google · Video Generation" data-icon="google" data-mode="video" style="display:none;">
                         <div class="model-option-content">
                             <div class="model-icon google">G</div>
@@ -873,7 +889,7 @@
         </div>
 
         <!-- Resolution -->
-        <div class="section">
+        <div class="section" id="resolutionSection">
             <div class="section-title">Resolution</div>
             <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
                 Разрешение изображения для генерации
@@ -1110,6 +1126,18 @@
                 defaultAspect: '1:1',
                 defaultRes: '1K'
             },
+            'grok': {
+                // [DOC kie.ai grok-imagine] t2i: только aspect_ratio (1:1,16:9,9:16,2:3,3:2),
+                // НЕТ resolution; i2i — 1 референс. resolutions:[] -> блок Resolution скрывается.
+                aspectRatios: [
+                    {value:'16:9',icon:'▬'}, {value:'3:2',icon:'▬'},
+                    {value:'1:1',icon:'▢'},
+                    {value:'2:3',icon:'▯'}, {value:'9:16',icon:'▯'}
+                ],
+                resolutions: [],
+                defaultAspect: '1:1',
+                defaultRes: null
+            },
             'veo-3.1': {
                 apiSlug: 'veo-3.1',
                 provider: 'google',
@@ -1249,6 +1277,15 @@
             selectedAspectRatio = config.defaultAspect;
 
             // --- Update Resolution dropdown ---
+            // Models without a resolution axis (e.g. Grok Imagine) hide the whole block
+            // and send no resolution to the backend.
+            const resSection = document.getElementById('resolutionSection');
+            if (!config.resolutions || config.resolutions.length === 0) {
+                resSection.classList.add('hidden');
+                selectedResolution = null;
+                return;
+            }
+            resSection.classList.remove('hidden');
             const resOptions = document.querySelector('#resolutionDropdown .dropdown-options');
             const resValue = document.getElementById('resolutionValue');
             resOptions.innerHTML = '';
@@ -1364,7 +1401,7 @@
                 
                 // Update icon
                 modelIconEl.className = 'model-icon ' + option.dataset.icon;
-                modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','openai':'O'}[option.dataset.icon] || 'S';
+                modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','openai':'O','grok':'X'}[option.dataset.icon] || 'S';
                 
                 modelDropdown.classList.remove('open');
                 updateModelParams(selectedModel);
