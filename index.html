@@ -909,9 +909,9 @@
 
         <!-- Number of Images -->
         <div class="section" id="countSection">
-            <div class="section-title">Number of Images</div>
+            <div class="section-title">Количество изображений</div>
             <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
-                Генерировать несколько вариантов (в зависимости от модели)
+                Сколько разных картинок сгенерировать за одно нажатие. Это <b>не разрешение</b> — <b>каждая картинка оплачивается отдельно</b>.
             </p>
             <div class="dropdown" id="countDropdown">
                 <div class="dropdown-selected">
@@ -925,6 +925,7 @@
                     <div class="dropdown-option" data-value="4">4</div>
                 </div>
             </div>
+            <p id="countWarning" style="display:none; font-size:12px; color:#f0a020; margin-top:10px; font-weight:600;"></p>
         </div>
 
         <!-- Duration (Video only) -->
@@ -1366,7 +1367,20 @@
         }
 
         setupDropdown('resolutionDropdown', 'resolutionValue', (val) => selectedResolution = val);
-        setupDropdown('countDropdown', 'countValue', (val) => selectedCount = val);
+        // Count picker: keep selectedCount and surface an explicit cost warning when >1,
+        // so nobody mistakes this for a resolution setting and gets charged multiple times.
+        function updateCountWarning(val) {
+            selectedCount = val;
+            const w = document.getElementById('countWarning');
+            const n = parseInt(val, 10) || 1;
+            if (n > 1) {
+                w.textContent = '⚠️ Будет создано ' + n + ' изображения — спишется как ' + n + ' генерации (×' + n + ').';
+                w.style.display = 'block';
+            } else {
+                w.style.display = 'none';
+            }
+        }
+        setupDropdown('countDropdown', 'countValue', updateCountWarning);
         setupDropdown('durationDropdown', 'durationValue', (val) => selectedDuration = val);
 
         // Audio toggle
