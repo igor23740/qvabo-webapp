@@ -890,8 +890,8 @@
 
         <!-- Resolution -->
         <div class="section" id="resolutionSection">
-            <div class="section-title">Resolution</div>
-            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+            <div class="section-title">Разрешение</div>
+            <p id="resolutionHint" style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
                 Разрешение изображения для генерации
             </p>
             <div class="dropdown" id="resolutionDropdown">
@@ -905,6 +905,9 @@
                     <div class="dropdown-option" data-value="4K">4K</div>
                 </div>
             </div>
+            <p id="resolutionNote" style="display:none; font-size:13px; color: var(--text-secondary); margin:0; padding:12px 14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px;">
+                🔒 У этой модели разрешение не настраивается — доступен только выбор количества ниже.
+            </p>
         </div>
 
         <!-- Number of Images -->
@@ -1278,15 +1281,25 @@
             selectedAspectRatio = config.defaultAspect;
 
             // --- Update Resolution dropdown ---
-            // Models without a resolution axis (e.g. Grok Imagine) hide the whole block
-            // and send no resolution to the backend.
+            // Models without a resolution axis (e.g. Grok Imagine) keep the block VISIBLE
+            // but swap the picker for an explicit note — otherwise the missing block leaves
+            // a vacuum and users mistake the count picker below for resolution. No resolution
+            // is sent to the backend.
             const resSection = document.getElementById('resolutionSection');
+            const resHint = document.getElementById('resolutionHint');
+            const resDropdownEl = document.getElementById('resolutionDropdown');
+            const resNote = document.getElementById('resolutionNote');
+            resSection.classList.remove('hidden');
             if (!config.resolutions || config.resolutions.length === 0) {
-                resSection.classList.add('hidden');
+                resHint.style.display = 'none';
+                resDropdownEl.style.display = 'none';
+                resNote.style.display = 'block';
                 selectedResolution = null;
                 return;
             }
-            resSection.classList.remove('hidden');
+            resHint.style.display = '';
+            resDropdownEl.style.display = '';
+            resNote.style.display = 'none';
             const resOptions = document.querySelector('#resolutionDropdown .dropdown-options');
             const resValue = document.getElementById('resolutionValue');
             resOptions.innerHTML = '';
