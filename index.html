@@ -1442,7 +1442,9 @@
             
             if (tg && tg.initData) {
                 try {
-                    await fetch('https://coaladot.fun/webhook/qvabo-webapp', {
+                    // Synchronous endpoint: returns { improved: "<text>" } and we drop it
+                    // straight into the prompt field (no copy-from-chat).
+                    const res = await fetch('https://coaladot.fun/webhook/qvabo-improve', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -1453,17 +1455,29 @@
                             initDataUnsafe: tg.initDataUnsafe
                         })
                     });
-                    
-                    // Успех — показываем галочку
-                    improveBtn.innerHTML = '✅ Принято';
-                    
-                    // Через 2 сек возвращаем кнопку
+
+                    let improved = '';
+                    try {
+                        const data = await res.json();
+                        improved = (data && (data.improved || data.output || data.text) || '').trim();
+                    } catch (_) {}
+
+                    if (improved) {
+                        promptInput.value = improved;
+                        updateValidation();
+                        improveBtn.innerHTML = '✅ Готово';
+                    } else {
+                        showToast('Не удалось улучшить промпт, попробуйте ещё раз', 'error');
+                        improveBtn.innerHTML = '✨ Улучшить Prompt';
+                    }
+
+                    // Через 2 сек возвращаем исходную надпись кнопки
                     setTimeout(() => {
                         improveBtn.disabled = false;
                         improveBtn.innerHTML = '✨ Улучшить Prompt';
                         improveBtn.style.opacity = '1';
                     }, 2000);
-                    
+
                 } catch (error) {
                     showToast('Ошибка: ' + error.message, 'error');
                     improveBtn.disabled = false;
