@@ -1230,9 +1230,10 @@
                 defaultRes: null
             },
             'ideogram-v3': {
-                // [DOC kie.ai ideogram/v3] НЕТ resolution/4K: размер только через image_size enum,
-                // маппится из aspectRatio на бэке (Kie Mapper). rendering_speed=BALANCED фиксируется там же.
-                // i2i (есть фото) -> ideogram/v3-remix (1 референс). resolutions:[] -> блок Resolution = note.
+                // [DOC kie.ai ideogram/v3] НЕТ resolution/4K: размер только через image_size enum (маппинг на бэке).
+                // rendering_speed=BALANCED фиксируется в Kie Mapper. resolutions:[] -> блок Resolution = note.
+                // textOnly: i2i-режимы Ideogram (remix/character) у kie дают 500 — загрузка фото скрыта, только t2i.
+                textOnly: true,
                 aspectRatios: [
                     {value:'16:9',icon:'▬'}, {value:'4:3',icon:'▬'},
                     {value:'1:1',icon:'▢'},
@@ -1392,6 +1393,14 @@
             // --- Reference-required note (Ideogram Персонаж): mandatory photo input ---
             const refNote = document.getElementById('refRequiredNote');
             if (refNote) refNote.style.display = config.requiresReference ? 'block' : 'none';
+
+            // --- Image upload visibility: hide for text-only models ---
+            // Ideogram V3 i2i (remix) returns 500 on kie, so this model is text-only:
+            // hide the upload block and drop any already-picked photos so nothing goes to i2i.
+            const uploadSectionEl = document.getElementById('uploadSection');
+            if (uploadSectionEl) uploadSectionEl.classList.toggle('hidden', !!config.textOnly);
+            if (config.textOnly && uploadedImages.length) { uploadedImages = []; updateImagePreviews(); }
+
             updateValidation();
 
             // --- Update Aspect Ratio chips ---
