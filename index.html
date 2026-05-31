@@ -601,6 +601,13 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         }
 
+        .model-icon.ideogram {
+            background: linear-gradient(135deg, #2b4cf0 0%, #1e3a8a 100%);
+            border: 1px solid #4a6bff;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(43, 76, 240, 0.3);
+        }
+
         .dropdown-option .model-info {
             flex: 1;
         }
@@ -813,6 +820,24 @@
                             </div>
                         </div>
                     </div>
+                    <div class="dropdown-option" data-value="ideogram-v3" data-name="Ideogram V3" data-desc="Ideogram · Текст → картинка" data-icon="ideogram" data-mode="image">
+                        <div class="model-option-content">
+                            <div class="model-icon ideogram">✦</div>
+                            <div class="model-info">
+                                <div class="model-name">Ideogram V3</div>
+                                <div class="model-desc">Ideogram · Текст → картинка</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-option" data-value="ideogram-character" data-name="Ideogram Персонаж" data-desc="Ideogram · По фото · сохраняет лицо" data-icon="ideogram" data-mode="image">
+                        <div class="model-option-content">
+                            <div class="model-icon ideogram">✦</div>
+                            <div class="model-info">
+                                <div class="model-name">Ideogram Персонаж</div>
+                                <div class="model-desc">Ideogram · По фото · сохраняет лицо</div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="dropdown-option" data-value="veo-3.1" data-name="Veo 3.1" data-desc="Google · Video Generation" data-icon="google" data-mode="video" style="display:none;">
                         <div class="model-option-content">
                             <div class="model-icon google">G</div>
@@ -852,6 +877,9 @@
                     maxlength="5000"
                 ></textarea>
                 <div class="char-count"><span id="charCount">0</span>/5000</div>
+            </div>
+            <div id="refRequiredNote" style="display:none; margin-top:12px; font-size:13px; color:#f0a020; padding:12px 14px; background:rgba(240,160,32,0.08); border:1px solid rgba(240,160,32,0.35); border-radius:10px; line-height:1.5;">
+                ⚠️ <b>Для этой модели обязательно нужно фото-референс.</b> Загрузите изображение персонажа ниже — без него генерация не запустится.
             </div>
         </div>
 
@@ -1060,6 +1088,7 @@
                 </div>
             `).join('');
             imageCount.textContent = uploadedImages.length;
+            updateValidation();
         }
 
         function removeImage(index) {
@@ -1137,6 +1166,32 @@
                     {value:'16:9',icon:'▬'}, {value:'3:2',icon:'▬'},
                     {value:'1:1',icon:'▢'},
                     {value:'2:3',icon:'▯'}, {value:'9:16',icon:'▯'}
+                ],
+                resolutions: [],
+                defaultAspect: '1:1',
+                defaultRes: null
+            },
+            'ideogram-v3': {
+                // [DOC kie.ai ideogram/v3] НЕТ resolution/4K: размер только через image_size enum,
+                // маппится из aspectRatio на бэке (Kie Mapper). rendering_speed=BALANCED фиксируется там же.
+                // i2i (есть фото) -> ideogram/v3-remix (1 референс). resolutions:[] -> блок Resolution = note.
+                aspectRatios: [
+                    {value:'16:9',icon:'▬'}, {value:'4:3',icon:'▬'},
+                    {value:'1:1',icon:'▢'},
+                    {value:'3:4',icon:'▯'}, {value:'9:16',icon:'▯'}
+                ],
+                resolutions: [],
+                defaultAspect: '1:1',
+                defaultRes: null
+            },
+            'ideogram-character': {
+                // [DOC kie.ai ideogram/character] ТРЕБУЕТ reference_image_urls (обязательно, без фото не запускается).
+                // requiresReference -> фронт блокирует Generate без фото + показывает плашку у промпта.
+                requiresReference: true,
+                aspectRatios: [
+                    {value:'16:9',icon:'▬'}, {value:'4:3',icon:'▬'},
+                    {value:'1:1',icon:'▢'},
+                    {value:'3:4',icon:'▯'}, {value:'9:16',icon:'▯'}
                 ],
                 resolutions: [],
                 defaultAspect: '1:1',
@@ -1262,6 +1317,11 @@
 
             // --- Audio toggle visibility (only for models that support audio on/off) ---
             document.getElementById('audioSection').classList.toggle('hidden', !config.audioToggle);
+
+            // --- Reference-required note (Ideogram Персонаж): mandatory photo input ---
+            const refNote = document.getElementById('refRequiredNote');
+            if (refNote) refNote.style.display = config.requiresReference ? 'block' : 'none';
+            updateValidation();
 
             // --- Update Aspect Ratio chips ---
             const chipsContainer = document.getElementById('aspectRatioChips');
@@ -1428,7 +1488,7 @@
                 
                 // Update icon
                 modelIconEl.className = 'model-icon ' + option.dataset.icon;
-                modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','openai':'O','grok':'X'}[option.dataset.icon] || 'S';
+                modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','openai':'O','grok':'X','ideogram':'✦'}[option.dataset.icon] || 'S';
                 
                 modelDropdown.classList.remove('open');
                 updateModelParams(selectedModel);
@@ -1445,8 +1505,23 @@
         // Validation
         function updateValidation() {
             const hasPrompt = promptInput.value.trim().length > 0;
-            validationMessage.classList.toggle('show', !hasPrompt);
-            generateBtn.disabled = !hasPrompt;
+            const cfg = modelConfigs[selectedModel] || {};
+            const needsRef = !!cfg.requiresReference;
+            const hasRef = uploadedImages.length > 0;
+
+            if (!hasPrompt) {
+                document.getElementById('validationText').textContent = currentMode === 'video'
+                    ? 'Пожалуйста, предоставьте описание видео для генерации'
+                    : 'Пожалуйста, предоставьте описание изображения для генерации';
+                validationMessage.classList.add('show');
+            } else if (needsRef && !hasRef) {
+                document.getElementById('validationText').textContent = '⚠️ Загрузите фото-референс — для модели «Ideogram Персонаж» оно обязательно.';
+                validationMessage.classList.add('show');
+            } else {
+                validationMessage.classList.remove('show');
+            }
+
+            generateBtn.disabled = !(hasPrompt && (!needsRef || hasRef));
         }
 
         // Improve Prompt button
@@ -1523,6 +1598,13 @@
         generateBtn.addEventListener('click', async () => {
             if (!promptInput.value.trim()) {
                 showToast('Please enter a description', 'error');
+                return;
+            }
+
+            // Models that require a reference image (Ideogram Персонаж) must not fire without a photo.
+            const genCfg = modelConfigs[selectedModel] || {};
+            if (genCfg.requiresReference && uploadedImages.length === 0) {
+                showToast('Загрузите фото-референс — для «Ideogram Персонаж» оно обязательно', 'error');
                 return;
             }
 
