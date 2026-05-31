@@ -660,6 +660,13 @@
             box-shadow: 0 4px 12px rgba(43, 76, 240, 0.3);
         }
 
+        .model-icon.recraft {
+            background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+            border: 1px solid #8b5cf6;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+        }
+
         .dropdown-option .model-info {
             flex: 1;
         }
@@ -894,6 +901,24 @@
                             </div>
                         </div>
                     </div>
+                    <div class="dropdown-option" data-value="recraft-removebg" data-name="Убрать фон" data-desc="Recraft · Прозрачный фон" data-icon="recraft" data-mode="image">
+                        <div class="model-option-content">
+                            <div class="model-icon recraft">R</div>
+                            <div class="model-info">
+                                <div class="model-name">Убрать фон</div>
+                                <div class="model-desc">Recraft · Прозрачный фон</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-option" data-value="recraft-upscale" data-name="Апскейл" data-desc="Recraft · Увеличение до 4K" data-icon="recraft" data-mode="image">
+                        <div class="model-option-content">
+                            <div class="model-icon recraft">R</div>
+                            <div class="model-info">
+                                <div class="model-name">Апскейл</div>
+                                <div class="model-desc">Recraft · Увеличение до 4K</div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="dropdown-option" data-value="veo-3.1" data-name="Veo 3.1" data-desc="Google · Video Generation" data-icon="google" data-mode="video" style="display:none;">
                         <div class="model-option-content">
                             <div class="model-icon google">G</div>
@@ -917,7 +942,7 @@
         </div>
 
         <!-- Image Description -->
-        <div class="section">
+        <div class="section" id="promptSection">
             <div class="textarea-header">
                 <div class="section-title">Prompt</div>
                 <button class="improve-btn" id="improveBtn">
@@ -955,7 +980,7 @@
         </div>
 
         <!-- Aspect Ratio -->
-        <div class="section">
+        <div class="section" id="aspectSection">
             <div class="section-title">Соотношение сторон</div>
             <div class="chips-container" id="aspectRatioChips">
                 <div class="chip" data-value="auto"><span class="chip-icon">▢</span> auto</div>
@@ -1256,6 +1281,29 @@
                 defaultAspect: '1:1',
                 defaultRes: null
             },
+            'recraft-removebg': {
+                // [DOC kie.ai recraft/remove-background] утилита: вход только image (URL), без промпта/форматов.
+                // utility -> скрыть промпт/формат/разрешение/количество; requiresReference -> фото обязательно.
+                utility: true,
+                noPrompt: true,
+                requiresReference: true,
+                uploadHint: 'Загрузите 1 фото — уберём фон и вернём PNG с прозрачностью.',
+                aspectRatios: [],
+                resolutions: [],
+                defaultAspect: null,
+                defaultRes: null
+            },
+            'recraft-upscale': {
+                // [DOC kie.ai recraft/crisp-upscale] утилита: вход только image, увеличивает до ~4K (множитель не задаётся).
+                utility: true,
+                noPrompt: true,
+                requiresReference: true,
+                uploadHint: 'Загрузите 1 фото (лучше не огромное) — увеличим до ~4K. Очень тяжёлые результаты Telegram может не принять.',
+                aspectRatios: [],
+                resolutions: [],
+                defaultAspect: null,
+                defaultRes: null
+            },
             'veo-3.1': {
                 apiSlug: 'veo-3.1',
                 provider: 'google',
@@ -1390,6 +1438,24 @@
             // --- Audio toggle visibility (only for models that support audio on/off) ---
             document.getElementById('audioSection').classList.toggle('hidden', !config.audioToggle);
 
+            // --- Utility models (recraft remove-bg / upscale): photo in -> file out.
+            // No prompt / aspect / resolution / count — only the photo upload, which is mandatory. ---
+            const isUtility = !!config.utility;
+            document.getElementById('promptSection').classList.toggle('hidden', isUtility);
+            document.getElementById('aspectSection').classList.toggle('hidden', isUtility);
+            document.getElementById('resolutionSection').classList.toggle('hidden', isUtility);
+            document.getElementById('countSection').classList.toggle('hidden', isUtility);
+            if (isUtility) {
+                const us = document.getElementById('uploadSection');
+                us.classList.remove('hidden');
+                const usTitle = us.querySelector('.section-title');
+                const usHint = us.querySelector('p');
+                if (usTitle) usTitle.textContent = 'Загрузить фото';
+                if (usHint) usHint.textContent = config.uploadHint || 'Загрузите одно фото.';
+                updateValidation();
+                return;
+            }
+
             // --- Reference-required note (Ideogram Персонаж): mandatory photo input ---
             const refNote = document.getElementById('refRequiredNote');
             if (refNote) refNote.style.display = config.requiresReference ? 'block' : 'none';
@@ -1398,7 +1464,14 @@
             // Ideogram V3 i2i (remix) returns 500 on kie, so this model is text-only:
             // hide the upload block and drop any already-picked photos so nothing goes to i2i.
             const uploadSectionEl = document.getElementById('uploadSection');
-            if (uploadSectionEl) uploadSectionEl.classList.toggle('hidden', !!config.textOnly);
+            if (uploadSectionEl) {
+                uploadSectionEl.classList.toggle('hidden', !!config.textOnly);
+                // restore default upload labels (a utility model may have changed them)
+                const ut = uploadSectionEl.querySelector('.section-title');
+                const up = uploadSectionEl.querySelector('p');
+                if (ut) ut.textContent = 'Загрузить изображения (Optional)';
+                if (up) up.textContent = 'Можно загрузить до 10 изображений.';
+            }
             if (config.textOnly && uploadedImages.length) { uploadedImages = []; updateImagePreviews(); }
 
             updateValidation();
@@ -1568,7 +1641,7 @@
                 
                 // Update icon
                 modelIconEl.className = 'model-icon ' + option.dataset.icon;
-                modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','openai':'O','grok':'X','ideogram':'✦'}[option.dataset.icon] || 'S';
+                modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','openai':'O','grok':'X','ideogram':'✦','recraft':'R'}[option.dataset.icon] || 'S';
                 
                 modelDropdown.classList.remove('open');
                 updateModelParams(selectedModel);
@@ -1584,24 +1657,27 @@
 
         // Validation
         function updateValidation() {
-            const hasPrompt = promptInput.value.trim().length > 0;
             const cfg = modelConfigs[selectedModel] || {};
-            const needsRef = !!cfg.requiresReference;
+            const noPrompt = !!cfg.noPrompt;          // утилиты (recraft) — промпт не нужен
+            const needsRef = !!cfg.requiresReference; // обязательно фото
+            const hasPrompt = promptInput.value.trim().length > 0;
             const hasRef = uploadedImages.length > 0;
+            const promptOk = noPrompt || hasPrompt;
+            const refOk = !needsRef || hasRef;
 
-            if (!hasPrompt) {
+            if (!promptOk) {
                 document.getElementById('validationText').textContent = currentMode === 'video'
                     ? 'Пожалуйста, предоставьте описание видео для генерации'
                     : 'Пожалуйста, предоставьте описание изображения для генерации';
                 validationMessage.classList.add('show');
-            } else if (needsRef && !hasRef) {
-                document.getElementById('validationText').textContent = '⚠️ Загрузите фото-референс — для модели «Ideogram Персонаж» оно обязательно.';
+            } else if (!refOk) {
+                document.getElementById('validationText').textContent = '⚠️ Загрузите фото — для этой операции оно обязательно.';
                 validationMessage.classList.add('show');
             } else {
                 validationMessage.classList.remove('show');
             }
 
-            generateBtn.disabled = !(hasPrompt && (!needsRef || hasRef));
+            generateBtn.disabled = !(promptOk && refOk);
         }
 
         // Improve Prompt button
@@ -1676,15 +1752,14 @@
 
         // Generate button
         generateBtn.addEventListener('click', async () => {
-            if (!promptInput.value.trim()) {
+            const genCfg = modelConfigs[selectedModel] || {};
+            if (!genCfg.noPrompt && !promptInput.value.trim()) {
                 showToast('Please enter a description', 'error');
                 return;
             }
-
-            // Models that require a reference image (Ideogram Персонаж) must not fire without a photo.
-            const genCfg = modelConfigs[selectedModel] || {};
+            // Models that require a photo (Ideogram Персонаж, recraft utilities) must not fire without one.
             if (genCfg.requiresReference && uploadedImages.length === 0) {
-                showToast('Загрузите фото-референс — для «Ideogram Персонаж» оно обязательно', 'error');
+                showToast('Загрузите фото — для этой операции оно обязательно', 'error');
                 return;
             }
 
