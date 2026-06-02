@@ -533,10 +533,12 @@
                                 <div class="qa-a"><div class="qa-a-inner"><div class="qa-a-text">
                                     <p>Каждая нейросеть сильна в своём:</p>
                                     <ul>
-                                        <li class="model-line"><b>Nano-Banana 2</b> — хорошо рисует текст на картинке.</li>
-                                        <li class="model-line"><b>GPT-Image-2</b> — текст и кириллица (русские надписи).</li>
-                                        <li class="model-line"><b>Ideogram V3</b> — типографика и надписи; работает только по тексту.</li>
-                                        <li class="model-line"><b>Grok, FLUX, Seedream</b> — универсальные модели для разных стилей и сцен.</li>
+                                        <li class="model-line"><b>GPT-Image-2</b> — лучшая для текста и надписей на картинке, в том числе на русском. Точно делает то, что описали, даже если описание длинное. Берите для постеров, обложек, упаковки и схем с подписями.</li>
+                                        <li class="model-line"><b>Ideogram V3</b> — мастер логотипов, постеров и баннеров: там, где надписи и красивые шрифты на первом месте. Работает только по тексту — своё фото не принимает.</li>
+                                        <li class="model-line"><b>FLUX 2 Pro</b> — аккуратные надписи и точные фирменные цвета. Держит единый стиль и одного персонажа на серии картинок.</li>
+                                        <li class="model-line"><b>Nano-Banana 2</b> — быстрая и недорогая при хорошем качестве. Удобна, когда нужно много картинок подряд, и держит одних и тех же персонажей.</li>
+                                        <li class="model-line"><b>Grok</b> — быстрые яркие картинки пачкой, хороша для товаров и рекламы. Может собрать сцену из нескольких ваших фото.</li>
+                                        <li class="model-line"><b>Seedream 5</b> — для схем, инфографики и «умных» макетов; хорошо правит картинку по сложным пошаговым инструкциям.</li>
                                     </ul>
                                 </div></div></div>
                             </div>
@@ -546,8 +548,16 @@
                                     <span class="qa-q-arrow">▼</span>
                                 </div>
                                 <div class="qa-a"><div class="qa-a-inner"><div class="qa-a-text">
-                                    <p>Нужен текст или надпись на картинке — берите <b>Nano-Banana</b> или <b>GPT-Image-2</b> (для русского).</p>
-                                    <p>Для общих сцен и фантазии — <b>Grok, FLUX, Seedream</b>. Не уверены — начните с той, что выбрана по умолчанию.</p>
+                                    <p>Коротко, под задачу:</p>
+                                    <ul>
+                                        <li><b>Надпись или текст на картинке</b> — GPT-Image-2 или Ideogram V3.</li>
+                                        <li><b>Логотип, постер, баннер</b> — Ideogram V3.</li>
+                                        <li><b>Точные фирменные цвета</b> — FLUX 2 Pro.</li>
+                                        <li><b>Много картинок быстро</b> — Nano-Banana 2 или Grok.</li>
+                                        <li><b>Схемы и инфографика</b> — Seedream 5 или Nano-Banana 2.</li>
+                                        <li><b>Переделать своё фото</b> — любая, кроме Ideogram V3 (он только по тексту).</li>
+                                    </ul>
+                                    <p>Не уверены — начните с той, что выбрана по умолчанию.</p>
                                 </div></div></div>
                             </div>
                         </div>
@@ -555,11 +565,11 @@
                 </div>
             </div>
 
-            <!-- 3. Бесплатные генерации — АКЦЕНТНАЯ -->
-            <div class="category accent" data-screen-label="Бесплатные генерации">
+            <!-- 3. Тарифы и доступ — АКЦЕНТНАЯ -->
+            <div class="category accent" data-screen-label="Тарифы и доступ">
                 <div class="cat-head">
-                    <span class="cat-emoji">🎁</span>
-                    <span class="cat-title">Бесплатные генерации <span class="accent-badge">Бесплатно</span></span>
+                    <span class="cat-emoji">💎</span>
+                    <span class="cat-title">Тарифы и доступ</span>
                     <span class="cat-arrow">▼</span>
                 </div>
                 <div class="cat-body">
@@ -567,27 +577,27 @@
                         <div class="qa-list">
                             <div class="qa">
                                 <div class="qa-q">
-                                    <span class="qa-q-text">Сколько стоит пользоваться?</span>
-                                    <span class="qa-q-arrow">▼</span>
-                                </div>
-                                <div class="qa-a"><div class="qa-a-inner"><div class="qa-a-text">
-                                    <p>Подпишитесь на канал <a href="https://t.me/qvabo_studio" target="_blank" rel="noopener">@qvabo_studio</a> — и получите бесплатные генерации. Это лучший способ попробовать бота.</p>
-                                </div></div></div>
-                            </div>
-                            <div class="qa">
-                                <div class="qa-q">
-                                    <span class="qa-q-text">Нужно больше?</span>
+                                    <span class="qa-q-text">Какие есть тарифы и сколько стоит?</span>
                                     <span class="qa-q-arrow">▼</span>
                                 </div>
                                 <div class="qa-a"><div class="qa-a-inner"><div class="qa-a-text">
                                     <p>Скоро появятся платные пакеты для тех, кому нужно больше генераций. Следите за анонсами в <a href="https://t.me/qvabo_studio" target="_blank" rel="noopener">@qvabo_studio</a>.</p>
+                                    <!-- Задел под цены — дополняется без переверстки -->
+                                    <div class="tariffs-slot" id="tariffsSlot">
+                                        <div class="ts-title">💎 Тарифы</div>
+                                        <div class="ts-sub">Здесь появятся пакеты и цены.</div>
+                                    </div>
                                 </div></div></div>
                             </div>
-                        </div>
-                        <!-- Задел под будущий под-раздел «Тарифы» — дополняется без переверстки -->
-                        <div class="tariffs-slot" id="tariffsSlot">
-                            <div class="ts-title">💎 Тарифы</div>
-                            <div class="ts-sub">Здесь появятся пакеты и цены.</div>
+                            <div class="qa">
+                                <div class="qa-q">
+                                    <span class="qa-q-text">Можно пользоваться бесплатно?</span>
+                                    <span class="qa-q-arrow">▼</span>
+                                </div>
+                                <div class="qa-a"><div class="qa-a-inner"><div class="qa-a-text">
+                                    <p>Да. Подпишитесь на канал <a href="https://t.me/qvabo_studio" target="_blank" rel="noopener">@qvabo_studio</a> — и получите бесплатные генерации. Это лучший способ попробовать бота.</p>
+                                </div></div></div>
+                            </div>
                         </div>
                     </div>
                 </div>
