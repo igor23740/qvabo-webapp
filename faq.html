@@ -396,6 +396,63 @@
             line-height: 1.5;
         }
 
+        /* Пакеты внутри слота */
+        .tariff-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        .tariff-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 11px 13px;
+            background: rgba(15, 15, 26, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+
+        .tariff-row.featured {
+            border-color: rgba(139, 92, 246, 0.55);
+            background: rgba(124, 58, 237, 0.12);
+        }
+
+        .tariff-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .tariff-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .tariff-gens {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .tariff-price {
+            font-size: 15px;
+            font-weight: 700;
+            color: #c4b5fd;
+            white-space: nowrap;
+        }
+
+        .tariff-note {
+            margin-top: 10px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--text-secondary);
+            text-align: left;
+        }
+
         /* ===== Footer CTA ===== */
         .footer-cta {
             margin-top: 28px;
@@ -582,11 +639,18 @@
                                     <span class="qa-q-arrow">▼</span>
                                 </div>
                                 <div class="qa-a"><div class="qa-a-inner"><div class="qa-a-text">
-                                    <p>Скоро появятся платные пакеты для тех, кому нужно больше генераций. Следите за анонсами в <a href="https://t.me/qvabo_studio" target="_blank" rel="noopener">@qvabo_studio</a>.</p>
-                                    <!-- Задел под цены — дополняется без переверстки -->
                                     <div class="tariffs-slot" id="tariffsSlot">
-                                        <div class="ts-title">💎 Тарифы</div>
-                                        <div class="ts-sub">Здесь появятся пакеты и цены.</div>
+                                        <div class="ts-title">💎 Стартовый пакет</div>
+                                        <div class="tariff-list">
+                                            <div class="tariff-row featured">
+                                                <div class="tariff-info">
+                                                    <span class="tariff-name">Старт</span>
+                                                    <span class="tariff-gens">140 генераций</span>
+                                                </div>
+                                                <span class="tariff-price">390 ₽</span>
+                                            </div>
+                                        </div>
+                                        <a href="tariffs.html" style="display:inline-block;margin-top:12px;font-size:13px;color:var(--accent-hover);text-decoration:none;font-weight:600;">Все тарифы и оплата →</a>
                                     </div>
                                 </div></div></div>
                             </div>
