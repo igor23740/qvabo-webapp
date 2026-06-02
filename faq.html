@@ -65,9 +65,17 @@
 
         /* ===== Top bar (дублирующая кнопка Назад) ===== */
         .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 20;
             display: flex;
             align-items: center;
-            margin-bottom: 16px;
+            margin: -16px -16px 16px;
+            padding: 12px 16px;
+            background: rgba(15, 15, 26, 0.82);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(124, 58, 237, 0.18);
         }
 
         .back-btn {
@@ -432,6 +440,10 @@
             }
             .header p {
                 font-size: 15px;
+            }
+            .topbar {
+                margin: -24px -24px 16px;
+                padding: 14px 24px;
             }
         }
     </style>
