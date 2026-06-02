@@ -803,6 +803,33 @@
             pointer-events: none;
             z-index: -1;
         }
+
+        /* FAQ pill-кнопка в шапке */
+        .faq-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 16px;
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(124, 58, 237, 0.1) 100%);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .faq-btn:hover {
+            background: var(--accent);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -811,6 +838,7 @@
         <div class="header">
             <h1 id="headerTitle">🎨 AI Image Generator</h1>
             <p id="headerDesc">Создавайте потрясающие изображения с помощью передовых технологий искусственного интеллекта. Превращайте свои идеи в визуальные шедевры.</p>
+            <a href="faq.html" class="faq-btn">❓ FAQ</a>
         </div>
 
         <!-- Mode Tabs -->
