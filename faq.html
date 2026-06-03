@@ -453,6 +453,34 @@
             text-align: left;
         }
 
+        /* ===== Оферта block ===== */
+        .offer-block {
+            padding: 4px 14px 16px;
+        }
+        .offer-block p {
+            font-size: 14px;
+            line-height: 1.55;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+        .offer-link {
+            display: inline-block;
+            padding: 11px 18px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%);
+            color: #fff;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.25s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .offer-link:hover {
+            box-shadow: var(--shadow-md), var(--shadow-glow);
+            transform: translateY(-1px);
+        }
+
         /* ===== Footer CTA ===== */
         .footer-cta {
             margin-top: 28px;
@@ -779,9 +807,26 @@
                                     <span class="qa-q-arrow">▼</span>
                                 </div>
                                 <div class="qa-a"><div class="qa-a-inner"><div class="qa-a-text">
-                                    <p>Напишите нам в <a href="https://t.me/qvabo_studio" target="_blank" rel="noopener">@qvabo_studio</a>.</p>
+                                    <p>Напишите нам в <a href="https://t.me/qvabo_support" target="_blank" rel="noopener">@qvabo_support</a>.</p>
                                 </div></div></div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Оферта -->
+            <div class="category" data-screen-label="Оферта">
+                <div class="cat-head">
+                    <span class="cat-emoji">📄</span>
+                    <span class="cat-title">Оферта</span>
+                    <span class="cat-arrow">▼</span>
+                </div>
+                <div class="cat-body">
+                    <div class="cat-body-inner">
+                        <div class="offer-block">
+                            <p>Публичная оферта — официальные условия оказания услуг QVABO Studio: предмет, порядок оплаты, возвраты и реквизиты.</p>
+                            <a class="offer-link" href="oferta.html">📄 Открыть оферту →</a>
                         </div>
                     </div>
                 </div>
@@ -791,7 +836,7 @@
 
         <!-- Footer CTA -->
         <div class="footer-cta">
-            <p>Остались вопросы? Пишите в <a href="https://t.me/qvabo_studio" target="_blank" rel="noopener">@qvabo_studio</a></p>
+            <p>Остались вопросы? Пишите в <a href="https://t.me/qvabo_support" target="_blank" rel="noopener">@qvabo_support</a></p>
         </div>
 
     </div>
