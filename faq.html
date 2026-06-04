@@ -531,6 +531,23 @@
                 padding: 14px 24px;
             }
         }
+
+        /* Инфо-карточки (возврат, обработка данных) */
+        .info-card { background: linear-gradient(145deg, var(--bg-card) 0%, #1f1f38 100%); border: 1px solid var(--border); border-radius: 16px; padding: 18px 16px; }
+        .info-card.accent { border-color: var(--accent); background: linear-gradient(145deg, rgba(124,58,237,0.16) 0%, rgba(31,31,56,0.96) 100%); box-shadow: var(--shadow-md), var(--shadow-glow), inset 0 1px 0 rgba(255,255,255,0.06); }
+        .info-card p { font-size: 13.5px; color: var(--text-secondary); line-height: 1.55; margin: 0 0 10px; }
+        .info-card p:last-child { margin-bottom: 0; }
+        .info-card b { color: var(--text-primary); }
+        .info-lead { font-size: 14px !important; color: var(--text-primary) !important; font-weight: 600; margin-bottom: 12px !important; }
+        .info-checks { list-style: none; padding: 0; margin: 0 0 16px; display: flex; flex-direction: column; gap: 9px; }
+        .info-checks li { display: flex; gap: 9px; align-items: flex-start; font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; }
+        .info-checks .ic-check { color: var(--success); font-weight: 700; flex-shrink: 0; }
+        .info-checks b { color: var(--text-primary); }
+        .info-subtitle { font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 9px; text-transform: uppercase; letter-spacing: .03em; }
+        .info-steps { margin: 0 0 14px; padding-left: 20px; display: flex; flex-direction: column; gap: 7px; }
+        .info-steps li { font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; }
+        .info-steps b { color: var(--text-primary); }
+        .info-note { font-size: 12.5px; color: var(--text-secondary); margin: 0; padding-top: 12px; border-top: 1px solid var(--border); font-style: italic; }
     </style>
 </head>
 <body>
@@ -551,6 +568,49 @@
 
         <!-- Accordion -->
         <div class="faq-list">
+
+            <!-- Оферта -->
+            <div class="category" data-screen-label="Оферта">
+                <div class="cat-head">
+                    <span class="cat-emoji">📄</span>
+                    <span class="cat-title">Оферта</span>
+                    <span class="cat-arrow">▼</span>
+                </div>
+                <div class="cat-body">
+                    <div class="cat-body-inner">
+                        <div class="offer-block">
+                            <p>Публичная оферта — официальные условия оказания услуг QVABO Studio: предмет, порядок оплаты, возвраты и реквизиты.</p>
+                            <a class="offer-link" href="oferta.html">📄 Открыть оферту →</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Возврат денег -->
+            <div class="category" data-screen-label="Возврат">
+                <div class="cat-head">
+                    <span class="cat-emoji">💸</span>
+                    <span class="cat-title">Возврат денег</span>
+                    <span class="cat-arrow">▼</span>
+                </div>
+                <div class="cat-body"><div class="cat-body-inner">
+                    <div class="info-card accent">
+                        <p class="info-lead">Деньги за неиспользованные генерации можно вернуть в любой момент.</p>
+                        <ul class="info-checks">
+                            <li><span class="ic-check">✓</span><span>Не потратили ни одной генерации из пакета — вернём <b>всю сумму</b>.</span></li>
+                            <li><span class="ic-check">✓</span><span>Потратили часть — вернём за <b>остаток</b>: использованные генерации не возвращаются, услуга по ним уже оказана.</span></li>
+                            <li><span class="ic-check">✓</span><span>Генерация не пришла из-за сбоя — вернётся на баланс <b>автоматически и сразу</b>.</span></li>
+                        </ul>
+                        <div class="info-subtitle">Как вернуть деньги</div>
+                        <ol class="info-steps">
+                            <li>Напишите в поддержку — <b>@qvabo_support</b> (или на почту Soundlinez@yandex.ru).</li>
+                            <li>Укажите ваш Telegram и сколько генераций или какую сумму хотите вернуть.</li>
+                            <li>Вернём <b>в течение 10 дней</b> на ту же карту, с которой вы платили.</li>
+                        </ol>
+                        <p class="info-note">Возвращаем полную сумму за неиспользованное — никакие комиссии за перевод не вычитаем.</p>
+                    </div>
+                </div></div>
+            </div>
 
             <!-- 1. Начало работы -->
             <div class="category" data-screen-label="Начало работы">
@@ -810,23 +870,6 @@
                                     <p>Напишите нам в <a href="https://t.me/qvabo_support" target="_blank" rel="noopener">@qvabo_support</a>.</p>
                                 </div></div></div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 7. Оферта -->
-            <div class="category" data-screen-label="Оферта">
-                <div class="cat-head">
-                    <span class="cat-emoji">📄</span>
-                    <span class="cat-title">Оферта</span>
-                    <span class="cat-arrow">▼</span>
-                </div>
-                <div class="cat-body">
-                    <div class="cat-body-inner">
-                        <div class="offer-block">
-                            <p>Публичная оферта — официальные условия оказания услуг QVABO Studio: предмет, порядок оплаты, возвраты и реквизиты.</p>
-                            <a class="offer-link" href="oferta.html">📄 Открыть оферту →</a>
                         </div>
                     </div>
                 </div>
