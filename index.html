@@ -1119,6 +1119,15 @@
             <p id="countWarning" style="display:none; font-size:12px; color:#f0a020; margin-top:10px; font-weight:600;"></p>
         </div>
 
+        <!-- Reve: Fast mode (Edit/Remix дешевле) -->
+        <div class="section hidden" id="reveFastSection">
+            <div class="section-title">Режим Reve</div>
+            <div class="toggle-row">
+                <span class="toggle-label">⚡ Быстрый режим — дешевле (для правок и ремикса фото)</span>
+                <div class="toggle-switch" id="reveFastToggle"></div>
+            </div>
+        </div>
+
         <!-- Duration (Video only) -->
         <div class="section hidden" id="durationSection">
             <div class="section-title">Duration</div>
@@ -1182,6 +1191,7 @@
         let currentMode = 'image';
         let selectedDuration = '8s';
         let generateAudio = true;
+        let reveFast = false;
 
         // Elements
         const promptInput = document.getElementById('promptInput');
@@ -1362,9 +1372,9 @@
             },
             'reve': {
                 // Reve Create (t2i) НАПРЯМУЮ через api.reve.com (мимо kie). API: только aspect_ratio (7 значений), БЕЗ resolution.
-                // textOnly: i2i (Edit/Remix) на бэке НЕ подключены — только генерация с нуля.
+                // Режим по числу фото: 0 = Create (t2i), 1 = Edit (фото+инструкция), 2-6 = Remix. Фото опционально.
                 // ⚠️ API-версия = reve-create@20250915 (сентябрь). Reve 2.0 (хорошая кириллица) пока ТОЛЬКО в вебе, не в API.
-                textOnly: true,
+                isReve: true,
                 aspectRatios: [
                     {value:'16:9',icon:'▬'}, {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'},
                     {value:'1:1',icon:'▢'}, {value:'3:4',icon:'▯'}, {value:'2:3',icon:'▯'},
@@ -1530,6 +1540,7 @@
 
             // --- Audio toggle visibility (only for models that support audio on/off) ---
             document.getElementById('audioSection').classList.toggle('hidden', !config.audioToggle);
+            document.getElementById('reveFastSection').classList.toggle('hidden', !config.isReve);
 
             // --- Utility models (recraft remove-bg / upscale): photo in -> file out.
             // No prompt / aspect / resolution / count — only the photo upload, which is mandatory. ---
@@ -1706,6 +1717,12 @@
         document.getElementById('audioToggle').addEventListener('click', function() {
             this.classList.toggle('active');
             generateAudio = this.classList.contains('active');
+        });
+
+        // Reve Fast toggle
+        document.getElementById('reveFastToggle').addEventListener('click', function() {
+            this.classList.toggle('active');
+            reveFast = this.classList.contains('active');
         });
 
         // Model dropdown (custom handler for complex options)
@@ -1888,6 +1905,7 @@
                         images: uploadedImages.map(img => img.dataUrl)
                     };
                     if (imageConfig.provider) data.provider = imageConfig.provider;
+                    if (imageConfig.isReve) data.reve_fast = reveFast;
                 }
 
                 sendData(data);
