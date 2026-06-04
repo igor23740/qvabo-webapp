@@ -667,6 +667,13 @@
             box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
         }
 
+        .model-icon.reve {
+            background: linear-gradient(135deg, #0e7490 0%, #155e75 100%);
+            border: 1px solid #22a5c4;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(14, 116, 144, 0.3);
+        }
+
         .dropdown-option .model-info {
             flex: 1;
         }
@@ -961,6 +968,15 @@
                             <div class="model-info">
                                 <div class="model-name">Ideogram V3</div>
                                 <div class="model-desc">Ideogram · Текст → картинка</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-option" data-value="reve" data-name="Reve" data-desc="Reve · Фото и латиница, дёшево" data-icon="reve" data-mode="image">
+                        <div class="model-option-content">
+                            <div class="model-icon reve">◆</div>
+                            <div class="model-info">
+                                <div class="model-name">Reve</div>
+                                <div class="model-desc">Reve · Фото и латиница, дёшево</div>
                             </div>
                         </div>
                     </div>
@@ -1344,6 +1360,20 @@
                 defaultAspect: '1:1',
                 defaultRes: null
             },
+            'reve': {
+                // Reve Create (t2i) НАПРЯМУЮ через api.reve.com (мимо kie). API: только aspect_ratio (7 значений), БЕЗ resolution.
+                // textOnly: i2i (Edit/Remix) на бэке НЕ подключены — только генерация с нуля.
+                // ⚠️ API-версия = reve-create@20250915 (сентябрь). Reve 2.0 (хорошая кириллица) пока ТОЛЬКО в вебе, не в API.
+                textOnly: true,
+                aspectRatios: [
+                    {value:'16:9',icon:'▬'}, {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'},
+                    {value:'1:1',icon:'▢'}, {value:'3:4',icon:'▯'}, {value:'2:3',icon:'▯'},
+                    {value:'9:16',icon:'▯'}
+                ],
+                resolutions: [],
+                defaultAspect: '1:1',
+                defaultRes: null
+            },
             'recraft-removebg': {
                 // [DOC kie.ai recraft/remove-background] утилита: вход только image (URL), без промпта/форматов.
                 // utility -> скрыть промпт/формат/разрешение/количество; requiresReference -> фото обязательно.
@@ -1704,7 +1734,7 @@
                 
                 // Update icon
                 modelIconEl.className = 'model-icon ' + option.dataset.icon;
-                modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','openai':'O','grok':'X','ideogram':'✦','recraft':'R'}[option.dataset.icon] || 'S';
+                modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','openai':'O','grok':'X','ideogram':'✦','recraft':'R','reve':'◆'}[option.dataset.icon] || 'S';
                 
                 modelDropdown.classList.remove('open');
                 updateModelParams(selectedModel);
