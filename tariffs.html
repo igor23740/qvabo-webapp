@@ -603,10 +603,12 @@
         }
 
         function postAction(payload) {
+            // initData нужен бэкенду для проверки подписи Telegram (иначе запрос отклонится)
+            var full = Object.assign({ initData: (tg && tg.initData) || '' }, payload);
             return fetch(WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(full)
             });
         }
 
