@@ -343,12 +343,18 @@
         .free-banner {
             margin-top: 16px;
             display: flex;
-            align-items: center;
+            flex-direction: column;
+            align-items: stretch;
             gap: 12px;
             padding: 15px 16px;
             background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(124, 58, 237, 0.06) 100%);
             border: 1px solid rgba(34, 197, 94, 0.3);
             border-radius: 14px;
+        }
+        .free-banner .fb-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
         .free-banner .fb-emoji {
             font-size: 22px;
@@ -363,6 +369,33 @@
         .free-banner .fb-text b { color: var(--text-primary); font-weight: 600; }
         .free-banner a { color: var(--accent-hover); text-decoration: none; font-weight: 600; }
         .free-banner a:hover { text-decoration: underline; }
+
+        /* Кнопка «Забрать бесплатные» */
+        .free-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--success) 0%, #16a34a 100%);
+            border: none;
+            color: #fff;
+            padding: 13px 20px;
+            border-radius: 12px;
+            font-size: 14.5px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: var(--shadow-md), 0 0 18px rgba(34, 197, 94, 0.3);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .free-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg), 0 0 24px rgba(34, 197, 94, 0.4);
+        }
+        .free-btn:active { transform: translateY(0) scale(0.99); }
+        .free-btn:disabled { opacity: 0.7; cursor: default; }
 
         /* ===== Footer ===== */
         .footer-note {
@@ -453,7 +486,7 @@
                     <li><span class="check">✓</span><span>Все модели нашего сервиса</span></li>
                     <li><span class="check">✓</span><span>Загрузка своих фото и инструменты обработки</span></li>
                 </ul>
-                <button class="pay-btn" data-plan="start" data-title="Старт" data-amount="390" data-currency="RUB">
+                <button class="pay-btn" data-package="start">
                     Оплатить <span class="price-tag">390&nbsp;₽</span>
                 </button>
             </div>
@@ -492,12 +525,17 @@
 
         <!-- Бесплатный вариант -->
         <div class="free-banner">
-            <span class="fb-emoji">🎁</span>
-            <span class="fb-text">
-                <b>Хотите бесплатно?</b> Подпишитесь на канал
-                <a href="https://t.me/qvabo_studio" target="_blank" rel="noopener">@qvabo_studio</a>
-                и получите бесплатные генерации.
-            </span>
+            <div class="fb-row">
+                <span class="fb-emoji">🎁</span>
+                <span class="fb-text">
+                    <b>Хотите бесплатно?</b> Подпишитесь на канал
+                    <a href="https://t.me/qvabo_studio" target="_blank" rel="noopener">@qvabo_studio</a>
+                    и заберите <b>5 бесплатных генераций</b>.
+                </span>
+            </div>
+            <button class="free-btn" id="freeClaimBtn">
+                🎁 Забрать 5 бесплатных
+            </button>
         </div>
 
         <!-- Footer -->
@@ -548,32 +586,103 @@
             }, 2600);
         }
 
+        // ===== Бэкенд-связь =====
+        // Контракт сверен с живым воркфлоу O1JO6wxE0PfzWPrOvaN8S (coaladot.fun):
+        //   buy:        { action:'buy', package:'proba'|'start'|'optimum'|'maxi', chat_id:<number> }
+        //   claim_free: { action:'claim_free', chat_id:<number> }
+        // HTTP-ответ пустой — ссылка на оплату / результат подписки приходят
+        // сообщением бота в личный чат (решение владельца, Вариант А).
+        var WEBHOOK_URL = 'https://coaladot.fun/webhook/qvabo-webapp';
+
+        function getChatId() {
+            if (tg && tg.initDataUnsafe) {
+                if (tg.initDataUnsafe.user && tg.initDataUnsafe.user.id) return tg.initDataUnsafe.user.id;
+                if (tg.initDataUnsafe.chat && tg.initDataUnsafe.chat.id) return tg.initDataUnsafe.chat.id;
+            }
+            return null;
+        }
+
+        function postAction(payload) {
+            return fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        function setBtnLoading(btn, loading) {
+            if (loading) {
+                if (btn.dataset.label == null) btn.dataset.label = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = 'Минутку…';
+            } else {
+                btn.disabled = false;
+                if (btn.dataset.label != null) btn.innerHTML = btn.dataset.label;
+            }
+        }
+
         // ===== Оплата =====
-        // Кнопка отправляет данные боту — бот выставляет счёт (invoice).
-        // Если используете Telegram Stars или провайдера с готовой invoice-ссылкой —
-        // замените тело на tg.openInvoice(invoiceUrl, callback).
+        // Фронт только шлёт action=buy; бот собирает платёжную ссылку Robokassa
+        // и присылает её кнопкой в личный чат пользователя.
         document.querySelectorAll('.pay-btn').forEach(function (btn) {
             btn.addEventListener('click', function () {
-                var payload = {
-                    action: 'buy',
-                    plan: btn.dataset.plan,
-                    title: btn.dataset.title,
-                    amount: Number(btn.dataset.amount),
-                    currency: btn.dataset.currency
-                };
+                if (btn.disabled) return;
+                var pkg = btn.dataset.package;
+                var chatId = getChatId();
 
-                if (tg && typeof tg.sendData === 'function') {
-                    // Бот получит web_app_data и выставит счёт на оплату.
-                    if (tg.HapticFeedback) { try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {} }
-                    tg.sendData(JSON.stringify(payload));
-                    // sendData автоматически закрывает Mini App.
-                } else {
-                    // Фолбэк вне Telegram (превью в браузере).
-                    showToast('Оплата «' + payload.title + '» — ' + payload.amount + ' ₽');
-                    console.log('PAY payload:', payload);
+                if (!tg || !chatId) {
+                    // Превью вне Telegram — реального chat_id нет.
+                    showToast('Откройте оплату через бота в Telegram');
+                    console.log('BUY payload (preview):', { action: 'buy', package: pkg });
+                    return;
                 }
+
+                if (tg.HapticFeedback) { try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {} }
+                setBtnLoading(btn, true);
+
+                postAction({ action: 'buy', package: pkg, chat_id: chatId })
+                    .then(function (r) {
+                        if (!r.ok) throw new Error('сервер ' + r.status);
+                        showToast('💬 Ссылка на оплату отправлена в чат с ботом');
+                        setTimeout(function () { try { tg.close(); } catch (e) {} }, 1800);
+                    })
+                    .catch(function (err) {
+                        showToast('Не удалось: ' + err.message);
+                        setBtnLoading(btn, false);
+                    });
             });
         });
+
+        // ===== Бесплатные генерации (за подписку на канал) =====
+        // Фронт шлёт action=claim_free; бот проверяет подписку на @qvabo_studio
+        // (getChatMember) и один раз начисляет 5 генераций, ответ — сообщением в чат.
+        var freeBtn = document.getElementById('freeClaimBtn');
+        if (freeBtn) {
+            freeBtn.addEventListener('click', function () {
+                if (freeBtn.disabled) return;
+                var chatId = getChatId();
+
+                if (!tg || !chatId) {
+                    showToast('Откройте через бота в Telegram');
+                    console.log('CLAIM_FREE payload (preview):', { action: 'claim_free' });
+                    return;
+                }
+
+                if (tg.HapticFeedback) { try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {} }
+                setBtnLoading(freeBtn, true);
+
+                postAction({ action: 'claim_free', chat_id: chatId })
+                    .then(function (r) {
+                        if (!r.ok) throw new Error('сервер ' + r.status);
+                        showToast('🎁 Готово! Загляните в чат с ботом');
+                        setTimeout(function () { try { tg.close(); } catch (e) {} }, 1800);
+                    })
+                    .catch(function (err) {
+                        showToast('Не удалось: ' + err.message);
+                        setBtnLoading(freeBtn, false);
+                    });
+            });
+        }
     </script>
 </body>
 </html>
