@@ -570,7 +570,7 @@
 
         // Demo data (used only outside Telegram, for layout preview)
         var DEMO = {
-            user:   { id: 371324849, name: 'Игорь', username: 'ignik' },
+            user:   { id: 0, name: 'Гость', username: 'user' },
             balance:{ paid: 140, free: 5, total: 145 },
             total_spent: 12,
             free_claimed: true,
@@ -661,14 +661,35 @@
                 }
                 var row = document.createElement('div');
                 row.className = 'history-row';
-                row.innerHTML =
-                    '<div class="h-icon ' + iconClass + '">' + sign + '</div>' +
-                    '<div class="h-body">' +
-                        '<div class="h-label"></div>' +
-                        '<div class="h-date">' + fmtDate(op.date) + '</div>' +
-                    '</div>' +
-                    '<div class="h-amount ' + amtClass + '">' + sign + op.amount + '</div>';
-                row.querySelector('.h-label').textContent = op.label || (op.type === 'spend' ? 'Генерация' : 'Операция');
+
+                // icon (sign — внутренняя константа, но кладём через textContent)
+                var iconEl = document.createElement('div');
+                iconEl.className = 'h-icon ' + iconClass;
+                iconEl.textContent = sign;
+
+                // body: label + date — ВСЕ значения из API через textContent
+                var bodyEl = document.createElement('div');
+                bodyEl.className = 'h-body';
+
+                var labelEl = document.createElement('div');
+                labelEl.className = 'h-label';
+                labelEl.textContent = op.label || (op.type === 'spend' ? 'Генерация' : 'Операция');
+
+                var dateEl = document.createElement('div');
+                dateEl.className = 'h-date';
+                dateEl.textContent = fmtDate(op.date);
+
+                bodyEl.appendChild(labelEl);
+                bodyEl.appendChild(dateEl);
+
+                // amount: знак + сумма из API через textContent
+                var amountEl = document.createElement('div');
+                amountEl.className = 'h-amount ' + amtClass;
+                amountEl.textContent = sign + op.amount;
+
+                row.appendChild(iconEl);
+                row.appendChild(bodyEl);
+                row.appendChild(amountEl);
                 card.appendChild(row);
             });
         }

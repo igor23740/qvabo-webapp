@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Консервативный CSP под Telegram WebApp. ⚠️ Протестировать в Telegram перед деплоем (риск поломки). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org; connect-src 'self' https://coaladot.fun https://telegram.org https://*.telegram.org; img-src 'self' data: https: https://res.cloudinary.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; base-uri 'self'; form-action 'self'">
     <title>QVABO Studio - AI Image Generator</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
@@ -1201,6 +1203,10 @@
     <div class="toast" id="toast"></div>
 
     <script>
+        // Debug flag — keep false in production. Wrap any diagnostics in `if (DEBUG)`.
+        // Never log initData / initDataUnsafe / payload — they carry the signed Telegram session.
+        const DEBUG = false;
+
         // Initialize Telegram WebApp
         const tg = window.Telegram?.WebApp;
         if (tg) {
@@ -1259,12 +1265,21 @@
             handleFiles(e.target.files);
         });
 
+        const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 МБ
+
         function handleFiles(files) {
             const remaining = 10 - uploadedImages.length;
             const toAdd = Array.from(files).slice(0, remaining);
 
             toAdd.forEach(file => {
-                if (file.type.startsWith('image/')) {
+                if (!file.type.startsWith('image/')) {
+                    return;
+                }
+                if (file.size > MAX_FILE_SIZE) {
+                    showToast('Фото больше 10 МБ — выберите меньше', 'error');
+                    return;
+                }
+                {
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         uploadedImages.push({
@@ -1845,8 +1860,7 @@
                             action: 'improve_prompt',
                             prompt: promptInput.value,
                             chat_id: chatId,
-                            initData: tg.initData,
-                            initDataUnsafe: tg.initDataUnsafe
+                            initData: tg.initData
                         })
                     });
 
@@ -1942,11 +1956,6 @@
         });
 
         function sendData(data) {
-            // Диагностика - что есть в initData
-            console.log('tg object:', tg);
-            console.log('initData:', tg ? tg.initData : 'no tg');
-            console.log('initDataUnsafe:', tg ? tg.initDataUnsafe : 'no tg');
-            
             // Получаем chat_id из разных источников
             let chatId = null;
             if (tg && tg.initDataUnsafe) {
@@ -1956,18 +1965,15 @@
                     chatId = tg.initDataUnsafe.chat.id;
                 }
             }
-            
+
             if (tg && tg.initData) {
-                // Добавляем все доступные данные
+                // Только подписанная строка initData + chat_id. Весь initDataUnsafe не шлём.
                 const payload = {
                     ...data,
                     chat_id: chatId,
-                    initData: tg.initData,
-                    initDataUnsafe: tg.initDataUnsafe
+                    initData: tg.initData
                 };
-                
-                console.log('Sending payload:', payload);
-                
+
                 fetch('https://coaladot.fun/webhook/qvabo-webapp', {
                     method: 'POST',
                     headers: {
@@ -1976,7 +1982,7 @@
                     body: JSON.stringify(payload)
                 })
                 .then(response => {
-                    console.log('Response status:', response.status);
+                    if (DEBUG) console.log('Response status:', response.status);
                     if (response.ok) {
                         showToast('🚀 Генерация запущена!', 'success');
                         setTimeout(() => tg.close(), 1500);
@@ -1985,13 +1991,13 @@
                     }
                 })
                 .catch(error => {
-                    console.error('Fetch error:', error);
+                    if (DEBUG) console.error('Fetch error:', error);
                     showToast('Ошибка: ' + error.message, 'error');
                     resetButton();
                 });
             } else {
                 // For testing outside Telegram OR no initData
-                console.log('No tg.initData, data:', data);
+                if (DEBUG) console.log('No tg.initData');
                 showToast('Нет данных Telegram', 'error');
                 resetButton();
             }
