@@ -2,7 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org; connect-src 'self' https://coaladot.fun https://telegram.org https://*.telegram.org; img-src 'self' data: https://res.cloudinary.com; style-src 'self' 'unsafe-inline'; base-uri 'self'; form-action 'self'">
     <title>QVABO Studio — Вопросы и ответы</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
@@ -562,6 +563,7 @@
             </a>
         </div>
 
+      <main>
         <!-- Header -->
         <div class="header">
             <h1>❓ Вопросы и ответы</h1>
@@ -605,7 +607,7 @@
                         </ul>
                         <div class="info-subtitle">Как вернуть деньги</div>
                         <ol class="info-steps">
-                            <li>Напишите нам в поддержку:<br><a class="support-btn" href="https://t.me/qvabo_support_bot" target="_blank" rel="noopener">💬 Написать в поддержку</a></li>
+                            <li>Напишите нам в поддержку:<br><a class="support-btn" href="https://t.me/qvabo_support_bot" target="_blank" rel="noopener noreferrer">💬 Написать в поддержку</a></li>
                             <li>Укажите ваш Telegram и сколько генераций или какую сумму хотите вернуть.</li>
                             <li>Вернём <b>в течение 10 дней</b> на ту же карту, с которой вы платили.</li>
                         </ol>
@@ -754,7 +756,7 @@
                                     <span class="qa-q-arrow">▼</span>
                                 </div>
                                 <div class="qa-a"><div class="qa-a-inner"><div class="qa-a-text">
-                                    <p>Да. Подпишитесь на канал <a href="https://t.me/qvabo_studio" target="_blank" rel="noopener">@qvabo_studio</a> — и получите бесплатные генерации. Это лучший способ попробовать бота.</p>
+                                    <p>Да. Подпишитесь на канал <a href="https://t.me/qvabo_studio" target="_blank" rel="noopener noreferrer">@qvabo_studio</a> — и получите бесплатные генерации. Это лучший способ попробовать бота.</p>
                                 </div></div></div>
                             </div>
                         </div>
@@ -873,7 +875,7 @@
                                     <span class="qa-q-arrow">▼</span>
                                 </div>
                                 <div class="qa-a"><div class="qa-a-inner"><div class="qa-a-text">
-                                    <p>Напишите нам в <a href="https://t.me/qvabo_support_bot" target="_blank" rel="noopener">поддержку</a>.</p>
+                                    <p>Напишите нам в <a href="https://t.me/qvabo_support_bot" target="_blank" rel="noopener noreferrer">поддержку</a>.</p>
                                 </div></div></div>
                             </div>
                         </div>
@@ -885,8 +887,9 @@
 
         <!-- Footer CTA -->
         <div class="footer-cta">
-            <p>Остались вопросы? <a href="https://t.me/qvabo_support_bot" target="_blank" rel="noopener">Напишите в поддержку</a></p>
+            <p>Остались вопросы? <a href="https://t.me/qvabo_support_bot" target="_blank" rel="noopener noreferrer">Напишите в поддержку</a></p>
         </div>
+      </main>
 
     </div>
 
@@ -906,20 +909,44 @@
             }
         })();
 
+        // Активация по клавиатуре (Enter / Space) — как клик
+        function activateOnKey(el, handler) {
+            el.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+                    e.preventDefault();
+                    handler();
+                }
+            });
+        }
+
         // ===== Accordion logic (categories) =====
         document.querySelectorAll('.cat-head').forEach(function (head) {
-            head.addEventListener('click', function () {
+            // Доступность: заголовок-аккордеон управляется с клавиатуры
+            head.setAttribute('role', 'button');
+            head.setAttribute('tabindex', '0');
+            head.setAttribute('aria-expanded', head.closest('.category').classList.contains('open') ? 'true' : 'false');
+            function toggleCat() {
                 var cat = head.closest('.category');
-                cat.classList.toggle('open');
-            });
+                var open = cat.classList.toggle('open');
+                head.setAttribute('aria-expanded', open ? 'true' : 'false');
+            }
+            head.addEventListener('click', toggleCat);
+            activateOnKey(head, toggleCat);
         });
 
         // ===== Accordion logic (Q&A) =====
         document.querySelectorAll('.qa-q').forEach(function (q) {
-            q.addEventListener('click', function () {
+            // Доступность: вопрос-аккордеон управляется с клавиатуры
+            q.setAttribute('role', 'button');
+            q.setAttribute('tabindex', '0');
+            q.setAttribute('aria-expanded', q.closest('.qa').classList.contains('open') ? 'true' : 'false');
+            function toggleQa() {
                 var qa = q.closest('.qa');
-                qa.classList.toggle('open');
-            });
+                var open = qa.classList.toggle('open');
+                q.setAttribute('aria-expanded', open ? 'true' : 'false');
+            }
+            q.addEventListener('click', toggleQa);
+            activateOnKey(q, toggleQa);
         });
 
         // ===== Telegram-ссылки через нативный openTelegramLink (с фолбэком) =====

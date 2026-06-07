@@ -2,9 +2,9 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Консервативный CSP под Telegram WebApp. ⚠️ Протестировать в Telegram перед деплоем (риск поломки). -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org; connect-src 'self' https://coaladot.fun https://telegram.org https://*.telegram.org; img-src 'self' data: https: https://res.cloudinary.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; base-uri 'self'; form-action 'self'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org; connect-src 'self' https://coaladot.fun https://telegram.org https://*.telegram.org; img-src 'self' data: https://res.cloudinary.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; base-uri 'self'; form-action 'self'">
     <title>QVABO Studio - AI Image Generator</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
@@ -911,6 +911,7 @@
             </div>
         </div>
 
+        <main>
         <!-- Mode Tabs -->
         <div class="mode-tabs">
             <div class="mode-tab active" data-mode="image">🖼 Image</div>
@@ -1057,8 +1058,9 @@
                 </button>
             </div>
             <div class="textarea-wrapper">
-                <textarea 
-                    id="promptInput" 
+                <textarea
+                    id="promptInput"
+                    aria-label="Описание изображения"
                     placeholder="Опишите желаемую сцену...
 
 Пример: На пляже на закате с волнами на заднем плане, профессиональная фотография продукта"
@@ -1077,7 +1079,7 @@
             <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
                 Можно загрузить до 10 изображений.
             </p>
-            <div class="upload-area" id="uploadArea">
+            <div class="upload-area" id="uploadArea" role="button" tabindex="0" aria-label="Загрузить изображения">
                 <div class="upload-icon">☁️</div>
                 <div class="upload-text"><span>Click here</span> загрузить изображения</div>
                 <div class="upload-count">Изображение (<span id="imageCount">0</span>/10)</div>
@@ -1151,8 +1153,8 @@
         <div class="section hidden" id="reveFastSection">
             <div class="section-title">Режим Reve</div>
             <div class="toggle-row">
-                <span class="toggle-label">⚡ Быстрый режим — дешевле (для правок и ремикса фото)</span>
-                <div class="toggle-switch" id="reveFastToggle"></div>
+                <span class="toggle-label" id="reveFastLabel">⚡ Быстрый режим — дешевле (для правок и ремикса фото)</span>
+                <div class="toggle-switch" id="reveFastToggle" role="switch" tabindex="0" aria-checked="false" aria-labelledby="reveFastLabel"></div>
             </div>
         </div>
 
@@ -1179,8 +1181,8 @@
         <div class="section hidden" id="audioSection">
             <div class="section-title">Audio</div>
             <div class="toggle-row">
-                <span class="toggle-label">Generate Audio</span>
-                <div class="toggle-switch active" id="audioToggle"></div>
+                <span class="toggle-label" id="audioLabel">Generate Audio</span>
+                <div class="toggle-switch active" id="audioToggle" role="switch" tabindex="0" aria-checked="true" aria-labelledby="audioLabel"></div>
             </div>
         </div>
 
@@ -1197,6 +1199,7 @@
             <span>✨</span>
             <span>Generate</span>
         </button>
+        </main>
     </div>
 
     <!-- Toast -->
@@ -1243,9 +1246,20 @@
             updateValidation();
         });
 
+        // Активация по клавиатуре (Enter / Space) — выполняет ту же логику, что и клик
+        function onActivateKey(handler) {
+            return function (e) {
+                if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+                    e.preventDefault();
+                    handler(e);
+                }
+            };
+        }
+
         // Upload area
         uploadArea.addEventListener('click', () => fileInput.click());
-        
+        uploadArea.addEventListener('keydown', onActivateKey(() => fileInput.click()));
+
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
@@ -1294,12 +1308,28 @@
         }
 
         function updateImagePreviews() {
-            imagePreviews.innerHTML = uploadedImages.map((img, index) => `
-                <div class="preview-item">
-                    <img src="${img.dataUrl}" alt="Preview">
-                    <button class="preview-remove" onclick="removeImage(${index})">×</button>
-                </div>
-            `).join('');
+            // DOM API вместо innerHTML с интерполяцией data-URL и inline onclick:
+            // data-URL не попадает в HTML-парсер, обработчик удаления — через addEventListener.
+            imagePreviews.textContent = '';
+            uploadedImages.forEach((img, index) => {
+                const item = document.createElement('div');
+                item.className = 'preview-item';
+
+                const imgEl = document.createElement('img');
+                imgEl.src = img.dataUrl;
+                imgEl.alt = 'Preview';
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'preview-remove';
+                btn.textContent = '×';
+                btn.setAttribute('aria-label', 'Удалить изображение');
+                btn.addEventListener('click', () => removeImage(index));
+
+                item.appendChild(imgEl);
+                item.appendChild(btn);
+                imagePreviews.appendChild(item);
+            });
             imageCount.textContent = uploadedImages.length;
             updateValidation();
         }
@@ -1755,16 +1785,24 @@
         setupDropdown('durationDropdown', 'durationValue', (val) => selectedDuration = val);
 
         // Audio toggle
-        document.getElementById('audioToggle').addEventListener('click', function() {
-            this.classList.toggle('active');
-            generateAudio = this.classList.contains('active');
-        });
+        const audioToggleEl = document.getElementById('audioToggle');
+        function toggleAudio() {
+            audioToggleEl.classList.toggle('active');
+            generateAudio = audioToggleEl.classList.contains('active');
+            audioToggleEl.setAttribute('aria-checked', generateAudio ? 'true' : 'false');
+        }
+        audioToggleEl.addEventListener('click', toggleAudio);
+        audioToggleEl.addEventListener('keydown', onActivateKey(toggleAudio));
 
         // Reve Fast toggle
-        document.getElementById('reveFastToggle').addEventListener('click', function() {
-            this.classList.toggle('active');
-            reveFast = this.classList.contains('active');
-        });
+        const reveFastToggleEl = document.getElementById('reveFastToggle');
+        function toggleReveFast() {
+            reveFastToggleEl.classList.toggle('active');
+            reveFast = reveFastToggleEl.classList.contains('active');
+            reveFastToggleEl.setAttribute('aria-checked', reveFast ? 'true' : 'false');
+        }
+        reveFastToggleEl.addEventListener('click', toggleReveFast);
+        reveFastToggleEl.addEventListener('keydown', onActivateKey(toggleReveFast));
 
         // Model dropdown (custom handler for complex options)
         const modelDropdown = document.getElementById('modelDropdown');
@@ -1887,7 +1925,7 @@
                     }, 2000);
 
                 } catch (error) {
-                    showToast('Ошибка: ' + error.message, 'error');
+                    showToast('Не удалось улучшить промпт, попробуйте ещё раз', 'error');
                     improveBtn.disabled = false;
                     improveBtn.innerHTML = '✨ Улучшить Prompt';
                     improveBtn.style.opacity = '1';
@@ -1950,7 +1988,7 @@
 
                 sendData(data);
             } catch (error) {
-                showToast('Error: ' + error.message, 'error');
+                showToast('Не удалось отправить запрос, попробуйте ещё раз', 'error');
                 resetButton();
             }
         });
@@ -1981,18 +2019,25 @@
                     },
                     body: JSON.stringify(payload)
                 })
-                .then(response => {
+                .then(async response => {
                     if (DEBUG) console.log('Response status:', response.status);
-                    if (response.ok) {
-                        showToast('🚀 Генерация запущена!', 'success');
-                        setTimeout(() => tg.close(), 1500);
-                    } else {
-                        throw new Error('Сервер: ' + response.status);
+                    // Тело может быть пустым/не-JSON — не роняем поток.
+                    const body = await response.json().catch(() => ({}));
+
+                    // Сетевой/серверный сбой (не 2xx) ИЛИ явная ошибка в теле — не закрываем приложение.
+                    if (!response.ok || body.error || body.ok === false) {
+                        const msg = body.error ? 'Сервис временно недоступен, попробуйте ещё раз' : ('Ошибка сервера ' + response.status);
+                        throw new Error(msg);
                     }
+
+                    // Бэкенд отвечает мгновенно: генерация асинхронная, результат придёт
+                    // сообщением в чат. Поэтому формулировка честная — «отправлен», не «запущена».
+                    showToast('🚀 Запрос отправлен — результат придёт в чат', 'success');
+                    setTimeout(() => tg.close(), 1500);
                 })
                 .catch(error => {
                     if (DEBUG) console.error('Fetch error:', error);
-                    showToast('Ошибка: ' + error.message, 'error');
+                    showToast('Не удалось отправить запрос, попробуйте ещё раз', 'error');
                     resetButton();
                 });
             } else {
@@ -2017,6 +2062,105 @@
             toast.className = 'toast ' + type + ' show';
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
+
+        // ===== A11y: кастомные дропдауны (combobox + listbox) =====
+        // Существующие click-обработчики не трогаем — добавляем роли, синхронизацию
+        // aria-expanded и клавиатуру (Enter/Space открыть/выбрать, Esc закрыть, стрелки — навигация).
+        document.querySelectorAll('.dropdown').forEach(dropdown => {
+            const selected = dropdown.querySelector('.dropdown-selected');
+            const optionsBox = dropdown.querySelector('.dropdown-options');
+            if (!selected || !optionsBox) return;
+
+            selected.setAttribute('role', 'combobox');
+            selected.setAttribute('tabindex', '0');
+            selected.setAttribute('aria-haspopup', 'listbox');
+            selected.setAttribute('aria-expanded', dropdown.classList.contains('open') ? 'true' : 'false');
+            optionsBox.setAttribute('role', 'listbox');
+
+            // aria-expanded следует за классом .open (его переключают разные обработчики)
+            new MutationObserver(() => {
+                selected.setAttribute('aria-expanded', dropdown.classList.contains('open') ? 'true' : 'false');
+            }).observe(dropdown, { attributes: true, attributeFilter: ['class'] });
+
+            // role=option выставляем и динамически (resolution/count/duration перерисовываются)
+            function tagOptions() {
+                optionsBox.querySelectorAll('.dropdown-option').forEach(o => {
+                    o.setAttribute('role', 'option');
+                    o.setAttribute('aria-selected', o.classList.contains('active') ? 'true' : 'false');
+                });
+            }
+            tagOptions();
+            new MutationObserver(tagOptions).observe(optionsBox, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+
+            // Клавиатура на заголовке дропдауна
+            selected.addEventListener('keydown', e => {
+                const opts = Array.from(optionsBox.querySelectorAll('.dropdown-option'))
+                    .filter(o => o.offsetParent !== null);
+                if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+                    e.preventDefault();
+                    selected.click();
+                } else if (e.key === 'Escape') {
+                    dropdown.classList.remove('open');
+                } else if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && opts.length) {
+                    e.preventDefault();
+                    if (!dropdown.classList.contains('open')) { selected.click(); return; }
+                    const cur = opts.findIndex(o => o.classList.contains('active'));
+                    const next = e.key === 'ArrowDown'
+                        ? Math.min(opts.length - 1, cur + 1)
+                        : Math.max(0, cur - 1);
+                    opts[next].click();
+                    selected.focus();
+                }
+            });
+        });
+
+        // ===== A11y: чипы соотношения сторон (radiogroup / radio) =====
+        // Контейнер перерисовывается в updateModelParams — навешиваем на сам контейнер
+        // (делегирование клавиатуры) + помечаем роли при каждом изменении.
+        const aspectChipsEl = document.getElementById('aspectRatioChips');
+        if (aspectChipsEl) {
+            aspectChipsEl.setAttribute('role', 'radiogroup');
+            aspectChipsEl.setAttribute('aria-label', 'Соотношение сторон');
+
+            function tagChips() {
+                aspectChipsEl.querySelectorAll('.chip').forEach(chip => {
+                    chip.setAttribute('role', 'radio');
+                    const active = chip.classList.contains('active');
+                    chip.setAttribute('aria-checked', active ? 'true' : 'false');
+                    // только активный чип в tab-порядке (паттерн radiogroup)
+                    chip.setAttribute('tabindex', active ? '0' : '-1');
+                });
+            }
+            tagChips();
+            new MutationObserver(tagChips).observe(aspectChipsEl, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+
+            // Enter/Space — выбрать чип под фокусом; стрелки — перемещение по radiogroup
+            aspectChipsEl.addEventListener('keydown', e => {
+                const chips = Array.from(aspectChipsEl.querySelectorAll('.chip'));
+                const focused = document.activeElement;
+                const idx = chips.indexOf(focused);
+                if (idx === -1) return;
+                if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+                    e.preventDefault();
+                    focused.click();
+                } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const n = chips[Math.min(chips.length - 1, idx + 1)];
+                    n.click(); n.focus();
+                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const p = chips[Math.max(0, idx - 1)];
+                    p.click(); p.focus();
+                }
+            });
+        }
+
+        // ===== A11y: вкладки режима (Image / Video) =====
+        document.querySelectorAll('.mode-tab').forEach(tab => {
+            tab.setAttribute('role', 'button');
+            tab.setAttribute('tabindex', '0');
+            tab.addEventListener('keydown', onActivateKey(() => tab.click()));
+        });
 
         // Initial validation
         updateValidation();
