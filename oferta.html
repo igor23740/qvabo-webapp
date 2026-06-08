@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org; connect-src 'self' https://coaladot.fun https://telegram.org https://*.telegram.org; img-src 'self' data: https://res.cloudinary.com; style-src 'self' 'unsafe-inline'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://telegram.org; connect-src 'self' https://coaladot.fun https://telegram.org https://*.telegram.org; img-src 'self' data: https://res.cloudinary.com; style-src 'self' 'unsafe-inline'; base-uri 'self'; form-action 'self'">
 <title>Публичная оферта — QVABO Studio</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
@@ -55,7 +55,7 @@
 </head>
 <body>
 <div class="topbar">
-  <button class="back" onclick="goBack()">← Назад</button>
+  <button class="back" id="backBtn">← Назад</button>
 </div>
 <main class="wrap">
   <h1>Публичная оферта</h1>
@@ -147,16 +147,6 @@
 
   <div class="note">Настоящая Оферта является публичным документом. Размещена по адресу https://igor23740.github.io/qvabo-webapp/oferta.html</div>
 </main>
-<script>
-  var tg = window.Telegram && window.Telegram.WebApp;
-  if (tg) { try { tg.ready(); tg.expand(); } catch(e){} }
-  function goBack(){
-    if (tg && tg.BackButton) { try { tg.close(); return; } catch(e){} }
-    if (document.referrer) { history.back(); } else { location.href = 'index.html'; }
-  }
-  if (tg && tg.BackButton) {
-    try { tg.BackButton.show(); tg.BackButton.onClick(function(){ location.href='index.html'; }); } catch(e){}
-  }
-</script>
+<script src="oferta.js"></script>
 </body>
 </html>
