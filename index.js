@@ -151,6 +151,21 @@ const modelConfigs = {
         defaultAspect: '1:1',
         defaultRes: '1K'
     },
+    'gpt-image-2': {
+        aspectRatios: [
+            {value:'auto',icon:'▢'}, {value:'21:9',icon:'▬'}, {value:'16:9',icon:'▬'},
+            {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'5:4',icon:'▢'},
+            {value:'1:1',icon:'▢'}, {value:'4:5',icon:'▯'}, {value:'3:4',icon:'▯'},
+            {value:'2:3',icon:'▯'}, {value:'9:16',icon:'▯'}
+        ],
+        resolutions: [
+            {value:'1K', label:'1K'},
+            {value:'2K', label:'2K'},
+            {value:'4K', label:'4K'}
+        ],
+        defaultAspect: '1:1',
+        defaultRes: '1K'
+    },
     'flux-2-pro': {
         aspectRatios: [
             {value:'16:9',icon:'▬'}, {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'},
