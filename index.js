@@ -238,6 +238,7 @@ const modelConfigs = {
         // Режим по числу фото: 0 = Create (t2i), 1 = Edit (фото+инструкция), 2-6 = Remix. Фото опционально.
         // ⚠️ API-версия = reve-create@20250915 (сентябрь). Reve 2.0 (хорошая кириллица) пока ТОЛЬКО в вебе, не в API.
         isReve: true,
+        promptLimit: 2560,  // Reve API жёстко режет prompt на 2560 символов (иначе HTTP 400)
         aspectRatios: [
             {value:'16:9',icon:'▬'}, {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'},
             {value:'1:1',icon:'▢'}, {value:'3:4',icon:'▯'}, {value:'2:3',icon:'▯'},
@@ -400,6 +401,27 @@ document.querySelectorAll('.mode-tab').forEach(tab => {
 
 function updateModelParams(model) {
     const config = modelConfigs[model] || modelConfigs['nano-banana-pro'];
+
+    // --- Per-model prompt length limit ---
+    // Reve API hard-caps the prompt at 2560 chars (HTTP 400 otherwise). Other models default to 5000.
+    // Enforce in the field (maxlength blocks typing past the cap), reflect the cap in the counter,
+    // and show an explicit note under the prompt so nobody pastes a longer prompt and hits a failure.
+    const DEFAULT_PROMPT_LIMIT = 5000;
+    const promptLimit = config.promptLimit || DEFAULT_PROMPT_LIMIT;
+    promptInput.maxLength = promptLimit;
+    const charLimitEl = document.getElementById('charLimit');
+    if (charLimitEl) charLimitEl.textContent = promptLimit;
+    if (promptInput.value.length > promptLimit) promptInput.value = promptInput.value.slice(0, promptLimit);
+    charCount.textContent = promptInput.value.length;
+    const plNote = document.getElementById('promptLimitNote');
+    if (plNote) {
+        if (config.promptLimit) {
+            plNote.textContent = '✏️ Лимит промпта для этой модели: ' + promptLimit + ' знаков, длиннее ввести нельзя.';
+            plNote.style.display = 'block';
+        } else {
+            plNote.style.display = 'none';
+        }
+    }
 
     // --- Audio toggle visibility (only for models that support audio on/off) ---
     document.getElementById('audioSection').classList.toggle('hidden', !config.audioToggle);

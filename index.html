@@ -1066,8 +1066,9 @@
 Пример: На пляже на закате с волнами на заднем плане, профессиональная фотография продукта"
                     maxlength="5000"
                 ></textarea>
-                <div class="char-count"><span id="charCount">0</span>/5000</div>
+                <div class="char-count"><span id="charCount">0</span>/<span id="charLimit">5000</span></div>
             </div>
+            <div id="promptLimitNote" style="display:none; margin-top:12px; font-size:13px; color:#f0a020; padding:10px 14px; background:rgba(240,160,32,0.08); border:1px solid rgba(240,160,32,0.35); border-radius:10px; line-height:1.5;"></div>
             <div id="refRequiredNote" style="display:none; margin-top:12px; font-size:13px; color:#f0a020; padding:12px 14px; background:rgba(240,160,32,0.08); border:1px solid rgba(240,160,32,0.35); border-radius:10px; line-height:1.5;">
                 ⚠️ <b>Для этой модели обязательно нужно фото-референс.</b> Загрузите изображение персонажа ниже — без него генерация не запустится.
             </div>
@@ -1205,6 +1206,6 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
-    <script src="index.js?v=20260617"></script>
+    <script src="index.js?v=20260624"></script>
 </body>
 </html>
