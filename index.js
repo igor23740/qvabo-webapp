@@ -321,7 +321,7 @@ const modelConfigs = {
         defaultAspect: '16:9',
         defaultRes: '720p',
         defaultDuration: '5s',
-        showcase: { logo: 'seedance.png?v=2', video: 'seedance-preview.mp4', sub: 'Пример — ролик по раскадровке (мотозаезд)' }
+        showcase: { logo: 'seedance.png?v=3', video: 'seedance-preview.mp4', sub: 'Пример — ролик по раскадровке (мотозаезд)' }
     },
     'grok-video': {
         apiSlug: 'grok-video',
