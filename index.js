@@ -338,6 +338,8 @@ const modelConfigs = {
         apiSlug: 'grok-video',
         provider: 'kie',
         audioToggle: false,   // у Grok звук нативный, тумблера нет
+        requiresReference: true,   // Grok 1.5 = image-to-video: фото обязательно
+        refHint: 'Grok оживляет вашу картинку или раскадровку в видео. Загрузите 1 фото — без него генерация не начнётся.',
         notice: '⚡️ Высокий спрос на новинку — возможны задержки и редкие осечки. За неудачу баллы вернём автоматически.',
         aspectRatios: [
             {value:'auto',icon:'▢'}, {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'},
@@ -512,9 +514,16 @@ function updateModelParams(model) {
         return;
     }
 
-    // --- Reference-required note (Ideogram Персонаж): mandatory photo input ---
+    // --- Reference-required note: mandatory photo input (Ideogram Персонаж, Grok i2v) ---
     const refNote = document.getElementById('refRequiredNote');
-    if (refNote) refNote.style.display = config.requiresReference ? 'block' : 'none';
+    if (refNote) {
+        if (config.requiresReference) {
+            refNote.textContent = '⚠️ ' + (config.refHint || 'Для этой модели нужно загрузить фото — без него генерация не начнётся.');
+            refNote.style.display = 'block';
+        } else {
+            refNote.style.display = 'none';
+        }
+    }
 
     // --- Image upload visibility: hide for text-only models ---
     // Ideogram V3 i2i (remix) returns 500 on kie, so this model is text-only:

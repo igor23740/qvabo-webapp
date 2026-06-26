@@ -11,3 +11,5 @@
 *.pfx
 secrets.json
 credentials.json
+
+.firecrawl/
