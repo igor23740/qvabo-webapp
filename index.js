@@ -332,6 +332,27 @@ const modelConfigs = {
         defaultAspect: '16:9',
         defaultRes: '720p',
         defaultDuration: '5s'
+    },
+    'grok-video': {
+        apiSlug: 'grok-video',
+        provider: 'kie',
+        audioToggle: false,   // у Grok звук нативный, тумблера нет
+        aspectRatios: [
+            {value:'1:1',icon:'▢'}, {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'}
+        ],
+        resolutions: [
+            {value:'480p', label:'480p'},
+            {value:'720p', label:'720p'}
+        ],
+        durations: [
+            {value:'5s', label:'5s'},
+            {value:'8s', label:'8s'},
+            {value:'10s', label:'10s'},
+            {value:'15s', label:'15s'}
+        ],
+        defaultAspect: '16:9',
+        defaultRes: '480p',
+        defaultDuration: '5s'
     }
 };
 
