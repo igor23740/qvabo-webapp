@@ -74,8 +74,9 @@ fileInput.addEventListener('change', (e) => {
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 МБ
 
 function handleFiles(files) {
-    const remaining = 10 - uploadedImages.length;
-    const toAdd = Array.from(files).slice(0, remaining);
+    const maxFiles = (modelConfigs[selectedModel] && modelConfigs[selectedModel].maxFiles) || 10;
+    const remaining = maxFiles - uploadedImages.length;
+    const toAdd = Array.from(files).slice(0, Math.max(0, remaining));
 
     toAdd.forEach(file => {
         if (!file.type.startsWith('image/')) {
@@ -339,7 +340,8 @@ const modelConfigs = {
         provider: 'kie',
         audioToggle: false,   // у Grok звук нативный, тумблера нет
         requiresReference: true,   // Grok 1.5 = image-to-video: фото обязательно
-        refHint: 'Grok оживляет вашу картинку или раскадровку в видео. Загрузите 1 фото — без него генерация не начнётся.',
+        maxFiles: 1,               // Grok API принимает максимум 1 изображение (<= 1 items)
+        refHint: 'Grok оживляет ваше изображение или раскадровку в видео. Нужна 1 картинка — это максимум для модели; без неё генерация не начнётся.',
         notice: '⚡️ Высокий спрос на новинку — возможны задержки и редкие осечки. За неудачу баллы вернём автоматически.',
         aspectRatios: [
             {value:'auto',icon:'▢'}, {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'},
