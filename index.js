@@ -348,7 +348,8 @@ const modelConfigs = {
         ],
         defaultAspect: '16:9',
         defaultRes: '480p',
-        defaultDuration: '5s'
+        defaultDuration: '5s',
+        showcase: { logo: 'grok.png', video: 'grok-preview.mp4', sub: 'Пример — оживление раскадровки в видео' }
     }
 };
 
@@ -458,6 +459,32 @@ function updateModelParams(model) {
     if (noticeEl) {
         if (config.notice) { noticeEl.textContent = config.notice; noticeEl.style.display = 'block'; }
         else { noticeEl.style.display = 'none'; }
+    }
+
+    // --- Витрина модели (лого + пример-ролик), напр. Grok video ---
+    const showcaseEl = document.getElementById('modelShowcase');
+    if (showcaseEl) {
+        if (config.showcase) {
+            const lg = document.getElementById('showcaseLogo');
+            const vd = document.getElementById('showcaseVideo');
+            const sb = document.getElementById('showcaseSub');
+            if (lg) lg.style.backgroundImage = "url('" + config.showcase.logo + "')";
+            if (sb) sb.textContent = config.showcase.sub || 'Пример работы модели';
+            if (vd) {
+                if (config.showcase.video) {
+                    if (vd.getAttribute('src') !== config.showcase.video) vd.src = config.showcase.video;
+                    vd.style.display = '';
+                    const pp = vd.play(); if (pp && pp.catch) pp.catch(function () {});
+                } else {
+                    vd.pause(); vd.removeAttribute('src'); vd.style.display = 'none';
+                }
+            }
+            showcaseEl.style.display = 'flex';
+        } else {
+            const vd = document.getElementById('showcaseVideo');
+            if (vd) { vd.pause(); vd.removeAttribute('src'); }
+            showcaseEl.style.display = 'none';
+        }
     }
 
     // --- Per-model prompt length limit ---
