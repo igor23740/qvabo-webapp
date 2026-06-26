@@ -348,10 +348,11 @@ const modelConfigs = {
             {value:'720p', label:'720p'}
         ],
         durations: [
-            {value:'5s', label:'5s'},
-            {value:'8s', label:'8s'},
-            {value:'10s', label:'10s'},
-            {value:'15s', label:'15s'}
+            {value:'1s', label:'1s'}, {value:'2s', label:'2s'}, {value:'3s', label:'3s'},
+            {value:'4s', label:'4s'}, {value:'5s', label:'5s'}, {value:'6s', label:'6s'},
+            {value:'7s', label:'7s'}, {value:'8s', label:'8s'}, {value:'9s', label:'9s'},
+            {value:'10s', label:'10s'}, {value:'11s', label:'11s'}, {value:'12s', label:'12s'},
+            {value:'13s', label:'13s'}, {value:'14s', label:'14s'}, {value:'15s', label:'15s'}
         ],
         defaultAspect: '16:9',
         defaultRes: '480p',
