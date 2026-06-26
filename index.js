@@ -320,7 +320,8 @@ const modelConfigs = {
         ],
         defaultAspect: '16:9',
         defaultRes: '720p',
-        defaultDuration: '5s'
+        defaultDuration: '5s',
+        showcase: { logo: 'seedance.png', video: 'seedance-preview.mp4', sub: 'Пример — ролик по раскадровке (мотозаезд)' }
     },
     'grok-video': {
         apiSlug: 'grok-video',
@@ -422,7 +423,7 @@ function switchMode(mode) {
         document.getElementById('modelName').textContent = 'Seedance 2.0 Mini';
         document.getElementById('modelDesc').textContent = 'ByteDance · Видео';
         const iconEl = document.querySelector('#modelDropdown .dropdown-selected .model-icon');
-        iconEl.className = 'model-icon seedream';
+        iconEl.className = 'model-icon seedance';
         iconEl.textContent = 'S';
     } else {
         selectedModel = 'nano-banana-pro';
@@ -744,7 +745,7 @@ modelOptions.forEach(option => {
 
         // Update icon
         modelIconEl.className = 'model-icon ' + option.dataset.icon;
-        modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','openai':'O','grok':'X','ideogram':'✦','recraft':'R','reve':'◆'}[option.dataset.icon] || 'S';
+        modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','seedance':'S','openai':'O','grok':'X','ideogram':'✦','recraft':'R','reve':'◆'}[option.dataset.icon] || 'S';
 
         modelDropdown.classList.remove('open');
         updateModelParams(selectedModel);
