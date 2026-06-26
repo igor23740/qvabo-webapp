@@ -337,8 +337,11 @@ const modelConfigs = {
         apiSlug: 'grok-video',
         provider: 'kie',
         audioToggle: false,   // у Grok звук нативный, тумблера нет
+        notice: '⚡️ Высокий спрос на новинку — возможны задержки и редкие осечки. За неудачу баллы вернём автоматически.',
         aspectRatios: [
-            {value:'1:1',icon:'▢'}, {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'}
+            {value:'auto',icon:'▢'}, {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'},
+            {value:'1:1',icon:'▢'}, {value:'4:3',icon:'▬'}, {value:'3:4',icon:'▯'},
+            {value:'3:2',icon:'▬'}, {value:'2:3',icon:'▯'}
         ],
         resolutions: [
             {value:'480p', label:'480p'},
@@ -456,6 +459,13 @@ document.querySelectorAll('.mode-tab').forEach(tab => {
 
 function updateModelParams(model) {
     const config = modelConfigs[model] || modelConfigs['nano-banana-pro'];
+
+    // --- Per-model notice (e.g. Grok high-demand warning) ---
+    const noticeEl = document.getElementById('modelNotice');
+    if (noticeEl) {
+        if (config.notice) { noticeEl.textContent = config.notice; noticeEl.style.display = 'block'; }
+        else { noticeEl.style.display = 'none'; }
+    }
 
     // --- Per-model prompt length limit ---
     // Reve API hard-caps the prompt at 2560 chars (HTTP 400 otherwise). Other models default to 5000.
