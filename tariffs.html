@@ -310,6 +310,41 @@
             font-weight: 800;
         }
 
+        /* Расписание стоимости видео (карточка «Тизер») */
+        .vid-rate {
+            margin: -6px 0 16px;
+            padding: 12px 13px;
+            background: rgba(15, 15, 26, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+        .vid-rate .vr-title {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #c4b5fd;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 9px;
+        }
+        .vid-rate .vr-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 10px;
+            padding: 3px 0;
+            font-size: 12.5px;
+        }
+        .vid-rate .vr-row .m { color: var(--text-primary); font-weight: 600; flex-shrink: 0; }
+        .vid-rate .vr-row .b { color: var(--text-secondary); text-align: right; }
+        .vid-rate .vr-foot {
+            margin-top: 9px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+            font-size: 11.5px;
+            line-height: 1.45;
+            color: var(--text-secondary);
+        }
+
         /* ===== «Скоро» — слоты под будущие тарифы ===== */
         .plan.soon {
             border-style: dashed;
@@ -493,6 +528,37 @@
                 </button>
             </div>
 
+            <!-- ТАРИФ ВИДЕО — «Для видео» (плашка «Тизер»). Скрыт для не-whitelist, как сама видео-вкладка. -->
+            <div class="plan active" id="videoPlan" style="display:none;">
+                <span class="plan-ribbon">Тизер</span>
+                <div class="plan-head">
+                    <span class="plan-emoji">🎬</span>
+                    <div>
+                        <div class="plan-name">Для видео</div>
+                        <div class="plan-tagline">Оживляй фото и создавай ролики</div>
+                    </div>
+                </div>
+                <div class="plan-price">
+                    <span class="amount">890&nbsp;₽</span>
+                    <span class="unit">разовый платёж</span>
+                </div>
+                <ul class="plan-features">
+                    <li><span class="check">✓</span><span><b>320 баллов</b> — на видео и картинки</span></li>
+                    <li><span class="check">✓</span><span>До <b>10 роликов</b> 720p HD или ~20 в 480p</span></li>
+                    <li><span class="check">✓</span><span>Модели <b>Seedance 2.0 Mini</b> и <b>Grok Imagine Video 1.5</b></span></li>
+                    <li><span class="check">✓</span><span><b>Баланс не сгорает</b> — тратьте когда удобно</span></li>
+                </ul>
+                <div class="vid-rate">
+                    <div class="vr-title">🎬 Стоимость ролика в баллах</div>
+                    <div class="vr-row"><span class="m">Seedance 2.0 Mini</span><span class="b">480p 15–45 · 720p 32–96</span></div>
+                    <div class="vr-row"><span class="m">Grok 1.5 · оживить фото</span><span class="b">480p 3–8 · 720p 5–14</span></div>
+                    <div class="vr-foot">За ролик 5–15 секунд, по выбранной длительности и качеству.</div>
+                </div>
+                <button class="pay-btn" data-package="teaser">
+                    Оплатить <span class="price-tag">890&nbsp;₽</span>
+                </button>
+            </div>
+
             <!-- ТАРИФ 2 — слот «Скоро» -->
             <div class="plan soon">
                 <div class="plan-head">
@@ -551,6 +617,6 @@
 
     <div class="toast" id="toast">Открываю оплату…</div>
 
-    <script src="tariffs.js?v=20260609"></script>
+    <script src="tariffs.js?v=20260626k"></script>
 </body>
 </html>

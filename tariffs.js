@@ -135,3 +135,16 @@
                     });
             });
         }
+
+        // ===== Видео-тариф «Для видео» — показываем только whitelist =====
+        // Косметический гейт (как видео-вкладка в index.js). Реальная защита оплаты — Access Gate на бэкенде.
+        var VIDEO_WHITELIST = [371324849, 369287553];
+        (function () {
+            try {
+                var uid = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
+                if (VIDEO_WHITELIST.indexOf(Number(uid)) !== -1) {
+                    var vp = document.getElementById('videoPlan');
+                    if (vp) vp.style.display = '';
+                }
+            } catch (e) {}
+        })();
