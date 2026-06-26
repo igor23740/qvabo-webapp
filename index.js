@@ -311,11 +311,42 @@ const modelConfigs = {
         defaultAspect: '16:9',
         defaultRes: '720p',
         defaultDuration: '15s'
+    },
+    'seedance-2-mini': {
+        apiSlug: 'seedance-2-mini',
+        provider: 'kie',
+        audioToggle: true,
+        aspectRatios: [
+            {value:'1:1',icon:'▢'}, {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'}
+        ],
+        resolutions: [
+            {value:'480p', label:'480p'},
+            {value:'720p', label:'720p'}
+        ],
+        durations: [
+            {value:'5s', label:'5s'},
+            {value:'8s', label:'8s'},
+            {value:'10s', label:'10s'},
+            {value:'15s', label:'15s'}
+        ],
+        defaultAspect: '16:9',
+        defaultRes: '720p',
+        defaultDuration: '5s'
     }
 };
 
 // Video aspect ratios (only these 3 active in video mode)
 const videoAspectRatios = ['1:1', '16:9', '9:16'];
+
+// Видео-режим открыт только для своих (whitelist). Остальным — заглушка.
+// Это косметический гейт; реальная защита — Access Gate на бэкенде.
+const VIDEO_WHITELIST = [371324849, 369287553];
+function isVideoWhitelisted() {
+    try {
+        const uid = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
+        return VIDEO_WHITELIST.includes(Number(uid));
+    } catch (e) { return false; }
+}
 
 // Mode switching
 function switchMode(mode) {
@@ -324,18 +355,21 @@ function switchMode(mode) {
 
     const isVideo = mode === 'video';
 
-    // Video tab is a placeholder while video generation is under construction:
-    // swap the whole work area for a notice and hide the generate button.
+    // Video tab: рабочая только для whitelist (свои). Остальным — заглушка «скоро».
     const mainWork = document.getElementById('mainWork');
     const videoPh = document.getElementById('videoPlaceholder');
-    if (mainWork) mainWork.classList.toggle('hidden', isVideo);
-    if (videoPh) videoPh.classList.toggle('hidden', !isVideo);
-    generateBtn.style.display = isVideo ? 'none' : '';
-    if (isVideo) {
+    const videoEnabled = isVideo && isVideoWhitelisted();
+    if (isVideo && !videoEnabled) {
+        if (mainWork) mainWork.classList.add('hidden');
+        if (videoPh) videoPh.classList.remove('hidden');
+        generateBtn.style.display = 'none';
         document.getElementById('headerTitle').textContent = '🎬 AI Video Generator';
         document.getElementById('headerDesc').textContent = 'Раздел видео скоро откроется — мы его готовим.';
         return;
     }
+    if (mainWork) mainWork.classList.remove('hidden');
+    if (videoPh) videoPh.classList.add('hidden');
+    generateBtn.style.display = '';
 
     // Header
     document.getElementById('headerTitle').textContent = isVideo ? '🎬 AI Video Generator' : '🎨 AI Image Generator';
@@ -366,12 +400,12 @@ function switchMode(mode) {
 
     // Auto-select first visible model
     if (isVideo) {
-        selectedModel = 'veo-3.1';
-        document.getElementById('modelName').textContent = 'Veo 3.1';
-        document.getElementById('modelDesc').textContent = 'Google · Video Generation';
+        selectedModel = 'seedance-2-mini';
+        document.getElementById('modelName').textContent = 'Seedance 2.0 Mini';
+        document.getElementById('modelDesc').textContent = 'ByteDance · Видео';
         const iconEl = document.querySelector('#modelDropdown .dropdown-selected .model-icon');
-        iconEl.className = 'model-icon google';
-        iconEl.textContent = 'G';
+        iconEl.className = 'model-icon seedream';
+        iconEl.textContent = 'S';
     } else {
         selectedModel = 'nano-banana-pro';
         document.getElementById('modelName').textContent = 'Nano-Banana 2';
