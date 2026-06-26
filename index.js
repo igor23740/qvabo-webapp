@@ -533,11 +533,19 @@ function updateModelParams(model) {
     const uploadSectionEl = document.getElementById('uploadSection');
     if (uploadSectionEl) {
         uploadSectionEl.classList.toggle('hidden', !!config.textOnly);
-        // restore default upload labels (a utility model may have changed them)
+        // Подписи блока загрузки — по конфигу модели (кол-во фото + обязательность),
+        // иначе остаётся дефолт «изображения (Optional) / до 10», что противоречит Grok i2v (ровно 1 фото, обязательно).
         const ut = uploadSectionEl.querySelector('.section-title');
         const up = uploadSectionEl.querySelector('p');
-        if (ut) ut.textContent = 'Загрузить изображения (Optional)';
-        if (up) up.textContent = 'Можно загрузить до 10 изображений.';
+        const mf = config.maxFiles || 10;
+        const mandatory = !!config.requiresReference;
+        const noun = mf === 1 ? 'изображение' : 'изображения';
+        if (ut) ut.textContent = 'Загрузить ' + noun + (mandatory ? '' : ' (Optional)');
+        if (up) up.textContent = mandatory
+            ? (mf === 1 ? 'Нужно 1 фото или раскадровку.' : 'Нужно загрузить фото.')
+            : (mf === 1 ? 'Можно загрузить 1 изображение.' : 'Можно загрузить до ' + mf + ' изображений.');
+        const imgMax = document.getElementById('imageMax');
+        if (imgMax) imgMax.textContent = mf;
     }
     if (config.textOnly && uploadedImages.length) { uploadedImages = []; updateImagePreviews(); }
 
