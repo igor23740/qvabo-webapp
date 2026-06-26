@@ -221,19 +221,6 @@ const modelConfigs = {
         defaultAspect: '1:1',
         defaultRes: null
     },
-    'ideogram-character': {
-        // [DOC kie.ai ideogram/character] ТРЕБУЕТ reference_image_urls (обязательно, без фото не запускается).
-        // requiresReference -> фронт блокирует Generate без фото + показывает плашку у промпта.
-        requiresReference: true,
-        aspectRatios: [
-            {value:'16:9',icon:'▬'}, {value:'4:3',icon:'▬'},
-            {value:'1:1',icon:'▢'},
-            {value:'3:4',icon:'▯'}, {value:'9:16',icon:'▯'}
-        ],
-        resolutions: [],
-        defaultAspect: '1:1',
-        defaultRes: null
-    },
     'reve': {
         // Reve Create (t2i) НАПРЯМУЮ через api.reve.com (мимо kie). API: только aspect_ratio (7 значений), БЕЗ resolution.
         // Режим по числу фото: 0 = Create (t2i), 1 = Edit (фото+инструкция), 2-6 = Remix. Фото опционально.
@@ -516,7 +503,7 @@ function updateModelParams(model) {
         return;
     }
 
-    // --- Reference-required note: mandatory photo input (Ideogram Персонаж, Grok i2v) ---
+    // --- Reference-required note: mandatory photo input (Grok i2v) ---
     const refNote = document.getElementById('refRequiredNote');
     if (refNote) {
         if (config.requiresReference) {
@@ -845,7 +832,7 @@ generateBtn.addEventListener('click', async () => {
         showToast('Please enter a description', 'error');
         return;
     }
-    // Models that require a photo (Ideogram Персонаж, recraft utilities) must not fire without one.
+    // Models that require a photo (Grok i2v, recraft utilities) must not fire without one.
     if (genCfg.requiresReference && uploadedImages.length === 0) {
         showToast('Загрузите фото — для этой операции оно обязательно', 'error');
         return;
