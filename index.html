@@ -671,7 +671,6 @@
         }
 
         .model-icon.ideogram,
-        .model-icon.recraft,
         .model-icon.reve {
             border: none;
             color: transparent;
@@ -691,16 +690,18 @@
             mask-image: url('ideogram.png?v=1');
         }
 
-        .model-icon.recraft {
-            background: #a78bfa;
-            -webkit-mask-image: url('recraft.png?v=1');
-            mask-image: url('recraft.png?v=1');
-        }
-
         .model-icon.reve {
             background: #22d3ee;
             -webkit-mask-image: url('reve.png?v=1');
             mask-image: url('reve.png?v=1');
+        }
+
+        .model-icon.recraft {
+            background: transparent url('recraft.png?v=1') center / contain no-repeat;
+            border: none;
+            color: transparent;
+            font-size: 0;
+            box-shadow: none;
         }
 
         /* Витрина выбранной видео-модели: лого слева, пример-ролик справа */
