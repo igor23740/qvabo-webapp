@@ -670,32 +670,33 @@
             box-shadow: none;
         }
 
-        .model-icon.ideogram {
-            background: transparent url('ideogram.png?v=1') center / contain no-repeat;
-            border: none;
-            color: transparent;
-            font-size: 0;
-            box-shadow: none;
-            filter: brightness(0) invert(1);
-        }
-
-        .model-icon.recraft {
-            background: transparent url('recraft.png?v=1') center / contain no-repeat;
-            border: none;
-            color: transparent;
-            font-size: 0;
-            box-shadow: none;
-            filter: brightness(0) invert(1);
-        }
-
+        .model-icon.ideogram,
+        .model-icon.recraft,
         .model-icon.reve {
-            background: transparent url('reve.png?v=1') center / contain no-repeat;
-            border: none;
+            background: #000;
+            border: 1px solid #555;
             color: transparent;
             font-size: 0;
-            box-shadow: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .model-icon.ideogram::before,
+        .model-icon.recraft::before,
+        .model-icon.reve::before {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
             filter: brightness(0) invert(1);
         }
+
+        .model-icon.ideogram::before { background-image: url('ideogram.png?v=1'); }
+        .model-icon.recraft::before { background-image: url('recraft.png?v=1'); }
+        .model-icon.reve::before { background-image: url('reve.png?v=1'); }
 
         /* Витрина выбранной видео-модели: лого слева, пример-ролик справа */
         .showcase {
