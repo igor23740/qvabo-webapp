@@ -71,6 +71,10 @@
             link.addEventListener('click', function (e) {
                 if (tg && typeof tg.openTelegramLink === 'function') {
                     e.preventDefault();
+                    // @ts-expect-error TS2339 — link здесь всегда <a> (селектор
+                    // 'a[href^="https://t.me/"]'), но querySelectorAll по составному
+                    // селектору типизируется как generic Element в lib.dom.d.ts
+                    // (не как HTMLAnchorElement), .href не виден без потери типа на SVG.
                     tg.openTelegramLink(link.href);
                 }
             });

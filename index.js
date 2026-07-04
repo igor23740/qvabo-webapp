@@ -125,6 +125,9 @@ function updateImagePreviews() {
         item.appendChild(btn);
         imagePreviews.appendChild(item);
     });
+    // @ts-expect-error TS2322 — DOM принимает textContent=number через неявный toString()
+    // на рантайме (стандартное поведение сеттера textContent), но lib.dom.d.ts объявляет
+    // его строго string|null. Не баг, просто более узкий тип DOM-либы, чем реальный сеттер.
     imageCount.textContent = uploadedImages.length;
     updateValidation();
 }
@@ -359,6 +362,9 @@ const videoAspectRatios = ['1:1', '16:9', '9:16'];
 
 // Видео-режим открыт только для своих (whitelist). Остальным — заглушка.
 // Это косметический гейт; реальная защита — Access Gate на бэкенде.
+// ДУБЛЬ: та же константа продублирована в tariffs.js:141 (независимая копия для
+// страницы тарифов, скрывающая план «Для видео»). Код не трогаем (правило проекта —
+// только комментарии), но держать оба списка синхронными вручную при правке whitelist.
 const VIDEO_WHITELIST = [371324849, 369287553];
 function isVideoWhitelisted() {
     try {
@@ -577,6 +583,10 @@ function updateModelParams(model) {
         chip.addEventListener('click', () => {
             chipsContainer.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
             chip.classList.add('active');
+            // ВЕРДИКТ (аудит index.js:580): DOMStringMap типизирует dataset.value как
+            // string|undefined, но undefined тут недостижим — этот же forEach несколькими
+            // строками выше сам проставляет chip.dataset.value = ar.value для каждого чипа,
+            // а ar.value всегда непустая строка из modelConfigs. Не баг, юзер "undefined" не увидит.
             selectedAspectRatio = chip.dataset.value;
         });
         chipsContainer.appendChild(chip);
@@ -597,6 +607,13 @@ function updateModelParams(model) {
         resHint.style.display = 'none';
         resDropdownEl.style.display = 'none';
         resNote.style.display = 'block';
+        // ВЕРДИКТ (аудит index.js:600): не UI-баг. Ранний return сразу после этой строки
+        // пропускает единственный код ниже, который пишет resValue.textContent — значит
+        // "null"/"undefined" на экране никогда не появится (блок resolutionDropdown к тому
+        // же display:none, вместо него показан resNote с фиксированным текстом-объяснением).
+        // null уходит только в исходящий payload генерации для моделей без оси разрешения
+        // (grok/ideogram-v3/reve/recraft-*); как это поле трактует бэкенд (Kie Mapper) — вне
+        // области этого фронтенд-аудита, не проверялось.
         selectedResolution = null;
         return;
     }
@@ -871,6 +888,25 @@ generateBtn.addEventListener('click', async () => {
     generateBtn.innerHTML = '<div class="spinner"></div><span>Generating...</span>';
 
     try {
+        /**
+         * Тело запроса на генерацию — форма отличается по ветке (video/image), поэтому
+         * все поля кроме action/prompt/model/aspectRatio/resolution/count/images
+         * помечены опциональными: provider/duration/generateAudio кладёт только видео-
+         * ветка, provider(image)/reve_fast — image-ветка, и то не всегда (см. if ниже).
+         * @typedef {Object} GeneratePayload
+         * @property {string} action
+         * @property {string} prompt
+         * @property {string} model
+         * @property {string} [provider]
+         * @property {string} aspectRatio
+         * @property {string|null} resolution
+         * @property {string} [duration]
+         * @property {boolean} [generateAudio]
+         * @property {number|string} count
+         * @property {string[]} images
+         * @property {boolean} [reve_fast]
+         */
+        /** @type {GeneratePayload} */
         let data;
         if (currentMode === 'video') {
             const videoConfig = modelConfigs[selectedModel] || {};
@@ -1053,6 +1089,12 @@ if (aspectChipsEl) {
     aspectChipsEl.addEventListener('keydown', e => {
         const chips = Array.from(aspectChipsEl.querySelectorAll('.chip'));
         const focused = document.activeElement;
+        // ВЕРДИКТ (аудит index.js:1056): document.activeElement типизирован Element|null,
+        // но null практически недостижим здесь — это keydown-обработчик самого чипа, то
+        // есть событие уже означает, что чип в фокусе (activeElement указывает на него же).
+        // Даже в невозможном крайнем случае null: Array.prototype.indexOf(null) просто
+        // вернёт -1, а следующая строка (if (idx === -1) return;) уже это обрабатывает
+        // без падения. Не баг.
         const idx = chips.indexOf(focused);
         if (idx === -1) return;
         if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {

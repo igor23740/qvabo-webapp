@@ -19,6 +19,10 @@
             link.addEventListener('click', function (e) {
                 if (tg && typeof tg.openTelegramLink === 'function') {
                     e.preventDefault();
+                    // @ts-expect-error TS2339 — link здесь всегда <a> (селектор
+                    // 'a[href^="https://t.me/"]'), но querySelectorAll по составному
+                    // селектору типизируется как generic Element в lib.dom.d.ts
+                    // (не как HTMLAnchorElement), .href не виден без потери типа на SVG.
                     tg.openTelegramLink(link.href);
                 }
             });
@@ -138,6 +142,9 @@
 
         // ===== Видео-тариф «Для видео» — показываем только whitelist =====
         // Косметический гейт (как видео-вкладка в index.js). Реальная защита оплаты — Access Gate на бэкенде.
+        // ДУБЛЬ: та же константа независимо объявлена в index.js:362 (там прячет вкладку
+        // видео-режима в генераторе). Код не трогаем — только держать оба списка в синхроне
+        // вручную при правке whitelist.
         var VIDEO_WHITELIST = [371324849, 369287553];
         (function () {
             try {
