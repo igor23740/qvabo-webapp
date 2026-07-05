@@ -42,7 +42,7 @@
 
         // ===== Бэкенд-связь =====
         // Контракт сверен с живым воркфлоу O1JO6wxE0PfzWPrOvaN8S (coaladot.fun):
-        //   buy:        { action:'buy', package:'proba'|'start'|'optimum'|'maxi', chat_id:<number> }
+        //   buy:        { action:'buy', package:'start'|'teaser'|'pro'|'max', chat_id:<number> }
         //   claim_free: { action:'claim_free', chat_id:<number> }
         // HTTP-ответ пустой — ссылка на оплату / результат подписки приходят
         // сообщением бота в личный чат (решение владельца, Вариант А).
@@ -150,8 +150,11 @@
             try {
                 var uid = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
                 if (VIDEO_WHITELIST.indexOf(Number(uid)) !== -1) {
-                    var vp = document.getElementById('videoPlan');
-                    if (vp) vp.style.display = '';
+                    // 05.07: + большие видео-пакеты «Про»/«Макс» — открываются вместе с видео
+                    ['videoPlan', 'proPlan', 'maxPlan'].forEach(function (id) {
+                        var el = document.getElementById(id);
+                        if (el) el.style.display = '';
+                    });
                 }
             } catch (e) {}
         })();

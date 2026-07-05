@@ -559,8 +559,9 @@
                 </button>
             </div>
 
-            <!-- ТАРИФ 2 — слот «Скоро» -->
-            <div class="plan soon">
+            <!-- ТАРИФ «Про» — большой видео-пакет. Скрыт для не-whitelist, как видео-тариф. -->
+            <div class="plan active" id="proPlan" style="display:none;">
+                <span class="plan-ribbon">Выгоднее</span>
                 <div class="plan-head">
                     <span class="plan-emoji">⚡</span>
                     <div>
@@ -569,13 +570,30 @@
                     </div>
                 </div>
                 <div class="plan-price">
-                    <span class="amount">Скоро</span>
+                    <span class="amount">3&nbsp;790&nbsp;₽</span>
+                    <span class="unit">разовый платёж</span>
                 </div>
-                <div class="soon-badge">Появится позже</div>
+                <ul class="plan-features">
+                    <li><span class="check">✓</span><span><b>1&nbsp;500 баллов</b> — на видео и картинки</span></li>
+                    <li><span class="check">✓</span><span>Балл дешевле: <b>2,53&nbsp;₽</b> вместо 2,79&nbsp;₽ на «Старте»</span></li>
+                    <li><span class="check">✓</span><span>Сколько роликов — зависит от длины и качества (расписание ниже)</span></li>
+                    <li><span class="check">✓</span><span>Все модели картинок + <b>Seedance 2.0 Mini</b> и <b>Grok Imagine Video 1.5</b></span></li>
+                    <li><span class="check">✓</span><span><b>Баланс не сгорает</b> — тратьте когда удобно</span></li>
+                </ul>
+                <div class="vid-rate">
+                    <div class="vr-title">🎬 Стоимость ролика в баллах</div>
+                    <div class="vr-row"><span class="m">Seedance 2.0 Mini</span><span class="b">480p 15–45 · 720p 32–96</span></div>
+                    <div class="vr-row"><span class="m">Grok 1.5 · оживить фото</span><span class="b">480p 3–8 · 720p 5–14</span></div>
+                    <div class="vr-foot">За ролик 5–15 секунд, по выбранной длительности и качеству.</div>
+                </div>
+                <button class="pay-btn" data-package="pro">
+                    Оплатить <span class="price-tag">3&nbsp;790&nbsp;₽</span>
+                </button>
             </div>
 
-            <!-- ТАРИФ 3 — слот «Скоро» -->
-            <div class="plan soon">
+            <!-- ТАРИФ «Макс» — максимальный видео-пакет. Скрыт для не-whitelist, как видео-тариф. -->
+            <div class="plan active" id="maxPlan" style="display:none;">
+                <span class="plan-ribbon">Максимум выгоды</span>
                 <div class="plan-head">
                     <span class="plan-emoji">👑</span>
                     <div>
@@ -584,9 +602,25 @@
                     </div>
                 </div>
                 <div class="plan-price">
-                    <span class="amount">Скоро</span>
+                    <span class="amount">6&nbsp;990&nbsp;₽</span>
+                    <span class="unit">разовый платёж</span>
                 </div>
-                <div class="soon-badge">Появится позже</div>
+                <ul class="plan-features">
+                    <li><span class="check">✓</span><span><b>3&nbsp;000 баллов</b> — запас на месяц активной генерации видео</span></li>
+                    <li><span class="check">✓</span><span>Самый дешёвый балл: <b>2,33&nbsp;₽</b> вместо 2,79&nbsp;₽ на «Старте»</span></li>
+                    <li><span class="check">✓</span><span>Сколько роликов — зависит от длины и качества (расписание ниже)</span></li>
+                    <li><span class="check">✓</span><span>Все модели картинок + <b>Seedance 2.0 Mini</b> и <b>Grok Imagine Video 1.5</b></span></li>
+                    <li><span class="check">✓</span><span><b>Баланс не сгорает</b> — тратьте когда удобно</span></li>
+                </ul>
+                <div class="vid-rate">
+                    <div class="vr-title">🎬 Стоимость ролика в баллах</div>
+                    <div class="vr-row"><span class="m">Seedance 2.0 Mini</span><span class="b">480p 15–45 · 720p 32–96</span></div>
+                    <div class="vr-row"><span class="m">Grok 1.5 · оживить фото</span><span class="b">480p 3–8 · 720p 5–14</span></div>
+                    <div class="vr-foot">За ролик 5–15 секунд, по выбранной длительности и качеству.</div>
+                </div>
+                <button class="pay-btn" data-package="max">
+                    Оплатить <span class="price-tag">6&nbsp;990&nbsp;₽</span>
+                </button>
             </div>
 
         </div>
