@@ -559,14 +559,14 @@
                 </button>
             </div>
 
-            <!-- ТАРИФ «Про» — большой видео-пакет. Скрыт для не-whitelist, как видео-тариф. -->
+            <!-- ТАРИФ «Трейлер» (key pro) — большой видео-пакет. Скрыт для не-whitelist, как видео-тариф. -->
             <div class="plan active" id="proPlan" style="display:none;">
                 <span class="plan-ribbon">Выгоднее</span>
                 <div class="plan-head">
-                    <span class="plan-emoji">⚡</span>
+                    <span class="plan-emoji">🎞️</span>
                     <div>
-                        <div class="plan-name">Про</div>
-                        <div class="plan-tagline">Больше генераций для активных</div>
+                        <div class="plan-name">Трейлер</div>
+                        <div class="plan-tagline">Когда тизера уже мало</div>
                     </div>
                 </div>
                 <div class="plan-price">
@@ -591,13 +591,15 @@
                 </button>
             </div>
 
-            <!-- ТАРИФ «Макс» — максимальный видео-пакет. Скрыт для не-whitelist, как видео-тариф. -->
+            <!-- ТАРИФ «Блокбастер» (key max) — максимальный видео-пакет. ВИТРИНА БЕЗ ПРОДАЖИ:
+                 кнопки оплаты нет и ключа max в Buy Prepare нет — активация по откликам (решение
+                 владельца 05.07, нужна вкладка на kie ~$80). Скрыт для не-whitelist, как видео-тариф. -->
             <div class="plan active" id="maxPlan" style="display:none;">
-                <span class="plan-ribbon">Максимум выгоды</span>
+                <span class="plan-ribbon">Скоро</span>
                 <div class="plan-head">
                     <span class="plan-emoji">👑</span>
                     <div>
-                        <div class="plan-name">Макс</div>
+                        <div class="plan-name">Блокбастер</div>
                         <div class="plan-tagline">Максимум возможностей</div>
                     </div>
                 </div>
@@ -618,9 +620,7 @@
                     <div class="vr-row"><span class="m">Grok 1.5 · оживить фото</span><span class="b">480p 3–8 · 720p 5–14</span></div>
                     <div class="vr-foot">За ролик 5–15 секунд, по выбранной длительности и качеству.</div>
                 </div>
-                <button class="pay-btn" data-package="max">
-                    Оплатить <span class="price-tag">6&nbsp;990&nbsp;₽</span>
-                </button>
+                <div class="soon-badge">Откроется скоро. Нужен уже сейчас? Напишите в поддержку</div>
             </div>
 
         </div>
