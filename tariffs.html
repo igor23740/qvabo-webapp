@@ -369,6 +369,17 @@
             border: 1px solid rgba(139, 92, 246, 0.35);
             border-radius: 20px;
         }
+        a.soon-badge {
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+        }
+        a.soon-badge:hover {
+            background: rgba(124, 58, 237, 0.3);
+            border-color: rgba(139, 92, 246, 0.6);
+            color: #ddd6fe;
+        }
+        a.soon-badge:active { transform: scale(0.98); }
         .plan.soon .plan-price .amount {
             -webkit-text-fill-color: var(--text-secondary);
             color: var(--text-secondary);
@@ -620,7 +631,7 @@
                     <div class="vr-row"><span class="m">Grok 1.5 · оживить фото</span><span class="b">480p 3–8 · 720p 5–14</span></div>
                     <div class="vr-foot">За ролик 5–15 секунд, по выбранной длительности и качеству.</div>
                 </div>
-                <div class="soon-badge">Откроется скоро. Нужен уже сейчас? Напишите в поддержку</div>
+                <a class="soon-badge" href="https://t.me/qvabo_support_bot" target="_blank" rel="noopener noreferrer">Откроется скоро. Нужен уже сейчас? Напишите в поддержку</a>
             </div>
 
         </div>
