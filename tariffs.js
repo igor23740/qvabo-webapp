@@ -42,7 +42,7 @@
 
         // ===== Бэкенд-связь =====
         // Контракт сверен с живым воркфлоу O1JO6wxE0PfzWPrOvaN8S (coaladot.fun):
-        //   buy:        { action:'buy', package:'start'|'teaser'|'pro', chat_id:<number> }
+        //   buy:        { action:'buy', package:'start'|'teaser'|'promo'|'pro', chat_id:<number> }
         //               ('max' = «Блокбастер»: карточка-витрина без кнопки, ключа на бэке пока нет)
         //   claim_free: { action:'claim_free', chat_id:<number> }
         // HTTP-ответ пустой — ссылка на оплату / результат подписки приходят
@@ -151,8 +151,8 @@
             try {
                 var uid = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
                 if (VIDEO_WHITELIST.indexOf(Number(uid)) !== -1) {
-                    // 05.07: + большие видео-пакеты «Про»/«Макс» — открываются вместе с видео
-                    ['videoPlan', 'proPlan', 'maxPlan'].forEach(function (id) {
+                    // 05.07: + большие видео-пакеты «Промо»/«Трейлер»/«Блокбастер» — открываются вместе с видео
+                    ['videoPlan', 'promoPlan', 'proPlan', 'maxPlan'].forEach(function (id) {
                         var el = document.getElementById(id);
                         if (el) el.style.display = '';
                     });
