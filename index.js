@@ -360,16 +360,16 @@ const modelConfigs = {
 // Video aspect ratios (only these 3 active in video mode)
 const videoAspectRatios = ['1:1', '16:9', '9:16'];
 
-// Видео-режим открыт только для своих (whitelist). Остальным — заглушка.
-// Это косметический гейт; реальная защита — Access Gate на бэкенде.
-// ДУБЛЬ: та же константа продублирована в tariffs.js:141 (независимая копия для
-// страницы тарифов, скрывающая план «Для видео»). Код не трогаем (правило проекта —
-// только комментарии), но держать оба списка синхронными вручную при правке whitelist.
+// Вайтлист снят 2026-07-06 (kie пополнен) — видео-режим открыт всем.
+// Константа и каркас функции оставлены для быстрого отката: вернуть
+// `return VIDEO_WHITELIST.includes(Number(uid));`. Реальная защита — Access Gate на бэкенде.
+// ДУБЛЬ: та же константа продублирована в tariffs.js (страница тарифов) — там гейт
+// снят той же правкой; при возврате вайтлиста править оба файла синхронно.
 const VIDEO_WHITELIST = [371324849, 369287553];
 function isVideoWhitelisted() {
     try {
         const uid = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
-        return VIDEO_WHITELIST.includes(Number(uid));
+        return true; // вайтлист снят 2026-07-06: kie пополнен, видео открыто для всех
     } catch (e) { return false; }
 }
 
