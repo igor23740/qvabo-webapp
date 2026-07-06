@@ -1119,5 +1119,132 @@ document.querySelectorAll('.mode-tab').forEach(tab => {
     tab.addEventListener('keydown', onActivateKey(() => tab.click()));
 });
 
+// ===== Контекстное меню поля Prompt =====
+// Десктопные клиенты Telegram гасят системное меню вебвью: правый клик в textarea
+// не даёт «Вставить», работает только Ctrl+V. Рисуем своё меню. Мобилки (android/ios)
+// и обычный браузер не трогаем — там родное меню живо и лучше нашего.
+
+// Чистая вставка с учётом остатка места по maxLength (maxLength <= 0 — без лимита)
+function ctxComputeInsert(value, selStart, selEnd, clip, maxLen) {
+    const room = maxLen > 0 ? maxLen - (value.length - (selEnd - selStart)) : Infinity;
+    const text = room < clip.length ? clip.slice(0, Math.max(0, room)) : clip;
+    return {
+        value: value.slice(0, selStart) + text + value.slice(selEnd),
+        caret: selStart + text.length,
+        clipped: text.length < clip.length
+    };
+}
+
+(function () {
+    const platform = (tg && tg.platform) || '';
+    if (!/^(tdesktop|macos|unigram)$/.test(platform)) return;
+    if (!promptInput) return;
+
+    const menu = document.createElement('div');
+    menu.className = 'ctx-menu';
+    menu.setAttribute('role', 'menu');
+    [
+        { action: 'paste', label: 'Вставить' },
+        { action: 'copy', label: 'Копировать' },
+        { action: 'cut', label: 'Вырезать' },
+        { action: 'selectall', label: 'Выделить всё' }
+    ].forEach(it => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'ctx-menu-item';
+        b.setAttribute('role', 'menuitem');
+        b.dataset.action = it.action;
+        b.textContent = it.label;
+        menu.appendChild(b);
+    });
+    document.body.appendChild(menu);
+
+    function hideMenu() { menu.style.display = 'none'; }
+    hideMenu();
+
+    promptInput.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        const hasSel = promptInput.selectionStart !== promptInput.selectionEnd;
+        menu.querySelectorAll('.ctx-menu-item').forEach(b => {
+            b.disabled = (b.dataset.action === 'copy' || b.dataset.action === 'cut') && !hasSel;
+        });
+        // показать невидимо, замерить и прижать к краям экрана
+        menu.style.visibility = 'hidden';
+        menu.style.display = 'block';
+        const r = menu.getBoundingClientRect();
+        menu.style.left = Math.max(8, Math.min(e.clientX, window.innerWidth - r.width - 8)) + 'px';
+        menu.style.top = Math.max(8, Math.min(e.clientY, window.innerHeight - r.height - 8)) + 'px';
+        menu.style.visibility = '';
+    });
+
+    ['pointerdown', 'wheel'].forEach(ev => document.addEventListener(ev, (e) => {
+        if (!menu.contains(e.target)) hideMenu();
+    }, true));
+    window.addEventListener('resize', hideMenu);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideMenu(); });
+
+    function insertClip(clip) {
+        if (typeof clip !== 'string' || !clip) return false;
+        const r = ctxComputeInsert(promptInput.value, promptInput.selectionStart, promptInput.selectionEnd, clip, promptInput.maxLength);
+        promptInput.value = r.value;
+        promptInput.setSelectionRange(r.caret, r.caret);
+        promptInput.dispatchEvent(new Event('input', { bubbles: true }));
+        promptInput.focus();
+        if (r.clipped) showToast('Текст обрезан по лимиту поля', 'error');
+        return true;
+    }
+
+    // Каскад способов достать буфер: Clipboard API → Telegram API → execCommand → подсказка
+    async function doPaste() {
+        try {
+            if (insertClip(await navigator.clipboard.readText())) return;
+        } catch (err) { /* нет разрешения — пробуем следующий способ */ }
+        if (tg && typeof tg.readTextFromClipboard === 'function') {
+            try {
+                const text = await new Promise((resolve) => {
+                    let done = false;
+                    const timer = setTimeout(() => { if (!done) { done = true; resolve(null); } }, 1500);
+                    tg.readTextFromClipboard((t) => { if (!done) { done = true; clearTimeout(timer); resolve(t); } });
+                });
+                if (insertClip(text)) return;
+            } catch (err) { /* доступно не для всех типов запуска Mini App */ }
+        }
+        promptInput.focus();
+        try { if (document.execCommand('paste')) return; } catch (err) { }
+        showToast('Не получилось достать текст из буфера. Нажмите Ctrl+V', 'error');
+    }
+
+    async function doCopy(cut) {
+        const s = promptInput.selectionStart, e = promptInput.selectionEnd;
+        if (s === e) return;
+        const text = promptInput.value.slice(s, e);
+        let ok = false;
+        try { await navigator.clipboard.writeText(text); ok = true; } catch (err) { }
+        if (!ok) {
+            promptInput.focus();
+            promptInput.setSelectionRange(s, e);
+            try { ok = document.execCommand(cut ? 'cut' : 'copy'); } catch (err) { }
+            if (ok && cut) { promptInput.dispatchEvent(new Event('input', { bubbles: true })); return; }
+        }
+        if (!ok) { showToast('Не получилось скопировать', 'error'); return; }
+        if (cut) {
+            promptInput.setRangeText('', s, e, 'start');
+            promptInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        promptInput.focus();
+    }
+
+    menu.addEventListener('click', (e) => {
+        const btn = e.target.closest('.ctx-menu-item');
+        if (!btn || btn.disabled) return;
+        hideMenu();
+        const a = btn.dataset.action;
+        if (a === 'paste') doPaste();
+        else if (a === 'copy') doCopy(false);
+        else if (a === 'cut') doCopy(true);
+        else if (a === 'selectall') { promptInput.focus(); promptInput.select(); }
+    });
+})();
+
 // Initial validation
 updateValidation();
