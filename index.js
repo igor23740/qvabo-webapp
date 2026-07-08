@@ -806,6 +806,36 @@ function updateValidation() {
     generateBtn.disabled = !(promptOk && refOk);
 }
 
+// Ужатая копия первого референса для «Улучшить промпт»: до 512px по большей
+// стороне, JPEG. Полное качество уходит только в генерацию; улучшателю хватает
+// миниатюры, чтобы видеть реальную сцену. При любой ошибке — просто без картинки.
+async function buildImproveReference() {
+    if (!uploadedImages.length) return null;
+    try {
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = uploadedImages[0].dataUrl;
+        });
+        const MAX_SIDE = 512;
+        const scale = Math.min(1, MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
+        const w = Math.max(1, Math.round(img.naturalWidth * scale));
+        const h = Math.max(1, Math.round(img.naturalHeight * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        // JPEG не знает прозрачности — подложка белым, иначе PNG с альфой станет чёрным
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        return canvas.toDataURL('image/jpeg', 0.85);
+    } catch (_) {
+        return null;
+    }
+}
+
 // Improve Prompt button
 improveBtn.addEventListener('click', async () => {
     if (!promptInput.value.trim()) {
@@ -826,17 +856,20 @@ improveBtn.addEventListener('click', async () => {
 
     if (tg && tg.initData) {
         try {
+            // Есть референс — шлём ужатую копию, чтобы улучшатель видел сцену
+            const refImage = await buildImproveReference();
+
             // Synchronous endpoint: returns { improved: "<text>" } and we drop it
             // straight into the prompt field (no copy-from-chat).
             const res = await fetch('https://coaladot.fun/webhook/qvabo-improve', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                body: JSON.stringify(Object.assign({
                     action: 'improve_prompt',
                     prompt: promptInput.value,
                     chat_id: chatId,
                     initData: tg.initData
-                })
+                }, refImage ? { image: refImage } : {}))
             });
 
             let improved = '';
