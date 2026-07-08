@@ -225,15 +225,19 @@ const modelConfigs = {
         defaultRes: null
     },
     'reve': {
-        // Reve Create (t2i) НАПРЯМУЮ через api.reve.com (мимо kie). API: только aspect_ratio (7 значений), БЕЗ resolution.
-        // Режим по числу фото: 0 = Create (t2i), 1 = Edit (фото+инструкция), 2-6 = Remix. Фото опционально.
-        // ⚠️ API-версия = reve-create@20250915 (сентябрь). Reve 2.0 (хорошая кириллица) пока ТОЛЬКО в вебе, не в API.
+        // Reve 2.0 Beta (V2 API) НАПРЯМУЮ через api.reve.com (мимо kie): v2/image/create|edit, включён per-account 08.07.26.
+        // Режим по числу фото: 0 = Create (t2i), 1 = Edit (фото+инструкция), 2-8 = Create с references. Фото опционально.
+        // Палитра форматов V2 подтверждена живыми пробами 08.07 (15 значений + auto). Тумблера Fast в V2 нет.
         isReve: true,
-        promptLimit: 2560,  // Reve API жёстко режет prompt на 2560 символов (иначе HTTP 400)
+        maxFiles: 8,        // V2 references: до 8 фото
+        promptLimit: 4000,  // Лимит V2 (живой проб 08.07: «prompt length must be no more than 4000 characters»)
         aspectRatios: [
-            {value:'16:9',icon:'▬'}, {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'},
-            {value:'1:1',icon:'▢'}, {value:'3:4',icon:'▯'}, {value:'2:3',icon:'▯'},
-            {value:'9:16',icon:'▯'}
+            {value:'auto',icon:'▢'},
+            {value:'4:1',icon:'▬'}, {value:'3:1',icon:'▬'}, {value:'21:9',icon:'▬'}, {value:'2:1',icon:'▬'},
+            {value:'17:9',icon:'▬'}, {value:'16:9',icon:'▬'}, {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'},
+            {value:'1:1',icon:'▢'},
+            {value:'3:4',icon:'▯'}, {value:'2:3',icon:'▯'}, {value:'9:16',icon:'▯'},
+            {value:'1:2',icon:'▯'}, {value:'1:3',icon:'▯'}, {value:'1:4',icon:'▯'}
         ],
         resolutions: [],
         defaultAspect: '1:1',
@@ -495,7 +499,7 @@ function updateModelParams(model) {
     }
 
     // --- Per-model prompt length limit ---
-    // Reve API hard-caps the prompt at 2560 chars (HTTP 400 otherwise). Other models default to 5000.
+    // Reve V2 API hard-caps the prompt at 4000 chars (HTTP 400 otherwise). Other models default to 5000.
     // Enforce in the field (maxlength blocks typing past the cap), reflect the cap in the counter,
     // and show an explicit note under the prompt so nobody pastes a longer prompt and hits a failure.
     const DEFAULT_PROMPT_LIMIT = 5000;
@@ -517,7 +521,8 @@ function updateModelParams(model) {
 
     // --- Audio toggle visibility (only for models that support audio on/off) ---
     document.getElementById('audioSection').classList.toggle('hidden', !config.audioToggle);
-    document.getElementById('reveFastSection').classList.toggle('hidden', !config.isReve);
+    // Reve V2 (08.07.26): параметра fast в API нет — секция скрыта для всех моделей.
+    document.getElementById('reveFastSection').classList.add('hidden');
 
     // --- Utility models (recraft remove-bg / upscale): photo in -> file out.
     // No prompt / aspect / resolution / count — only the photo upload, which is mandatory. ---
@@ -934,7 +939,6 @@ generateBtn.addEventListener('click', async () => {
                 images: uploadedImages.map(img => img.dataUrl)
             };
             if (imageConfig.provider) data.provider = imageConfig.provider;
-            if (imageConfig.isReve) data.reve_fast = reveFast;
         }
 
         sendData(data);
