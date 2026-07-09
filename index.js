@@ -288,7 +288,7 @@ const modelConfigs = {
         utility: true,
         noPrompt: true,
         requiresReference: true,
-        uploadHint: 'Загрузите 1 фото — ИИ дорисует детали и увеличит до 4K. Результат придёт файлом.',
+        uploadHint: 'Загрузите 1 фото — ИИ восстановит детали и чёткость, увеличит до 4K. Результат придёт файлом.',
         aspectRatios: [],
         resolutions: [],
         defaultAspect: null,
