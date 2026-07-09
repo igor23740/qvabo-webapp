@@ -671,7 +671,8 @@
         }
 
         .model-icon.ideogram,
-        .model-icon.reve {
+        .model-icon.reve,
+        .model-icon.topaz {
             border: none;
             color: transparent;
             font-size: 0;
@@ -702,6 +703,13 @@
             color: transparent;
             font-size: 0;
             box-shadow: none;
+        }
+
+        .model-icon.topaz {
+            /* Фирменный знак Topaz Labs (3 квадрата лесенкой, topaz.png) в топазовой заливке — лого от владельца 09.07 */
+            background: #f59e0b;
+            -webkit-mask-image: url('topaz.png?v=1');
+            mask-image: url('topaz.png?v=1');
         }
 
         /* Витрина выбранной видео-модели: лого слева, пример-ролик справа */
@@ -1003,7 +1011,7 @@
             <h1 id="headerTitle">🎨 AI Image Generator</h1>
             <p id="headerDesc">Создавайте потрясающие изображения с помощью передовых технологий искусственного интеллекта. Превращайте свои идеи в визуальные шедевры.</p>
             <div class="header-links">
-                <a href="faq.html?v=20260709b" class="faq-btn">❓ FAQ</a>
+                <a href="faq.html?v=20260710a" class="faq-btn">❓ FAQ</a>
                 <a href="cabinet.html?v=20260709b" class="cabinet-btn">💰 Баланс</a>
                 <a href="tariffs.html?v=20260709b" class="tariffs-btn">💎 Тарифы</a>
             </div>
@@ -1131,6 +1139,15 @@
                             <div class="model-info">
                                 <div class="model-name">Апскейл</div>
                                 <div class="model-desc">Recraft · Увеличение до 4K</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-option" data-value="topaz-upscale" data-name="Апскейл PRO" data-desc="Topaz · Дорисовка деталей, до 4K" data-icon="topaz" data-mode="image">
+                        <div class="model-option-content">
+                            <div class="model-icon topaz">T</div>
+                            <div class="model-info">
+                                <div class="model-name">Апскейл PRO</div>
+                                <div class="model-desc">Topaz · Дорисовка деталей, до 4K</div>
                             </div>
                         </div>
                     </div>
@@ -1325,6 +1342,6 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
-    <script src="index.js?v=20260709b"></script>
+    <script src="index.js?v=20260710a"></script>
 </body>
 </html>

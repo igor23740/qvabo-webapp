@@ -282,6 +282,18 @@ const modelConfigs = {
         defaultAspect: null,
         defaultRes: null
     },
+    'topaz-upscale': {
+        // [DOC kie.ai topaz/image-upscale] утилита: image_url + upscale_factor "2" (фикс, выход ≤4K) + nsfw_checker (бэкенд).
+        // Вход ужимается до 2048px по длинной стороне перед отправкой (shrinkForTopaz) — тир закупки предсказуем (решение 09.07).
+        utility: true,
+        noPrompt: true,
+        requiresReference: true,
+        uploadHint: 'Загрузите 1 фото — ИИ дорисует детали и увеличит до 4K. Результат придёт файлом.',
+        aspectRatios: [],
+        resolutions: [],
+        defaultAspect: null,
+        defaultRes: null
+    },
     'veo-3.1': {
         apiSlug: 'veo-3.1',
         provider: 'google',
@@ -783,7 +795,7 @@ modelOptions.forEach(option => {
 
         // Update icon
         modelIconEl.className = 'model-icon ' + option.dataset.icon;
-        modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','seedance':'S','openai':'O','grok':'X','ideogram':'✦','recraft':'R','reve':'◆'}[option.dataset.icon] || 'S';
+        modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','seedance':'S','openai':'O','grok':'X','ideogram':'✦','recraft':'R','reve':'◆','topaz':'T'}[option.dataset.icon] || 'S';
 
         modelDropdown.classList.remove('open');
         updateModelParams(selectedModel);
@@ -849,6 +861,35 @@ async function buildImproveReference() {
         return canvas.toDataURL('image/jpeg', 0.85);
     } catch (_) {
         return null;
+    }
+}
+
+// Апскейл PRO (Topaz): вход ужимается до 2048px по длинной стороне (JPEG) — при факторе ×2
+// выход ≤4K и закупка у kie не выскакивает из тира $0.10. Меньший вход не трогаем.
+async function shrinkForTopaz(dataUrl) {
+    try {
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = dataUrl;
+        });
+        const MAX_SIDE = 2048;
+        const scale = Math.min(1, MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
+        if (scale >= 1) return dataUrl;
+        const w = Math.max(1, Math.round(img.naturalWidth * scale));
+        const h = Math.max(1, Math.round(img.naturalHeight * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        // JPEG не знает прозрачности — подложка белым (как в buildImproveReference)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        return canvas.toDataURL('image/jpeg', 0.92);
+    } catch (_) {
+        return dataUrl;
     }
 }
 
@@ -988,6 +1029,10 @@ generateBtn.addEventListener('click', async () => {
                 images: uploadedImages.map(img => img.dataUrl)
             };
             if (imageConfig.provider) data.provider = imageConfig.provider;
+            // Topaz: ужать вход до 2048px (см. shrinkForTopaz), бэкенд берёт только 1-е фото
+            if (selectedModel === 'topaz-upscale' && data.images.length) {
+                data.images = [await shrinkForTopaz(data.images[0])];
+            }
         }
 
         sendData(data);
