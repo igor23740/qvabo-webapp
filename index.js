@@ -198,6 +198,22 @@ const modelConfigs = {
         defaultAspect: '1:1',
         defaultRes: '1K'
     },
+    'seedream-5-pro': {
+        // Seedream 5 Pro (V2) — флагман ByteDance. Basic=1K / High=2K (4K нет). До 10 фото (i2i). nsfw_checker вкл (Фаза 1).
+        // aspect_ratio: 7 значений, подтверждено живым дропдауном kie 09.07 (auto/21:9/5:4/4:5 НЕ поддерживаются).
+        aspectRatios: [
+            {value:'16:9',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'3:2',icon:'▬'},
+            {value:'1:1',icon:'▢'},
+            {value:'3:4',icon:'▯'}, {value:'2:3',icon:'▯'}, {value:'9:16',icon:'▯'}
+        ],
+        resolutions: [
+            {value:'1K', label:'1K'},
+            {value:'2K', label:'2K'}
+        ],
+        defaultAspect: '1:1',
+        defaultRes: '1K',
+        maxFiles: 10
+    },
     'grok': {
         // [DOC kie.ai grok-imagine] t2i: только aspect_ratio (1:1,16:9,9:16,2:3,3:2),
         // НЕТ resolution; i2i — 1 референс. resolutions:[] -> блок Resolution скрывается.
