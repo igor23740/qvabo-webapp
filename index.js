@@ -300,7 +300,7 @@ const modelConfigs = {
         defaultRes: null
     },
     'reve': {
-        // Reve 2.0 Beta (V2 API) НАПРЯМУЮ через api.reve.com (мимо kie): v2/image/create|edit, включён per-account 08.07.26.
+        // Reve 2.1 (V2 API) НАПРЯМУЮ через api.reve.com (мимо kie): v2/image/create|edit, включён per-account 08.07.26.
         // Режим по числу фото: 0 = Create (t2i), 1 = Edit (фото+инструкция), 2-8 = Create с references. Фото опционально.
         // Палитра форматов V2 подтверждена живыми пробами 08.07 (15 значений + auto). Тумблера Fast в V2 нет.
         isReve: true,
