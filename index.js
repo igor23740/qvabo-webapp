@@ -11,6 +11,7 @@ if (tg) {
 
 // State
 let uploadedImages = [];
+let uploadedVideoRef = null; // {file, dataUrl, duration} — референс движения для Kling Motion Control
 let selectedAspectRatio = '1:1';
 let selectedResolution = '1K';
 let selectedCount = '1';
@@ -135,6 +136,64 @@ function updateImagePreviews() {
 function removeImage(index) {
     uploadedImages.splice(index, 1);
     updateImagePreviews();
+}
+
+// === Референс-видео (Kling Motion Control) ===
+// Лимит файла 9 МБ: тело вебхука n8n ограничено 16 МБ на весь JSON, base64 добавляет ~37%.
+const MAX_VIDEO_REF_SIZE = 9 * 1024 * 1024;
+const videoRefArea = document.getElementById('videoRefArea');
+const videoRefInput = document.getElementById('videoRefInput');
+if (videoRefArea && videoRefInput) {
+    videoRefArea.addEventListener('click', () => videoRefInput.click());
+    videoRefArea.addEventListener('keydown', onActivateKey(() => videoRefInput.click()));
+    videoRefInput.addEventListener('change', (e) => handleVideoRef(e.target.files && e.target.files[0]));
+}
+
+function handleVideoRef(file) {
+    if (!file) return;
+    if (!(file.type === 'video/mp4' || file.type === 'video/quicktime')) {
+        showToast('Нужен файл MP4 или MOV', 'error');
+        videoRefInput.value = '';
+        return;
+    }
+    if (file.size > MAX_VIDEO_REF_SIZE) {
+        showToast('Видео больше 9 МБ — обрежьте или сожмите (обычно хватает 720p до 10 секунд)', 'error');
+        videoRefInput.value = '';
+        return;
+    }
+    const probe = document.createElement('video');
+    probe.preload = 'metadata';
+    probe.onloadedmetadata = () => {
+        const dur = probe.duration;
+        URL.revokeObjectURL(probe.src);
+        if (!isFinite(dur) || dur < 3 || dur > 30) {
+            showToast('Длительность видео должна быть от 3 до 30 секунд', 'error');
+            videoRefInput.value = '';
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            uploadedVideoRef = { file: file, dataUrl: ev.target.result, duration: Math.ceil(dur) };
+            updateVideoRefStatus();
+        };
+        reader.readAsDataURL(file);
+    };
+    probe.onerror = () => {
+        URL.revokeObjectURL(probe.src);
+        showToast('Не удалось прочитать видео — попробуйте другой файл', 'error');
+        videoRefInput.value = '';
+    };
+    probe.src = URL.createObjectURL(file);
+}
+
+function updateVideoRefStatus() {
+    const st = document.getElementById('videoRefStatus');
+    if (st) {
+        st.textContent = uploadedVideoRef
+            ? '✓ ' + (uploadedVideoRef.file.name || 'видео') + ' · ' + uploadedVideoRef.duration + ' сек'
+            : 'Видео не выбрано';
+    }
+    updateValidation();
 }
 
 
@@ -386,6 +445,60 @@ const modelConfigs = {
         defaultRes: '480p',
         defaultDuration: '5s',
         showcase: { logo: 'grok.png', video: 'grok-preview.mp4', sub: 'Пример — оживление раскадровки в видео' }
+    },
+    'kling-video': {
+        // [DOC docs.kie.ai/market/kling/kling-3-0] kling-3.0/video: t2v + i2v (1 фото = первый кадр),
+        // duration '3'..'15' (строка), mode std/pro/4K, sound bool, aspect_ratio 16:9|9:16|1:1.
+        // Ось «Разрешение» на фронте = режим качества (std/pro/4k), бэкенд Kling VIDEO PREP мапит в mode.
+        apiSlug: 'kling-video',
+        provider: 'kie',
+        audioToggle: true,
+        maxFiles: 1,
+        promptLimit: 2500,
+        aspectRatios: [
+            {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'}, {value:'1:1',icon:'▢'}
+        ],
+        resolutions: [
+            {value:'std', label:'Standard · 720p'},
+            {value:'pro', label:'Pro · 1080p'},
+            {value:'4k', label:'4K · Ultra HD'}
+        ],
+        durations: [
+            {value:'3s', label:'3s'}, {value:'4s', label:'4s'}, {value:'5s', label:'5s'},
+            {value:'6s', label:'6s'}, {value:'7s', label:'7s'}, {value:'8s', label:'8s'},
+            {value:'9s', label:'9s'}, {value:'10s', label:'10s'}, {value:'11s', label:'11s'},
+            {value:'12s', label:'12s'}, {value:'13s', label:'13s'}, {value:'14s', label:'14s'},
+            {value:'15s', label:'15s'}
+        ],
+        defaultAspect: '16:9',
+        defaultRes: 'std',
+        defaultDuration: '5s',
+        showcase: { logo: 'kling.png', video: 'kling-preview.mp4', sub: 'Пример — ролик Kling 3.0 со звуком' }
+    },
+    'kling-motion': {
+        // [DOC docs.kie.ai/market/kling/motion-control-v3] kling-3.0/motion-control:
+        // input_urls (1 фото персонажа, обязательно) + video_urls (1 видео 3–30с, обязательно),
+        // prompt опционален, mode 720p/1080p. Длительность не выбирается — берётся из референс-видео.
+        apiSlug: 'kling-motion',
+        provider: 'kie',
+        audioToggle: false,
+        requiresReference: true,
+        requiresVideoRef: true,
+        promptOptional: true,
+        maxFiles: 1,
+        promptLimit: 2500,
+        refHint: 'Kling Motion Control переносит движение из вашего видео на персонажа с фото. Нужны 1 фото (голова, плечи и корпус в кадре) и видео с движением 3–30 секунд.',
+        noAspect: true,
+        aspectRatios: [],
+        resolutions: [
+            {value:'720p', label:'720p'},
+            {value:'1080p', label:'1080p'}
+        ],
+        durations: [],
+        defaultAspect: null,
+        defaultRes: '720p',
+        defaultDuration: null,
+        showcase: { logo: 'kling.png', video: 'kling-preview.mp4', sub: 'Пример — перенос движения на персонажа' }
     }
 };
 
@@ -511,6 +624,9 @@ function updateModelParams(model) {
             if (sb) sb.textContent = config.showcase.sub || 'Пример работы модели';
             if (vd) {
                 if (config.showcase.video) {
+                    // Файл-пример может ещё не быть задеплоен (404) — тогда прячем витрину целиком,
+                    // чтобы не показывать чёрный пустой блок.
+                    vd.onerror = function () { showcaseEl.style.display = 'none'; };
                     if (vd.getAttribute('src') !== config.showcase.video) vd.src = config.showcase.video;
                     vd.style.display = '';
                     const pp = vd.play(); if (pp && pp.catch) pp.catch(function () {});
@@ -556,9 +672,12 @@ function updateModelParams(model) {
     // No prompt / aspect / resolution / count — only the photo upload, which is mandatory. ---
     const isUtility = !!config.utility;
     document.getElementById('promptSection').classList.toggle('hidden', isUtility);
-    document.getElementById('aspectSection').classList.toggle('hidden', isUtility);
+    // noAspect: у модели нет оси соотношения сторон (Kling Motion Control — формат берётся из референса)
+    document.getElementById('aspectSection').classList.toggle('hidden', isUtility || !!config.noAspect);
     document.getElementById('resolutionSection').classList.toggle('hidden', isUtility);
-    document.getElementById('countSection').classList.toggle('hidden', isUtility);
+    // Счётчик количества — только для картинок: видео-ветка всегда шлёт count:1,
+    // а блок «Количество изображений» в видео-режиме только путал (дефект и до Kling).
+    document.getElementById('countSection').classList.toggle('hidden', isUtility || currentMode === 'video');
     if (isUtility) {
         const us = document.getElementById('uploadSection');
         us.classList.remove('hidden');
@@ -568,6 +687,17 @@ function updateModelParams(model) {
         if (usHint) usHint.textContent = config.uploadHint || 'Загрузите одно фото.';
         updateValidation();
         return;
+    }
+
+    // --- Референс-видео (Kling Motion Control): показать/спрятать секцию, сбросить выбранное ---
+    const vrsEl = document.getElementById('videoRefSection');
+    if (vrsEl) {
+        vrsEl.classList.toggle('hidden', !config.requiresVideoRef);
+        if (!config.requiresVideoRef && uploadedVideoRef) {
+            uploadedVideoRef = null;
+            if (videoRefInput) videoRefInput.value = '';
+            updateVideoRefStatus();
+        }
     }
 
     // --- Reference-required note: mandatory photo input (Grok i2v) ---
@@ -674,6 +804,11 @@ function updateModelParams(model) {
     selectedResolution = config.defaultRes;
 
     // --- Update Duration dropdown (video only) ---
+    // У Kling Motion Control длительность не выбирается (равна длине референс-видео) — ось скрываем.
+    if (currentMode === 'video') {
+        document.getElementById('durationSection').classList.toggle('hidden', !(config.durations && config.durations.length));
+        if (!(config.durations && config.durations.length)) selectedDuration = null;
+    }
     if (config.durations && config.durations.length) {
         const durOptions = document.querySelector('#durationDropdown .dropdown-options');
         const durValue = document.getElementById('durationValue');
@@ -814,10 +949,12 @@ function updateValidation() {
     const cfg = modelConfigs[selectedModel] || {};
     const noPrompt = !!cfg.noPrompt;          // утилиты (recraft) — промпт не нужен
     const needsRef = !!cfg.requiresReference; // обязательно фото
+    const needsVideoRef = !!cfg.requiresVideoRef; // обязательно видео с движением (Kling Motion Control)
     const hasPrompt = promptInput.value.trim().length > 0;
     const hasRef = uploadedImages.length > 0;
-    const promptOk = noPrompt || hasPrompt;
+    const promptOk = noPrompt || !!cfg.promptOptional || hasPrompt;
     const refOk = !needsRef || hasRef;
+    const videoRefOk = !needsVideoRef || !!uploadedVideoRef;
 
     if (!promptOk) {
         document.getElementById('validationText').textContent = currentMode === 'video'
@@ -827,11 +964,14 @@ function updateValidation() {
     } else if (!refOk) {
         document.getElementById('validationText').textContent = '⚠️ Загрузите фото — для этой операции оно обязательно.';
         validationMessage.classList.add('show');
+    } else if (!videoRefOk) {
+        document.getElementById('validationText').textContent = '⚠️ Загрузите видео с движением — без него генерация не начнётся.';
+        validationMessage.classList.add('show');
     } else {
         validationMessage.classList.remove('show');
     }
 
-    generateBtn.disabled = !(promptOk && refOk);
+    generateBtn.disabled = !(promptOk && refOk && videoRefOk);
 }
 
 // Ужатая копия первого референса для «Улучшить промпт»: до 512px по большей
@@ -977,6 +1117,11 @@ generateBtn.addEventListener('click', async () => {
         showToast('Загрузите фото — для этой операции оно обязательно', 'error');
         return;
     }
+    // Kling Motion Control: без референс-видео не стартуем.
+    if (genCfg.requiresVideoRef && !uploadedVideoRef) {
+        showToast('Загрузите видео с движением — без него генерация не начнётся', 'error');
+        return;
+    }
 
     generateBtn.disabled = true;
     generateBtn.classList.add('loading');
@@ -999,6 +1144,7 @@ generateBtn.addEventListener('click', async () => {
          * @property {boolean} [generateAudio]
          * @property {number|string} count
          * @property {string[]} images
+         * @property {string} [video]
          * @property {boolean} [reve_fast]
          */
         /** @type {GeneratePayload} */
@@ -1017,6 +1163,12 @@ generateBtn.addEventListener('click', async () => {
                 count: 1,
                 images: uploadedImages.slice(0, 1).map(img => img.dataUrl)
             };
+            // Kling Motion Control: длительность = замеренная длина референс-видео,
+            // сам референс уходит отдельным полем video (data-URL, ≤9 МБ — проверено при выборе файла).
+            if (videoConfig.requiresVideoRef && uploadedVideoRef) {
+                data.video = uploadedVideoRef.dataUrl;
+                data.duration = uploadedVideoRef.duration + 's';
+            }
         } else {
             const imageConfig = modelConfigs[selectedModel] || {};
             data = {

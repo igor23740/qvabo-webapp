@@ -417,6 +417,10 @@
             display: none;
         }
 
+        #videoRefInput {
+            display: none;
+        }
+
         /* Image Previews */
         .image-previews {
             display: flex;
@@ -664,6 +668,15 @@
 
         .model-icon.seedance {
             background: transparent url('bytedance.png?v=1') center / contain no-repeat;
+            border: none;
+            color: transparent;
+            font-size: 0;
+            box-shadow: none;
+        }
+
+        .model-icon.kling {
+            /* Фирменный цветной знак Kling AI (файл от владельца 14.07, прозрачный фон) */
+            background: transparent url('kling.png?v=1') center / contain no-repeat;
             border: none;
             color: transparent;
             font-size: 0;
@@ -1011,9 +1024,9 @@
             <h1 id="headerTitle">🎨 AI Image Generator</h1>
             <p id="headerDesc">Создавайте потрясающие изображения с помощью передовых технологий искусственного интеллекта. Превращайте свои идеи в визуальные шедевры.</p>
             <div class="header-links">
-                <a href="faq.html?v=20260710b" class="faq-btn">❓ FAQ</a>
+                <a href="faq.html?v=20260714a" class="faq-btn">❓ FAQ</a>
                 <a href="cabinet.html?v=20260709b" class="cabinet-btn">💰 Баланс</a>
-                <a href="tariffs.html?v=20260709b" class="tariffs-btn">💎 Тарифы</a>
+                <a href="tariffs.html?v=20260714a" class="tariffs-btn">💎 Тарифы</a>
             </div>
         </div>
 
@@ -1169,6 +1182,24 @@
                             </div>
                         </div>
                     </div>
+                    <div class="dropdown-option" data-value="kling-video" data-name="Kling 3.0" data-desc="Kuaishou · Кино-видео со звуком" data-icon="kling" data-mode="video" style="display:none;">
+                        <div class="model-option-content">
+                            <div class="model-icon kling">K</div>
+                            <div class="model-info">
+                                <div class="model-name">Kling 3.0</div>
+                                <div class="model-desc">Kuaishou · Кино-видео со звуком</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-option" data-value="kling-motion" data-name="Kling Motion Control" data-desc="Kuaishou · Движение с видео — на фото" data-icon="kling" data-mode="video" style="display:none;">
+                        <div class="model-option-content">
+                            <div class="model-icon kling">K</div>
+                            <div class="model-info">
+                                <div class="model-name">Kling Motion Control</div>
+                                <div class="model-desc">Kuaishou · Движение с видео — на фото</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1223,6 +1254,20 @@
             </div>
             <input type="file" id="fileInput" accept="image/*" multiple>
             <div class="image-previews" id="imagePreviews"></div>
+        </div>
+
+        <!-- Референс-видео с движением (Kling Motion Control) -->
+        <div class="section hidden" id="videoRefSection">
+            <h2 class="section-title">Видео с движением</h2>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+                MP4 или MOV, 3–30 секунд, до 9 МБ. Человек в кадре по грудь (голова, плечи, корпус) — его движение перенесём на ваше фото.
+            </p>
+            <div class="upload-area" id="videoRefArea" role="button" tabindex="0" aria-label="Загрузить видео с движением">
+                <div class="upload-icon">🎬</div>
+                <div class="upload-text"><span>Click here</span> загрузить видео</div>
+                <div class="upload-count" id="videoRefStatus">Видео не выбрано</div>
+            </div>
+            <input type="file" id="videoRefInput" accept="video/mp4,video/quicktime">
         </div>
 
         <!-- Aspect Ratio -->
@@ -1342,6 +1387,6 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
-    <script src="index.js?v=20260710b"></script>
+    <script src="index.js?v=20260714a"></script>
 </body>
 </html>
