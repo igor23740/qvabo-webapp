@@ -473,7 +473,7 @@ const modelConfigs = {
         defaultAspect: '16:9',
         defaultRes: 'std',
         defaultDuration: '5s',
-        showcase: { logo: 'kling.png', video: 'kling-preview.mp4', sub: 'Пример — ролик Kling 3.0 со звуком' }
+        showcase: { logo: 'kling.png', video: 'kling-preview.mp4', sub: 'Пример — ролик Kling 3.0' }
     },
     'kling-motion': {
         // [DOC docs.kie.ai/market/kling/motion-control-v3] kling-3.0/motion-control:
@@ -498,7 +498,7 @@ const modelConfigs = {
         defaultAspect: null,
         defaultRes: '720p',
         defaultDuration: null,
-        showcase: { logo: 'kling.png', video: 'kling-preview.mp4', sub: 'Пример — перенос движения на персонажа' }
+        showcase: { logo: 'kling.png', video: 'kling-motion-preview.mp4', sub: 'Пример — перенос движения на персонажа' }
     }
 };
 
