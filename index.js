@@ -1041,6 +1041,34 @@ async function buildImproveReference() {
 
 // Апскейл PRO (Topaz): вход ужимается до 2048px по длинной стороне (JPEG) — при факторе ×2
 // выход ≤4K и закупка у kie не выскакивает из тира $0.10. Меньший вход не трогаем.
+// kie kling-3.0/motion-control принимает фото ТОЛЬКО JPEG/PNG (webp отклоняет мгновенным
+// «File type not supported» — ERR-20260715-001). Telegram-юзеры часто шлют webp:
+// конвертируем на месте через canvas (по образцу shrinkForTopaz). Что canvas не декодирует
+// (например heic) — отдаём как есть, бэкенд ответит честной ошибкой без списания.
+async function ensureJpegPng(dataUrl) {
+    try {
+        const mime = String(dataUrl).slice(5, String(dataUrl).indexOf(';')).toLowerCase();
+        if (mime === 'image/jpeg' || mime === 'image/png' || mime === 'image/jpg') return dataUrl;
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = dataUrl;
+        });
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        // JPEG не знает прозрачности — подложка белым (как в shrinkForTopaz)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+        return canvas.toDataURL('image/jpeg', 0.92);
+    } catch (_) {
+        return dataUrl;
+    }
+}
+
 async function shrinkForTopaz(dataUrl) {
     try {
         const img = new Image();
@@ -1210,6 +1238,8 @@ generateBtn.addEventListener('click', async () => {
                 data.video = uploadedVideoRef.dataUrl;
                 data.duration = uploadedVideoRef.duration + 's';
                 data.character_orientation = charOrientation;
+                // Фото персонажа для kie motion-control: webp и прочее -> JPEG на месте
+                if (data.images.length) data.images = [await ensureJpegPng(data.images[0])];
             }
         } else {
             const imageConfig = modelConfigs[selectedModel] || {};
