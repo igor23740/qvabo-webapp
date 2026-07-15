@@ -527,7 +527,7 @@ const modelConfigs = {
         defaultAspect: null,
         defaultRes: '720p',
         defaultDuration: null,
-        showcase: { logo: 'kling.png', video: 'kling-motion-preview.mp4', sub: 'Пример — перенос движения на персонажа' }
+        showcase: { logo: 'kling.png', video: 'kling-motion-preview.mp4?v=20260715b', sub: 'Пример: перенос движения на персонажа с фото' }
     }
 };
 
