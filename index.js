@@ -196,6 +196,35 @@ function updateVideoRefStatus() {
     updateValidation();
 }
 
+// Ориентация персонажа (character_orientation kie) — добровольный выбор юзера, как в нативном Kling.
+// 'video': ракурс как в референс-видео (kie рекомендует, референс до 30 с);
+// 'image': ракурс как на фото (kie принимает референс до 10 с — гейт на кнопке генерации).
+let charOrientation = 'video';
+const charOrientGroup = document.getElementById('charOrientGroup');
+const orientHint = document.getElementById('orientHint');
+function updateOrientHint() {
+    if (orientHint) {
+        orientHint.textContent = charOrientation === 'image'
+            ? 'Видео с движением до 10 секунд'
+            : 'Видео с движением до 30 секунд';
+    }
+}
+if (charOrientGroup) {
+    charOrientGroup.querySelectorAll('.orient-option').forEach((opt) => {
+        const pick = () => {
+            charOrientation = opt.dataset.value === 'image' ? 'image' : 'video';
+            charOrientGroup.querySelectorAll('.orient-option').forEach((o) => {
+                const on = o === opt;
+                o.classList.toggle('active', on);
+                o.setAttribute('aria-checked', on ? 'true' : 'false');
+            });
+            updateOrientHint();
+        };
+        opt.addEventListener('click', pick);
+        opt.addEventListener('keydown', onActivateKey(pick));
+    });
+}
+
 
 // === Model-dependent parameter switching ===
 const modelConfigs = {
@@ -699,6 +728,12 @@ function updateModelParams(model) {
             updateVideoRefStatus();
         }
     }
+    // --- Ориентация персонажа (Kling Motion Control): чекбоксы под моделью, только для этой модели ---
+    if (charOrientGroup) {
+        charOrientGroup.classList.toggle('hidden', !config.requiresVideoRef);
+        if (orientHint) orientHint.classList.toggle('hidden', !config.requiresVideoRef);
+        if (config.requiresVideoRef) updateOrientHint();
+    }
 
     // --- Reference-required note: mandatory photo input (Grok i2v) ---
     const refNote = document.getElementById('refRequiredNote');
@@ -1122,6 +1157,11 @@ generateBtn.addEventListener('click', async () => {
         showToast('Загрузите видео с движением — без него генерация не начнётся', 'error');
         return;
     }
+    // kie принимает референс до 10 секунд при ориентации «как на фото» (при «как в видео» до 30).
+    if (genCfg.requiresVideoRef && uploadedVideoRef && charOrientation === 'image' && uploadedVideoRef.duration > 10) {
+        showToast('При ориентации «как на фото» видео до 10 секунд. Выберите «как в видео» или загрузите короче', 'error');
+        return;
+    }
 
     generateBtn.disabled = true;
     generateBtn.classList.add('loading');
@@ -1145,6 +1185,7 @@ generateBtn.addEventListener('click', async () => {
          * @property {number|string} count
          * @property {string[]} images
          * @property {string} [video]
+         * @property {string} [character_orientation]
          * @property {boolean} [reve_fast]
          */
         /** @type {GeneratePayload} */
@@ -1168,6 +1209,7 @@ generateBtn.addEventListener('click', async () => {
             if (videoConfig.requiresVideoRef && uploadedVideoRef) {
                 data.video = uploadedVideoRef.dataUrl;
                 data.duration = uploadedVideoRef.duration + 's';
+                data.character_orientation = charOrientation;
             }
         } else {
             const imageConfig = modelConfigs[selectedModel] || {};
