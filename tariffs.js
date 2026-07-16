@@ -42,7 +42,7 @@
 
         // ===== Бэкенд-связь =====
         // Контракт сверен с живым воркфлоу O1JO6wxE0PfzWPrOvaN8S (coaladot.fun):
-        //   buy:        { action:'buy', package:'start'|'teaser'|'promo'|'pro', chat_id:<number> }
+        //   buy:        { action:'buy', package:'start'|'teaser'|'promo'|'pro'|'max', chat_id:<number> }
         //               ('max' = «Блокбастер»: карточка-витрина без кнопки, ключа на бэке пока нет)
         //   claim_free: { action:'claim_free', chat_id:<number> }
         // HTTP-ответ пустой — ссылка на оплату / результат подписки приходят
