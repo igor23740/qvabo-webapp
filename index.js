@@ -627,9 +627,9 @@ function switchMode(mode) {
 
     // Auto-select first visible model
     if (isVideo) {
-        selectedModel = 'seedance-2-mini';
-        document.getElementById('modelName').textContent = 'Seedance 2.0 Mini';
-        document.getElementById('modelDesc').textContent = 'ByteDance · Видео';
+        selectedModel = 'seedance-2'; // 16.07 сессия 3: дефолт видео-режима = СТАРШАЯ (заказ владельца «главной вкладкой — Seedance 2.0»)
+        document.getElementById('modelName').textContent = 'Seedance 2.0';
+        document.getElementById('modelDesc').textContent = 'ByteDance · Видео-флагман, до 4K';
         const iconEl = document.querySelector('#modelDropdown .dropdown-selected .model-icon');
         iconEl.className = 'model-icon seedance';
         iconEl.textContent = 'S';
