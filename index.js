@@ -347,6 +347,42 @@ const modelConfigs = {
         defaultAspect: '1:1',
         defaultRes: null
     },
+    'recraft-v41-pro': {
+        // [DOC recraft.ai /v1/images/generations] ПРЯМОЙ Recraft API (мимо kie). Только t2i (Фаза 1:
+        // i2i-цена V4.1 не опубликована Recraft'ом — фото не принимаем). Промпт до 10000 знаков.
+        // Разрешение фиксировано моделью (2048×2048 … 3072px по длинной стороне) — блок Resolution скрыт.
+        // Результат приходит файлом-документом (полиграфия = оригинал без пережатия Telegram).
+        textOnly: true,
+        promptLimit: 10000,
+        aspectRatios: [
+            {value:'auto',icon:'▢'},
+            {value:'2:1',icon:'▬'}, {value:'16:9',icon:'▬'}, {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'5:4',icon:'▬'},
+            {value:'1:1',icon:'▢'},
+            {value:'4:5',icon:'▯'}, {value:'3:4',icon:'▯'}, {value:'2:3',icon:'▯'}, {value:'9:16',icon:'▯'}, {value:'1:2',icon:'▯'}
+        ],
+        resolutions: [],
+        defaultAspect: '1:1',
+        defaultRes: null
+    },
+    'recraft-v41-vector': {
+        // Настоящий вектор: приходит SVG-ФАЙЛОМ (документ), редактируется в Illustrator/Figma/Inkscape.
+        // Для художников и дизайнеров: логотипы, иконки, иллюстрации со слоями и чистой геометрией.
+        // Палитра форматов та же, что у растровой V4.1 (дока Recraft 17.07).
+        // Витрина: до деплоя recraft-vector-preview.svg скрыта onerror-фоллбеком (паттерн видео-вкладок);
+        // файл = реальная тестовая генерация (премиум-позиционирование, заказ владельца 17.07).
+        textOnly: true,
+        promptLimit: 10000,
+        showcase: { logo: 'recraft.png', image: 'recraft-vector-preview.svg?v=20260717a', sub: 'Пример — настоящий вектор (SVG), Recraft V4.1' },
+        aspectRatios: [
+            {value:'auto',icon:'▢'},
+            {value:'2:1',icon:'▬'}, {value:'16:9',icon:'▬'}, {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'5:4',icon:'▬'},
+            {value:'1:1',icon:'▢'},
+            {value:'4:5',icon:'▯'}, {value:'3:4',icon:'▯'}, {value:'2:3',icon:'▯'}, {value:'9:16',icon:'▯'}, {value:'1:2',icon:'▯'}
+        ],
+        resolutions: [],
+        defaultAspect: '1:1',
+        defaultRes: null
+    },
     'recraft-removebg': {
         // [DOC kie.ai recraft/remove-background] утилита: вход только image (URL), без промпта/форматов.
         // utility -> скрыть промпт/формат/разрешение/количество; requiresReference -> фото обязательно.
@@ -691,10 +727,24 @@ function updateModelParams(model) {
                     vd.pause(); vd.removeAttribute('src'); vd.style.display = 'none';
                 }
             }
+            // Витрина-картинка (17.07, вкладка Recraft Vector): тот же контракт, что у видео —
+            // файла ещё нет (404) -> onerror прячет витрину целиком, никакого пустого блока.
+            const im = document.getElementById('showcaseImage');
+            if (im) {
+                if (config.showcase.image) {
+                    im.onerror = function () { showcaseEl.style.display = 'none'; };
+                    if (im.getAttribute('src') !== config.showcase.image) im.src = config.showcase.image;
+                    im.style.display = '';
+                } else {
+                    im.removeAttribute('src'); im.style.display = 'none';
+                }
+            }
             showcaseEl.style.display = 'flex';
         } else {
             const vd = document.getElementById('showcaseVideo');
             if (vd) { vd.pause(); vd.removeAttribute('src'); }
+            const im = document.getElementById('showcaseImage');
+            if (im) { im.removeAttribute('src'); }
             showcaseEl.style.display = 'none';
         }
     }
