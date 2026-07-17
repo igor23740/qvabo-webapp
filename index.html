@@ -835,6 +835,14 @@
             max-height: 200px;
             object-fit: cover;
         }
+        /* 17.07: витрина-картинка резервирует высоту ДО загрузки файла — вёрстка не дёргается,
+           когда webp/svg прилетает позже выбора модели (вторая причина рывка на вкладках Recraft). */
+        img.showcase-video {
+            aspect-ratio: 16 / 9;
+            height: auto;
+        }
+        /* Отступ при программной прокрутке к карточке модели после выбора из списка. */
+        #modelDropdown { scroll-margin-top: 12px; }
 
         .dropdown-option .model-info {
             flex: 1;
@@ -1506,6 +1514,6 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
-    <script src="index.js?v=20260717c"></script>
+    <script src="index.js?v=20260717d"></script>
 </body>
 </html>

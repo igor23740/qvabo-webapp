@@ -1050,6 +1050,10 @@ modelOptions.forEach(option => {
 
         modelDropdown.classList.remove('open');
         updateModelParams(selectedModel);
+        // 17.07: схлопывание длинного списка сохраняет пиксельный scroll — при выборе НИЖНИХ
+        // карточек (Recraft) вьюпорт проваливался ниже карточки и витрина «улетала за границу».
+        // После выбора всегда возвращаемся к карточке модели (заголовок + витрина в кадре).
+        modelDropdown.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 });
 
