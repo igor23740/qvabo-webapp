@@ -89,7 +89,7 @@ function handleFiles(files) {
         }
         if (file.size > 4 * 1024 * 1024) {
             // Честное предупреждение: тяжёлый файл на медленной сети едет заметно дольше
-            showToast('Файл ' + (file.size / 1048576).toFixed(1) + ' МБ: на медленной сети отправка займёт дольше обычного', 'success');
+            showToast('Файл ' + (file.size / 1048576).toFixed(1) + ' МБ: на медленной сети отправка будет дольше обычного', 'success');
         }
         {
             const reader = new FileReader();
