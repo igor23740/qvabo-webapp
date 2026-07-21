@@ -87,6 +87,10 @@ function handleFiles(files) {
             showToast('Фото больше 10 МБ — выберите меньше', 'error');
             return;
         }
+        if (file.size > 4 * 1024 * 1024) {
+            // Честное предупреждение: тяжёлый файл на медленной сети едет заметно дольше
+            showToast('Файл ' + (file.size / 1048576).toFixed(1) + ' МБ: на медленной сети отправка займёт дольше обычного', 'success');
+        }
         {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -1233,6 +1237,107 @@ async function fitImagesToBudget(data) {
     return false;
 }
 
+// === Параллельная закачка тяжёлых файлов (tus-приёмник, 22.07.2026) ===
+// Один TCP-поток на дальнем VPN-маршруте с потерями не выбирает канал юзера (стенд+бой
+// 21-22.07: параллель быстрее в 2,6 раза, сборка бит-в-бит, сверка размера в n8n).
+// Файл режется на части и едет одновременно на upload1-6.coaladot.fun (отдельные
+// соединения — у каждого поддомена свой сертификат, браузер не склеивает их в одно).
+// Любой сбой любой части после ретрая -> молчаливый фолбэк на старый base64-путь.
+const TUS_ENDPOINTS = ['upload1', 'upload2', 'upload3', 'upload4', 'upload5', 'upload6']
+    .map(h => 'https://' + h + '.coaladot.fun/files/');
+const TUS_PARTS = 6;
+const TUS_MIN_PART = 512 * 1024; // мельче не режем: накладные расходы съедают выгоду
+
+function tusPartCount(size) {
+    return Math.max(1, Math.min(TUS_PARTS, Math.floor(size / TUS_MIN_PART) || 1));
+}
+
+function dataUrlToBlob(dataUrl) {
+    const m = String(dataUrl).match(/^data:([^;]+);base64,(.+)$/);
+    if (!m) return null;
+    const bin = atob(m[2]);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new Blob([bytes], { type: m[1] });
+}
+
+async function tusCreate(endpoint, len, concatHeader) {
+    /** @type {Record<string, string>} */
+    const headers = { 'Tus-Resumable': '1.0.0' };
+    if (len != null) headers['Upload-Length'] = String(len);
+    if (concatHeader) headers['Upload-Concat'] = concatHeader;
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 30000);
+    try {
+        const res = await fetch(endpoint, { method: 'POST', headers, signal: ctl.signal });
+        if (res.status !== 201) throw new Error('tus create ' + res.status);
+        const loc = res.headers.get('Location');
+        if (!loc) throw new Error('tus create: no Location');
+        return loc;
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+function tusPatch(url, blob, onLoaded) {
+    return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('PATCH', url);
+        xhr.timeout = 300000; // потолок на часть; часть ~2 МБ едет минуты даже на слабом канале
+        xhr.setRequestHeader('Tus-Resumable', '1.0.0');
+        xhr.setRequestHeader('Upload-Offset', '0');
+        xhr.setRequestHeader('Content-Type', 'application/offset+octet-stream');
+        xhr.upload.onprogress = (e) => { if (onLoaded && e.lengthComputable) onLoaded(e.loaded); };
+        xhr.onload = () => (xhr.status === 204 ? resolve(null) : reject(new Error('tus patch ' + xhr.status)));
+        xhr.onerror = () => reject(new Error('tus patch network'));
+        xhr.ontimeout = () => reject(new Error('tus patch timeout'));
+        xhr.send(blob);
+    });
+}
+
+async function tusUploadPart(endpoint, blob, onLoaded) {
+    // одна повторная попытка: обрыв единичной части не роняет весь файл
+    for (let attempt = 0; ; attempt++) {
+        try {
+            const url = await tusCreate(endpoint, blob.size, 'partial');
+            await tusPatch(url, blob, onLoaded);
+            return url;
+        } catch (e) {
+            if (attempt >= 1) throw e;
+        }
+    }
+}
+
+async function tusUploadBlob(blob, onProgress) {
+    const n = tusPartCount(blob.size);
+    const partSize = Math.ceil(blob.size / n);
+    const parts = [];
+    for (let i = 0; i < n; i++) parts.push(blob.slice(i * partSize, Math.min(blob.size, (i + 1) * partSize)));
+    const loaded = new Array(n).fill(0);
+    const report = () => { if (onProgress) onProgress(Math.min(blob.size, loaded.reduce((a, b) => a + b, 0)), blob.size); };
+    const urls = await Promise.all(parts.map((p, i) =>
+        tusUploadPart(TUS_ENDPOINTS[i % TUS_ENDPOINTS.length], p, (l) => { loaded[i] = l; report(); })));
+    // финал: сервер сшивает части в исходный файл (байты не перекодируются)
+    const finalLoc = await tusCreate(TUS_ENDPOINTS[0], null, 'final;' + urls.join(' '));
+    report();
+    const id = finalLoc.split('/').pop();
+    if (!id) throw new Error('tus: empty id');
+    return { id, size: blob.size };
+}
+
+function setThumbProgress(index, pct) {
+    const item = imagePreviews.querySelectorAll('.preview-item')[index];
+    if (!item) return;
+    let ov = item.querySelector('.preview-progress');
+    if (pct == null) { if (ov) ov.remove(); return; }
+    if (!ov) {
+        ov = document.createElement('div');
+        ov.className = 'preview-progress';
+        item.appendChild(ov);
+    }
+    ov.textContent = pct + '%';
+}
+
 // Improve Prompt button
 improveBtn.addEventListener('click', async () => {
     if (!promptInput.value.trim()) {
@@ -1352,7 +1457,71 @@ generateBtn.addEventListener('click', async () => {
          * @property {string} [video]
          * @property {string} [character_orientation]
          * @property {boolean} [reve_fast]
+         * @property {{id: string, size: number, mime: string}[]} [image_uploads]
+         * @property {{id: string, size: number, mime: string}} [video_upload]
          */
+        // === Параллельная отправка референсов через tus-приёмник (22.07.2026) ===
+        // Reve остаётся на старом пути: его HTTP-нода читает base64 прямо из body.
+        // Сбой закачки/недоступный приёмник -> tusImageRefs=null -> старый base64-путь ниже.
+        let tusImageRefs = null;
+        let tusVideoRef = null;
+        {
+            const cfg = modelConfigs[selectedModel] || {};
+            const wantVideoRef = !!(currentMode === 'video' && cfg.requiresVideoRef && uploadedVideoRef);
+            const wantTus = selectedModel !== 'reve' && (uploadedImages.length > 0 || wantVideoRef);
+            if (wantTus) {
+                try {
+                    /** @type {{blob: Blob, mime: string, thumbIndex: number|null, isVideo: boolean}[]} */
+                    const jobs = [];
+                    if (currentMode === 'video') {
+                        if (uploadedImages.length) {
+                            const im = uploadedImages[0];
+                            // Kling motion: kie валидирует расширение — webp и прочее конвертируем в JPEG (ERR-20260715-001)
+                            const blob = cfg.requiresVideoRef ? dataUrlToBlob(await ensureJpegPng(im.dataUrl)) : im.file;
+                            if (!blob) throw new Error('blob convert fail');
+                            jobs.push({ blob, mime: blob.type || im.file.type || 'image/jpeg', thumbIndex: 0, isVideo: false });
+                        }
+                        if (wantVideoRef) {
+                            jobs.push({ blob: uploadedVideoRef.file, mime: uploadedVideoRef.file.type || 'video/mp4', thumbIndex: null, isVideo: true });
+                        }
+                    } else if (selectedModel === 'topaz-upscale' && uploadedImages.length) {
+                        // Topaz: прежнее ужатие входа сохранено (лимит модели), едет уже ужатое
+                        const blob = dataUrlToBlob(await shrinkForTopaz(uploadedImages[0].dataUrl));
+                        if (!blob) throw new Error('blob convert fail');
+                        jobs.push({ blob, mime: blob.type || 'image/jpeg', thumbIndex: 0, isVideo: false });
+                    } else {
+                        uploadedImages.forEach((im, i) => jobs.push({ blob: im.file, mime: im.file.type || 'image/jpeg', thumbIndex: i, isVideo: false }));
+                    }
+                    const totalBytes = jobs.reduce((s, j) => s + j.blob.size, 0);
+                    const done = new Array(jobs.length).fill(0);
+                    const refresh = () => {
+                        const sum = done.reduce((a, b) => a + b, 0);
+                        const pct = totalBytes ? Math.min(100, Math.floor(sum * 100 / totalBytes)) : 100;
+                        generateBtn.innerHTML = '<div class="spinner"></div><span>Отправка файлов… ' + pct + '%</span>';
+                    };
+                    refresh();
+                    const refs = [];
+                    for (let k = 0; k < jobs.length; k++) {
+                        const j = jobs[k];
+                        const r = await tusUploadBlob(j.blob, (l) => {
+                            done[k] = l;
+                            refresh();
+                            if (j.thumbIndex != null) setThumbProgress(j.thumbIndex, Math.min(100, Math.floor(l * 100 / j.blob.size)));
+                        });
+                        if (j.thumbIndex != null) setThumbProgress(j.thumbIndex, null);
+                        refs.push({ id: r.id, size: r.size, mime: j.mime, isVideo: j.isVideo });
+                    }
+                    tusImageRefs = refs.filter(r => !r.isVideo).map(r => ({ id: r.id, size: r.size, mime: r.mime }));
+                    const v = refs.find(r => r.isVideo);
+                    if (v) tusVideoRef = { id: v.id, size: v.size, mime: v.mime };
+                } catch (e) {
+                    tusImageRefs = null;
+                    tusVideoRef = null;
+                    uploadedImages.forEach((_, i) => setThumbProgress(i, null));
+                }
+                generateBtn.innerHTML = '<div class="spinner"></div><span>Generating...</span>';
+            }
+        }
         /** @type {GeneratePayload} */
         let data;
         if (currentMode === 'video') {
@@ -1393,6 +1562,17 @@ generateBtn.addEventListener('click', async () => {
             // Topaz: ужать вход до 2048px (см. shrinkForTopaz), бэкенд берёт только 1-е фото
             if (selectedModel === 'topaz-upscale' && data.images.length) {
                 data.images = [await shrinkForTopaz(data.images[0])];
+            }
+        }
+
+        // Референсы уже уехали параллельными частями -> в вебхук идут лёгкие ссылки
+        // вместо base64 (бэкенд заберёт файлы внутренней сетью и сверит размер).
+        if (tusImageRefs && (tusImageRefs.length || tusVideoRef)) {
+            data.image_uploads = tusImageRefs;
+            data.images = [];
+            if (tusVideoRef) {
+                data.video_upload = tusVideoRef;
+                delete data.video;
             }
         }
 
