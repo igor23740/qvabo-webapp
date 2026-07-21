@@ -1181,6 +1181,58 @@ async function shrinkForTopaz(dataUrl) {
     }
 }
 
+// === Суммарный бюджет тела вебхука ===
+// n8n принимает тело до 16 МБ (дефолт), base64 добавляет ~37%. Поштучный лимит 10 МБ
+// это не ловит: три фото по 7 МБ проходят поштучно и убивают запрос ДО воркфлоу
+// (PayloadTooLargeError, инцидент 21.07 — юзер видит молчаливое «не принимает»).
+// Перед отправкой сумма фото+видео сверяется с бюджетом; перебор лечится пережатием
+// фото от самого тяжёлого к меньшим (2048px / JPEG 0.92, как вход Topaz) — качество
+// оригинала страдает только там, где без этого запрос вообще не дошёл бы.
+const WEBHOOK_IMAGES_BUDGET = 14 * 1024 * 1024;
+
+async function shrinkReference(dataUrl) {
+    try {
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = dataUrl;
+        });
+        const MAX_SIDE = 2048;
+        const scale = Math.min(1, MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
+        const w = Math.max(1, Math.round(img.naturalWidth * scale));
+        const h = Math.max(1, Math.round(img.naturalHeight * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        // JPEG не знает прозрачности — подложка белым (как shrinkForTopaz); в отличие
+        // от него пережимаем и файлы мелкие по сторонам (тяжёлый PNG 2000px тоже перебор).
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        const out = canvas.toDataURL('image/jpeg', 0.92);
+        // Пережатие не выиграло места (уже плотный JPEG) — оставляем оригинал
+        return out.length < dataUrl.length ? out : dataUrl;
+    } catch (_) {
+        return dataUrl;
+    }
+}
+
+async function fitImagesToBudget(data) {
+    const videoLen = data.video ? data.video.length : 0;
+    const total = () => videoLen + data.images.reduce((s, u) => s + u.length, 0);
+    if (total() <= WEBHOOK_IMAGES_BUDGET) return true;
+    const heaviestFirst = data.images
+        .map((u, i) => ({ i, len: u.length }))
+        .sort((a, b) => b.len - a.len);
+    for (const { i } of heaviestFirst) {
+        data.images[i] = await shrinkReference(data.images[i]);
+        if (total() <= WEBHOOK_IMAGES_BUDGET) return true;
+    }
+    return false;
+}
+
 // Improve Prompt button
 improveBtn.addEventListener('click', async () => {
     if (!promptInput.value.trim()) {
@@ -1342,6 +1394,14 @@ generateBtn.addEventListener('click', async () => {
             if (selectedModel === 'topaz-upscale' && data.images.length) {
                 data.images = [await shrinkForTopaz(data.images[0])];
             }
+        }
+
+        // Сумма референсов больше бюджета вебхука -> тяжёлые фото пережимаются на месте;
+        // не влезло даже после пережатия (видео 9 МБ + нежмущийся файл) -> честный отказ.
+        if (data.images && data.images.length && !(await fitImagesToBudget(data))) {
+            showToast('Фото слишком большие, не получилось ужать. Уберите часть фото или выберите файлы полегче', 'error');
+            resetButton();
+            return;
         }
 
         sendData(data);
