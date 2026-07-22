@@ -522,7 +522,7 @@ const modelConfigs = {
         // duration ТОЛЬКО 4/6/8/10 (enum kie, строка), AR только 16:9|9:16, качества 720p/1080p/4k.
         // 1080p по цене 720p (демпинг kie). Звук родной и бесплатный, тумблера нет.
         // ⛔ nsfw_checker у модели в схеме kie НЕТ — фильтр Google не отключается ни на одном тарифе (FAQ/плашки говорят честно).
-        // Витрина = плейсхолдер в стиле промо kie (наша палитра); заменить на реальный ролик после первой генерации владельца.
+        // Витрина = реальная генерация владельца 22.07 (1080p 10s по раскадровке, сжата до 488 КБ по прецеденту Seedance).
         apiSlug: 'gemini-omni-video',
         provider: 'kie',
         audioToggle: false,
@@ -542,7 +542,7 @@ const modelConfigs = {
         defaultAspect: '16:9',
         defaultRes: '720p',
         defaultDuration: '8s',
-        showcase: { logo: 'gemini-omni.png?v=1', image: 'omni-placeholder.svg?v=20260722c', sub: 'Gemini Omni: клипы со звуком для TikTok и Reels' }
+        showcase: { logo: 'gemini-omni.png?v=1', video: 'omni-preview.mp4?v=20260722d', sub: 'Пример: мультик по раскадровке, звук из модели' }
     },
     'grok-video': {
         apiSlug: 'grok-video',
