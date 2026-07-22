@@ -517,6 +517,33 @@ const modelConfigs = {
         defaultDuration: '5s',
         showcase: { logo: 'bytedance.png?v=1', video: 'seedance-preview.mp4', sub: 'Пример — ролик по раскадровке (мотозаезд)' }
     },
+    'gemini-omni-video': {
+        // [DOC docs.kie.ai/market/gemini-omni-video] gemini-omni-video (22.07.2026): t2v + i2v (1 фото-референс),
+        // duration ТОЛЬКО 4/6/8/10 (enum kie, строка), AR только 16:9|9:16, качества 720p/1080p/4k.
+        // 1080p по цене 720p (демпинг kie). Звук родной и бесплатный, тумблера нет.
+        // ⛔ nsfw_checker у модели в схеме kie НЕТ — фильтр Google не отключается ни на одном тарифе (FAQ/плашки говорят честно).
+        // Витрина = плейсхолдер в стиле промо kie (наша палитра); заменить на реальный ролик после первой генерации владельца.
+        apiSlug: 'gemini-omni-video',
+        provider: 'kie',
+        audioToggle: false,
+        maxFiles: 1,
+        aspectRatios: [
+            {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'}
+        ],
+        resolutions: [
+            {value:'720p', label:'720p'},
+            {value:'1080p', label:'1080p'},
+            {value:'4k', label:'4K · Ultra HD'}
+        ],
+        durations: [
+            {value:'4s', label:'4s'}, {value:'6s', label:'6s'},
+            {value:'8s', label:'8s'}, {value:'10s', label:'10s'}
+        ],
+        defaultAspect: '16:9',
+        defaultRes: '720p',
+        defaultDuration: '8s',
+        showcase: { logo: 'gemini-omni.png?v=1', image: 'omni-placeholder.svg?v=20260722c', sub: 'Gemini Omni: клипы со звуком для TikTok и Reels' }
+    },
     'grok-video': {
         apiSlug: 'grok-video',
         provider: 'kie',

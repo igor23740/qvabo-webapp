@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720" role="img" aria-label="Gemini Omni Video">
+  <!-- Плейсхолдер витрины Gemini Omni (22.07.2026): структура промо kie, палитра фронта QVABO
+       (bg #1a1a2e/#252542, accent #7c3aed/#8b5cf6, text #fff/#9ca3af, border #3d3d5c).
+       Заменяется реальным роликом после первой генерации владельца. -->
+  <defs>
+    <linearGradient id="accg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="framebg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#252542"/>
+      <stop offset="0.55" stop-color="#1a1a2e"/>
+      <stop offset="1" stop-color="#252542"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.45" r="0.75">
+      <stop offset="0" stop-color="#8b5cf6" stop-opacity="0.35"/>
+      <stop offset="0.6" stop-color="#7c3aed" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#1a1a2e" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1280" height="720" fill="#1a1a2e"/>
+
+  <!-- Заголовок: звезда Omni + текст -->
+  <g transform="translate(340,52)">
+    <path d="M30 0 C33 16 44 27 60 30 C44 33 33 44 30 60 C27 44 16 33 0 30 C16 27 27 16 30 0 Z" fill="url(#accg)"/>
+    <text x="76" y="42" font-family="-apple-system, 'Segoe UI', Roboto, sans-serif" font-size="34" font-weight="700" fill="#ffffff">Gemini <tspan fill="#8b5cf6">Omni</tspan> Video</text>
+  </g>
+
+  <!-- Левая колонка: карточки входов (как в промо kie) -->
+  <g font-family="-apple-system, 'Segoe UI', Roboto, sans-serif" font-size="20" fill="#9ca3af">
+    <g transform="translate(64,150)">
+      <rect width="240" height="140" rx="18" fill="#252542" stroke="#3d3d5c"/>
+      <rect x="16" y="16" width="208" height="76" rx="10" fill="#1a1a2e"/>
+      <rect x="30" y="34" width="120" height="10" rx="5" fill="#3d3d5c"/>
+      <rect x="30" y="56" width="180" height="10" rx="5" fill="#3d3d5c"/>
+      <rect x="30" y="78" width="90" height="10" rx="5" fill="#3d3d5c"/>
+      <text x="16" y="122">Промпт</text>
+    </g>
+    <g transform="translate(64,314)">
+      <rect width="240" height="140" rx="18" fill="#252542" stroke="#3d3d5c"/>
+      <rect x="16" y="16" width="208" height="76" rx="10" fill="url(#accg)" opacity="0.25"/>
+      <path d="M40 76 L78 44 L108 70 L136 52 L200 88 L40 88 Z" fill="#8b5cf6" opacity="0.8"/>
+      <circle cx="176" cy="40" r="10" fill="#8b5cf6"/>
+      <text x="16" y="122">Фото-референс</text>
+    </g>
+    <g transform="translate(64,478)">
+      <rect width="240" height="140" rx="18" fill="#252542" stroke="#3d3d5c"/>
+      <g transform="translate(36,50)">
+        <rect x="0" y="8" width="8" height="14" rx="4" fill="#7c3aed"/>
+        <rect x="16" y="0" width="8" height="30" rx="4" fill="#8b5cf6"/>
+        <rect x="32" y="10" width="8" height="10" rx="4" fill="#7c3aed"/>
+        <rect x="48" y="4" width="8" height="22" rx="4" fill="#8b5cf6"/>
+        <rect x="64" y="12" width="8" height="6" rx="3" fill="#7c3aed"/>
+        <rect x="80" y="2" width="8" height="26" rx="4" fill="#8b5cf6"/>
+        <rect x="96" y="9" width="8" height="12" rx="4" fill="#7c3aed"/>
+        <rect x="112" y="5" width="8" height="20" rx="4" fill="#8b5cf6"/>
+        <rect x="128" y="11" width="8" height="8" rx="4" fill="#7c3aed"/>
+        <rect x="144" y="3" width="8" height="24" rx="4" fill="#8b5cf6"/>
+      </g>
+      <text x="16" y="122">Родной звук</text>
+    </g>
+  </g>
+
+  <!-- Главный кадр -->
+  <g transform="translate(340,150)">
+    <rect width="876" height="468" rx="22" fill="url(#framebg)" stroke="#3d3d5c"/>
+    <rect width="876" height="468" rx="22" fill="url(#glow)"/>
+    <!-- большая звезда Omni в кадре -->
+    <g transform="translate(378,142)">
+      <path d="M60 0 C66 32 88 54 120 60 C88 66 66 88 60 120 C54 88 32 66 0 60 C32 54 54 32 60 0 Z" fill="url(#accg)"/>
+    </g>
+    <!-- кнопка play -->
+    <g transform="translate(398,318)">
+      <circle cx="40" cy="40" r="40" fill="#252542" stroke="#8b5cf6"/>
+      <path d="M32 24 L58 40 L32 56 Z" fill="#8b5cf6"/>
+    </g>
+    <text x="438" y="428" text-anchor="middle" font-family="-apple-system, 'Segoe UI', Roboto, sans-serif" font-size="22" fill="#9ca3af">Видео со звуком за 4, 6, 8 или 10 секунд</text>
+  </g>
+
+  <!-- Нижняя строка-факты -->
+  <g font-family="-apple-system, 'Segoe UI', Roboto, sans-serif" font-size="20" fill="#9ca3af">
+    <text x="640" y="678" text-anchor="middle">720p и 1080p по одной цене · 4K · 16:9 и 9:16</text>
+  </g>
+</svg>

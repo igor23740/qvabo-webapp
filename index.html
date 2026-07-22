@@ -774,6 +774,15 @@
             box-shadow: none;
         }
 
+        .model-icon.omni {
+            /* Звезда Gemini Omni (файл от владельца 21.07, прозрачный фон); gemini.png остаётся у nano-banana */
+            background: transparent url('gemini-omni.png?v=1') center / contain no-repeat;
+            border: none;
+            color: transparent;
+            font-size: 0;
+            box-shadow: none;
+        }
+
         .model-icon.ideogram,
         .model-icon.reve,
         .model-icon.topaz {
@@ -1122,9 +1131,9 @@
             <h1 id="headerTitle">🎨 AI Image Generator</h1>
             <p id="headerDesc">Создавайте потрясающие изображения с помощью передовых технологий искусственного интеллекта. Превращайте свои идеи в визуальные шедевры.</p>
             <div class="header-links">
-                <a href="faq.html?v=20260718a" class="faq-btn">❓ FAQ</a>
+                <a href="faq.html?v=20260722c" class="faq-btn">❓ FAQ</a>
                 <a href="cabinet.html?v=20260709b" class="cabinet-btn">💰 Баланс</a>
-                <a href="tariffs.html?v=20260718a" class="tariffs-btn">💎 Тарифы</a>
+                <a href="tariffs.html?v=20260722c" class="tariffs-btn">💎 Тарифы</a>
             </div>
         </div>
 
@@ -1295,6 +1304,15 @@
                             <div class="model-info">
                                 <div class="model-name">Seedance 2.0 Mini</div>
                                 <div class="model-desc">ByteDance · Видео</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dropdown-option" data-value="gemini-omni-video" data-name="Gemini Omni Video" data-desc="Google · Идеально для TikTok" data-icon="omni" data-mode="video" style="display:none;">
+                        <div class="model-option-content">
+                            <div class="model-icon omni">G</div>
+                            <div class="model-info">
+                                <div class="model-name">Gemini Omni Video</div>
+                                <div class="model-desc">Google · Идеально для TikTok</div>
                             </div>
                         </div>
                     </div>
@@ -1526,6 +1544,6 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
-    <script src="index.js?v=20260722b"></script>
+    <script src="index.js?v=20260722c"></script>
 </body>
 </html>
