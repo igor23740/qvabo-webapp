@@ -9,6 +9,28 @@ if (tg) {
     tg.ready();
 }
 
+// 22.07.2026: юзер, открывший Mini App по прямой ссылке и не запускавший бота, не получает
+// НИЧЕГО — Telegram запрещает боту писать первым («bot can't initiate conversation»), поэтому
+// ни результаты, ни отказы «не хватает баллов» до него не доходят (6 из 47 юзеров базы).
+// Штатное лечение Telegram: requestWriteAccess (Bot API 6.9+) — нативный попап «Разрешить боту
+// писать вам». Просим на входе и страхуемся перед генерацией. Юзеры с диалогом (allows_write_to_pm
+// = true) попапа не видят вообще — для них ничего не меняется.
+let botWriteGranted = false; // Allow, полученный в этой сессии (initData не перечитывается)
+function hasBotWriteAccess() {
+    return botWriteGranted || tg?.initDataUnsafe?.user?.allows_write_to_pm === true;
+}
+function requestBotWriteAccess(cb) {
+    // Старый клиент без метода — не блокируем, ведём себя как раньше (хуже не станет)
+    if (!tg || typeof tg.requestWriteAccess !== 'function' ||
+        !(typeof tg.isVersionAtLeast === 'function' && tg.isVersionAtLeast('6.9'))) { cb(true); return; }
+    try {
+        tg.requestWriteAccess((granted) => { if (granted) botWriteGranted = true; cb(!!granted); });
+    } catch (e) { cb(true); }
+}
+if (tg && tg.initDataUnsafe?.user && !hasBotWriteAccess()) {
+    requestBotWriteAccess(() => {});
+}
+
 // State
 let uploadedImages = [];
 let uploadedVideoRef = null; // {file, dataUrl, duration} — референс движения для Kling Motion Control
@@ -1642,6 +1664,19 @@ function sendData(data) {
     }
 
     if (tg && tg.initData) {
+        // Без права бота писать доставка невозможна (результат уходит сообщением в чат) —
+        // не сжигаем попытку молча, а просим разрешение; отказ = честный тост, запрос не шлём.
+        if (!hasBotWriteAccess()) {
+            requestBotWriteAccess((granted) => {
+                if (!granted) {
+                    showToast('Результат приходит сообщением от бота. Разреши боту писать тебе и повтори', 'error');
+                    resetButton();
+                    return;
+                }
+                sendData(data); // право получено — теперь проверка пройдёт
+            });
+            return;
+        }
         // Только подписанная строка initData + chat_id. Весь initDataUnsafe не шлём.
         const payload = {
             ...data,
