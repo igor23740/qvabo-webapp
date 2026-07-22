@@ -542,7 +542,7 @@ const modelConfigs = {
         defaultAspect: '16:9',
         defaultRes: '720p',
         defaultDuration: '8s',
-        showcase: { logo: 'gemini-omni.png?v=1', video: 'omni-preview.mp4?v=20260722d', sub: 'Пример: мультик по раскадровке, звук из модели' }
+        showcase: { logo: 'gemini-omni.png?v=1', video: 'omni-preview.mp4?v=20260722d', side: 'omni-side.svg?v=20260722d', sub: 'Пример: мультик по раскадровке, звук из модели' }
     },
     'grok-video': {
         apiSlug: 'grok-video',
@@ -771,6 +771,18 @@ function updateModelParams(model) {
                     im.style.display = '';
                 } else {
                     im.removeAttribute('src'); im.style.display = 'none';
+                }
+            }
+            // Боковина витрины (22.07, Omni, просьба владельца): вертикальная колонка-плейсхолдер
+            // слева от ролика. Файл не доехал (404) -> прячем только боковину, ролик остаётся.
+            const sd = document.getElementById('showcaseSide');
+            if (sd) {
+                if (config.showcase.side) {
+                    sd.onerror = function () { sd.style.display = 'none'; };
+                    if (sd.getAttribute('src') !== config.showcase.side) sd.src = config.showcase.side;
+                    sd.style.display = '';
+                } else {
+                    sd.removeAttribute('src'); sd.style.display = 'none';
                 }
             }
             showcaseEl.style.display = 'flex';

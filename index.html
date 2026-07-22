@@ -863,6 +863,21 @@
             aspect-ratio: 16 / 9;
             height: auto;
         }
+        /* 22.07 (Omni, просьба владельца): вертикальная колонка-плейсхолдер слева от ролика витрины. */
+        .showcase-media {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .showcase-media .showcase-video { flex: 1; min-width: 0; }
+        .showcase-side {
+            width: 25%;
+            max-width: 110px;
+            height: auto;
+            display: block;
+            border-radius: 10px;
+        }
+
         /* Отступ при программной прокрутке к карточке модели после выбора из списка. */
         #modelDropdown { scroll-margin-top: 12px; }
 
@@ -1365,8 +1380,11 @@
             <div class="showcase-logo" id="showcaseLogo"></div>
             <div class="showcase-body">
                 <div class="showcase-sub" id="showcaseSub">Пример работы модели</div>
-                <video id="showcaseVideo" class="showcase-video" muted loop playsinline preload="metadata"></video>
-                <img id="showcaseImage" class="showcase-video" style="display:none;" alt="Пример работы модели">
+                <div class="showcase-media">
+                    <img id="showcaseSide" class="showcase-side" style="display:none;" alt="">
+                    <video id="showcaseVideo" class="showcase-video" muted loop playsinline preload="metadata"></video>
+                    <img id="showcaseImage" class="showcase-video" style="display:none;" alt="Пример работы модели">
+                </div>
             </div>
         </div>
 
