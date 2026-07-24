@@ -358,9 +358,19 @@ const modelConfigs = {
             {value:'4:5',icon:'▯'}, {value:'3:4',icon:'▯'}, {value:'2:3',icon:'▯'},
             {value:'10:16',icon:'▯'}, {value:'9:16',icon:'▯'}, {value:'1:2',icon:'▯'}, {value:'1:3',icon:'▯'}
         ],
-        resolutions: [],
+        // 24.07 (заказ владельца): выбор режима рендера отдан юзеру в тот же блок, где раньше было разрешение.
+        // У модели нет оси 1K/2K/4K (размер задаёт соотношение сторон), зато есть Turbo/Default/Quality —
+        // они и стоят по-разному, поэтому баллы подписаны прямо в списке, чтобы человек видел, за что платит.
+        // FLASH у 4.0 не поднят («coming soon», API отдаёт 400) — в списке его нет.
+        resLabel: 'Качество',
+        resHint: 'Чем выше качество, тем больше деталей и дороже генерация',
+        resolutions: [
+            {value:'TURBO', label:'Turbo · 2 балла · быстро'},
+            {value:'DEFAULT', label:'Default · 4 балла · детальнее'},
+            {value:'QUALITY', label:'Quality · 7 баллов · максимум деталей'}
+        ],
         defaultAspect: '1:1',
-        defaultRes: null
+        defaultRes: 'TURBO'
     },
     'reve': {
         // Reve 2.1 (V2 API) НАПРЯМУЮ через api.reve.com (мимо kie): v2/image/create|edit, включён per-account 08.07.26.
@@ -989,6 +999,11 @@ function updateModelParams(model) {
     resHint.style.display = '';
     resDropdownEl.style.display = '';
     resNote.style.display = 'none';
+    // 24.07: у моделей без оси разрешения этот блок может работать как ось качества (Ideogram: Turbo/Default/Quality).
+    const resTitle = document.getElementById('resolutionTitle');
+    const resHintEl = document.getElementById('resolutionHint');
+    if (resTitle) resTitle.textContent = config.resLabel || 'Разрешение';
+    if (resHintEl) resHintEl.textContent = config.resHint || 'Разрешение изображения для генерации';
     const resOptions = document.querySelector('#resolutionDropdown .dropdown-options');
     const resValue = document.getElementById('resolutionValue');
     resOptions.innerHTML = '';
