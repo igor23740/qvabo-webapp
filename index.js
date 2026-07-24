@@ -340,15 +340,23 @@ const modelConfigs = {
         defaultAspect: '1:1',
         defaultRes: null
     },
-    'ideogram-v3': {
-        // [DOC kie.ai ideogram/v3] НЕТ resolution/4K: размер только через image_size enum (маппинг на бэке).
-        // rendering_speed=BALANCED фиксируется в Kie Mapper. resolutions:[] -> блок Resolution = note.
-        // textOnly: i2i-режимы Ideogram (remix/character) у kie дают 500 — загрузка фото скрыта, только t2i.
+    'ideogram-v4': {
+        // [DOC developer.ideogram.ai /v1/ideogram-v4/generate] ПРЯМОЙ Ideogram API (мимо kie, 24.07.2026).
+        // Повод ухода с kie: там только V3 и он постоянно лежал. Прямой даёт 4.0 (релиз 03.06.2026):
+        // нативный 2K без апскейла, кириллица (проверено боем 24.07), лучшая типографика среди открытых моделей.
+        // Режим TURBO фиксируется в Ideogram Prep. Размер задаётся ОДНИМ значением resolution из палитры модели
+        // (23 варианта, те же, что на сайте Ideogram) — маппинг AR -> resolution на бэке, поэтому resolutions:[].
+        // textOnly: Фаза 1 без референсов (i2i у 4.0 есть, заводим отдельно по спросу).
+        // Результат приходит документом (2K-типографика, sendPhoto бы её пережал).
         textOnly: true,
+        promptLimit: 5000,
+        showcase: { logo: 'ideogram.png', image: 'ideogram-v4-preview.webp?v=20260724a', sub: 'Пример — типографика и кириллица, Ideogram 4.0' },
         aspectRatios: [
-            {value:'16:9',icon:'▬'}, {value:'4:3',icon:'▬'},
+            {value:'3:1',icon:'▬'}, {value:'2:1',icon:'▬'}, {value:'16:9',icon:'▬'}, {value:'16:10',icon:'▬'},
+            {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'5:4',icon:'▢'},
             {value:'1:1',icon:'▢'},
-            {value:'3:4',icon:'▯'}, {value:'9:16',icon:'▯'}
+            {value:'4:5',icon:'▯'}, {value:'3:4',icon:'▯'}, {value:'2:3',icon:'▯'},
+            {value:'10:16',icon:'▯'}, {value:'9:16',icon:'▯'}, {value:'1:2',icon:'▯'}, {value:'1:3',icon:'▯'}
         ],
         resolutions: [],
         defaultAspect: '1:1',
@@ -893,7 +901,7 @@ function updateModelParams(model) {
     }
 
     // --- Image upload visibility: hide for text-only models ---
-    // Ideogram V3 i2i (remix) returns 500 on kie, so this model is text-only:
+    // Ideogram 4.0: Фаза 1 без референсов (у прямого API i2i есть, заводим по спросу):
     // hide the upload block and drop any already-picked photos so nothing goes to i2i.
     const uploadSectionEl = document.getElementById('uploadSection');
     if (uploadSectionEl) {
@@ -956,7 +964,7 @@ function updateModelParams(model) {
         // "null"/"undefined" на экране никогда не появится (блок resolutionDropdown к тому
         // же display:none, вместо него показан resNote с фиксированным текстом-объяснением).
         // null уходит только в исходящий payload генерации для моделей без оси разрешения
-        // (grok/ideogram-v3/reve/recraft-*); как это поле трактует бэкенд (Kie Mapper) — вне
+        // (grok/ideogram-v4/reve/recraft-*); как это поле трактует бэкенд (Kie Mapper) — вне
         // области этого фронтенд-аудита, не проверялось.
         selectedResolution = null;
         return;
