@@ -350,7 +350,6 @@ const modelConfigs = {
         // Результат приходит документом (2K-типографика, sendPhoto бы её пережал).
         textOnly: true,
         promptLimit: 5000,
-        showcase: { logo: 'ideogram.png', image: 'ideogram-v4-preview.webp?v=20260724a', sub: 'Пример — типографика и кириллица, Ideogram 4.0' },
         aspectRatios: [
             {value:'3:1',icon:'▬'}, {value:'2:1',icon:'▬'}, {value:'16:9',icon:'▬'}, {value:'16:10',icon:'▬'},
             {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'5:4',icon:'▢'},
