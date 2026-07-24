@@ -350,7 +350,7 @@ const modelConfigs = {
         // Результат приходит документом (2K-типографика, sendPhoto бы её пережал).
         textOnly: true,
         promptLimit: 5000,
-        showcase: { logo: 'ideogram.png', image: 'ideogram-v4-preview.webp?v=20260724b', sub: 'Пример — надписи на русском, Ideogram 4.0' },
+        showcase: { logo: 'ideogram.png?v=1', logoTint: '#5b8cff', image: 'ideogram-v4-preview.webp?v=20260724b', sub: 'Пример — надписи на русском, Ideogram 4.0' },
         aspectRatios: [
             {value:'3:1',icon:'▬'}, {value:'2:1',icon:'▬'}, {value:'16:9',icon:'▬'}, {value:'16:10',icon:'▬'},
             {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'5:4',icon:'▢'},
@@ -777,7 +777,24 @@ function updateModelParams(model) {
             const lg = document.getElementById('showcaseLogo');
             const vd = document.getElementById('showcaseVideo');
             const sb = document.getElementById('showcaseSub');
-            if (lg) lg.style.backgroundImage = "url('" + config.showcase.logo + "')";
+            if (lg) {
+                // 24.07: logoTint — перекрасить логотип, как значок модели на вкладке (иконка Ideogram
+                // тёмная и сливалась с фоном витрины). Без tint — обычная картинка; сброс обязателен,
+                // иначе маска переезжает на следующую выбранную модель.
+                if (config.showcase.logoTint) {
+                    lg.style.backgroundImage = 'none';
+                    lg.style.backgroundColor = config.showcase.logoTint;
+                    lg.style.webkitMaskImage = "url('" + config.showcase.logo + "')";
+                    lg.style.maskImage = "url('" + config.showcase.logo + "')";
+                    lg.style.webkitMaskSize = lg.style.maskSize = 'contain';
+                    lg.style.webkitMaskRepeat = lg.style.maskRepeat = 'no-repeat';
+                    lg.style.webkitMaskPosition = lg.style.maskPosition = 'center';
+                } else {
+                    lg.style.webkitMaskImage = lg.style.maskImage = 'none';
+                    lg.style.backgroundColor = 'transparent';
+                    lg.style.backgroundImage = "url('" + config.showcase.logo + "')";
+                }
+            }
             if (sb) sb.textContent = config.showcase.sub || 'Пример работы модели';
             if (vd) {
                 if (config.showcase.video) {
