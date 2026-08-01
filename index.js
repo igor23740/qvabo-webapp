@@ -559,6 +559,36 @@ const modelConfigs = {
         defaultDuration: '5s',
         showcase: { logo: 'bytedance.png?v=1', video: 'seedance-preview.mp4', sub: 'Пример — ролик по раскадровке (мотозаезд)' }
     },
+    'minimax-h3': {
+        // [DOC platform.minimax.io/docs/api-reference/video-generation-v2-create] MiniMax H3 / Hailuo 03 (01.08.2026):
+        // ПРЯМОЙ API MiniMax, не kie — первая наша видео-ветка без посредника. t2v + i2v (первый кадр).
+        // resolution только 2K (768P — закрытая бета). duration целое 4–15: бэкенд принимает весь диапазон,
+        // здесь показываем привычные 4/6/8/10; ползунок можно добавить потом, не трогая бэкенд.
+        // ⛔ Фильтр контента НЕОТКЛЮЧАЕМЫЙ — параметра у модели нет, Промо+ его тут не снимает (говорим честно).
+        // ⚖️ Доступ с тарифа «Промо» и выше (решение владельца 01.08): младшим бэкенд отвечает адресным отказом.
+        apiSlug: 'minimax-h3',
+        provider: 'minimax',
+        audioToggle: false,   // звук у H3 нативный, тумблера нет
+        maxFiles: 1,          // одно фото = первый кадр ролика
+        aspectRatios: [
+            {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'}, {value:'1:1',icon:'▢'},
+            {value:'4:3',icon:'▬'}, {value:'3:4',icon:'▯'}, {value:'21:9',icon:'▬'}
+        ],
+        resolutions: [
+            {value:'2K', label:'2K'}
+        ],
+        durations: [
+            {value:'4s', label:'4s'}, {value:'6s', label:'6s'},
+            {value:'8s', label:'8s'}, {value:'10s', label:'10s'}
+        ],
+        defaultAspect: '16:9',
+        defaultRes: '2K',
+        defaultDuration: '6s',
+        // Витрина: пока владелец не снял свой ролик, в блоке стоит заставка с логотипом — чтобы вкладка
+        // не выпадала из ряда соседних (у всех блок «логотип + пример + подпись»). Как появится ролик —
+        // меняем image на video, подпись на «Пример — …», всё остальное не трогаем.
+        showcase: { logo: 'minimax-h3.png?v=20260801', image: 'minimax-h3-placeholder.png?v=20260801', sub: 'Особенности модели — 2K со звуком, ролики 4–10 секунд' }
+    },
     'gemini-omni-video': {
         // [DOC docs.kie.ai/market/gemini-omni-video] gemini-omni-video (22.07.2026): t2v + i2v (1 фото-референс),
         // duration ТОЛЬКО 4/6/8/10 (enum kie, строка), AR только 16:9|9:16, качества 720p/1080p/4k.
