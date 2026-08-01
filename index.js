@@ -1681,7 +1681,9 @@ generateBtn.addEventListener('click', async () => {
                 duration: selectedDuration,
                 generateAudio: videoConfig.audioToggle ? generateAudio : true,
                 count: 1,
-                images: uploadedImages.slice(0, 1).map(img => img.dataUrl)
+                // 01.08: сколько картинок реально уходит — берём из лимита модели. У всех видео-моделей
+                // он равен 1 (поведение не меняется), у MiniMax H3 — 5 (столько MiniMax отдаёт бесплатно).
+                images: uploadedImages.slice(0, Math.max(1, Number(videoConfig.maxFiles) || 1)).map(img => img.dataUrl)
             };
             // Kling Motion Control: длительность = замеренная длина референс-видео,
             // сам референс уходит отдельным полем video (data-URL, ≤9 МБ — проверено при выборе файла).
@@ -1691,6 +1693,13 @@ generateBtn.addEventListener('click', async () => {
                 data.character_orientation = charOrientation;
                 // Фото персонажа для kie motion-control: webp и прочее -> JPEG на месте
                 if (data.images.length) data.images = [await ensureJpegPng(data.images[0])];
+            }
+            // 01.08, MiniMax H3: видео-образец необязателен, длительность ролика человек выбирает сам.
+            // ⚠️ ДЕНЬГИ: MiniMax тарифицирует секунды входного видео вместе с роликом, поэтому его длину
+            // обязательно передаём отдельным полем — по нему Balance Cost Check считает цену.
+            if (videoConfig.optionalVideoRef && uploadedVideoRef) {
+                data.video = uploadedVideoRef.dataUrl;
+                data.ref_video_sec = uploadedVideoRef.duration;
             }
         } else {
             const imageConfig = modelConfigs[selectedModel] || {};
@@ -1718,6 +1727,9 @@ generateBtn.addEventListener('click', async () => {
             if (tusVideoRef) {
                 data.video_upload = tusVideoRef;
                 delete data.video;
+                // Длительность образца нужна для цены и на этом пути тоже — файл уехал ссылкой,
+                // но секунды считает Balance Cost Check, а не бэкенд по файлу.
+                if (uploadedVideoRef && uploadedVideoRef.duration) data.ref_video_sec = uploadedVideoRef.duration;
             }
         }
 
