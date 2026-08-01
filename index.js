@@ -569,7 +569,9 @@ const modelConfigs = {
         apiSlug: 'minimax-h3',
         provider: 'minimax',
         audioToggle: false,   // звук у H3 нативный, тумблера нет
-        maxFiles: 1,          // одно фото = первый кадр ролика
+        // ⛔ Решение владельца 01.08: РОВНО 5 картинок и ни одной больше — столько MiniMax отдаёт бесплатно,
+        // платные (6-я и далее по $0,04) не подключаем. Ограничение только у этой модели.
+        maxFiles: 5,
         aspectRatios: [
             {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'}, {value:'1:1',icon:'▢'},
             {value:'4:3',icon:'▬'}, {value:'3:4',icon:'▯'}, {value:'21:9',icon:'▬'}
@@ -577,9 +579,13 @@ const modelConfigs = {
         resolutions: [
             {value:'2K', label:'2K'}
         ],
+        // Полный диапазон API: любое целое 4–15 (дока api-reference/video-generation-v2-create).
+        // Урезать нельзя — у H3 длительность и есть главный рычаг цены (10 баллов за секунду).
         durations: [
-            {value:'4s', label:'4s'}, {value:'6s', label:'6s'},
-            {value:'8s', label:'8s'}, {value:'10s', label:'10s'}
+            {value:'4s', label:'4s'}, {value:'5s', label:'5s'}, {value:'6s', label:'6s'},
+            {value:'7s', label:'7s'}, {value:'8s', label:'8s'}, {value:'9s', label:'9s'},
+            {value:'10s', label:'10s'}, {value:'11s', label:'11s'}, {value:'12s', label:'12s'},
+            {value:'13s', label:'13s'}, {value:'14s', label:'14s'}, {value:'15s', label:'15s'}
         ],
         defaultAspect: '16:9',
         defaultRes: '2K',
