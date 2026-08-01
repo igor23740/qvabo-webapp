@@ -222,6 +222,88 @@ function updateVideoRefStatus() {
     updateValidation();
 }
 
+// --- Звук-образец (MiniMax H3, reference_audio) ---
+// 01.08: у MiniMax аудио на входе БЕСПЛАТНО (их Input Asset Pricing), поэтому баллы за него не берём.
+// Ограничения из их доки: WAV или MP3, 2–15 секунд, до 15 МБ.
+const MAX_AUDIO_REF_SIZE = 9 * 1024 * 1024;   // 9 МБ — не их лимит, а наш: тело вебхука n8n 16 МБ, base64 +37%
+const AUDIO_REF_MIME = ['audio/wav', 'audio/x-wav', 'audio/wave', 'audio/mpeg', 'audio/mp3'];
+let uploadedAudioRef = null;
+const audioRefArea = document.getElementById('audioRefArea');
+const audioRefInput = document.getElementById('audioRefInput');
+if (audioRefArea && audioRefInput) {
+    audioRefArea.addEventListener('click', () => audioRefInput.click());
+    audioRefArea.addEventListener('keydown', onActivateKey(() => audioRefInput.click()));
+    audioRefInput.addEventListener('change', (e) => handleAudioRef(e.target.files && e.target.files[0]));
+}
+
+function handleAudioRef(file) {
+    if (!file) return;
+    if (AUDIO_REF_MIME.indexOf(String(file.type).toLowerCase()) === -1) {
+        showToast('Нужен файл WAV или MP3', 'error');
+        audioRefInput.value = '';
+        return;
+    }
+    if (file.size > MAX_AUDIO_REF_SIZE) {
+        showToast('Аудио больше 9 МБ — возьмите файл покороче или сожмите', 'error');
+        audioRefInput.value = '';
+        return;
+    }
+    const probe = document.createElement('audio');
+    probe.preload = 'metadata';
+    probe.onloadedmetadata = () => {
+        const dur = probe.duration;
+        URL.revokeObjectURL(probe.src);
+        if (!isFinite(dur) || dur < 2 || dur > 15) {
+            showToast('Длительность аудио должна быть от 2 до 15 секунд', 'error');
+            audioRefInput.value = '';
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            uploadedAudioRef = { file: file, dataUrl: ev.target.result, duration: Math.ceil(dur) };
+            updateAudioRefStatus();
+        };
+        reader.readAsDataURL(file);
+    };
+    probe.onerror = () => {
+        URL.revokeObjectURL(probe.src);
+        showToast('Не удалось прочитать аудио — попробуйте другой файл', 'error');
+        audioRefInput.value = '';
+    };
+    probe.src = URL.createObjectURL(file);
+}
+
+function updateAudioRefStatus() {
+    const st = document.getElementById('audioRefStatus');
+    if (st) {
+        st.textContent = uploadedAudioRef
+            ? '✓ ' + (uploadedAudioRef.file.name || 'аудио') + ' · ' + uploadedAudioRef.duration + ' сек'
+            : 'Аудио не выбрано';
+    }
+}
+
+// --- Роль второй картинки (MiniMax H3): образец стиля или последний кадр ролика ---
+let h3ImageRole = 'reference';
+const h3RoleGroup = document.getElementById('h3RoleGroup');
+if (h3RoleGroup) {
+    h3RoleGroup.querySelectorAll('.orient-option').forEach(opt => {
+        const pick = () => {
+            h3ImageRole = opt.dataset.value === 'last' ? 'last' : 'reference';
+            h3RoleGroup.querySelectorAll('.orient-option').forEach(o => {
+                const on = o === opt;
+                o.classList.toggle('active', on);
+                o.setAttribute('aria-checked', on ? 'true' : 'false');
+            });
+            const hint = document.getElementById('h3RoleHint');
+            if (hint) hint.textContent = (h3ImageRole === 'last')
+                ? 'Первое фото — начало ролика, второе — чем он закончится'
+                : 'Все фото модель использует как образцы стиля и героев';
+        };
+        opt.addEventListener('click', pick);
+        opt.addEventListener('keydown', onActivateKey(pick));
+    });
+}
+
 // Ориентация персонажа (character_orientation kie) — добровольный выбор юзера, как в нативном Kling.
 // 'video': ракурс как в референс-видео (kie рекомендует, референс до 30 с);
 // 'image': ракурс как на фото (kie принимает референс до 10 с — гейт на кнопке генерации).
@@ -575,6 +657,10 @@ const modelConfigs = {
         // Режим reference-to-video: видео на входе допускается и ОПЛАЧИВАЕТСЯ отдельно —
         // MiniMax тарифицирует его секунды по ставке ролика, поэтому цена = выход + вход.
         optionalVideoRef: true,
+        // Звук-образец (reference_audio) — у MiniMax бесплатный, в цену не входит.
+        optionalAudioRef: true,
+        // Выбор роли второй картинки: образец стиля (reference_image) или финальный кадр (last_frame).
+        imageRoles: true,
         aspectRatios: [
             {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'}, {value:'1:1',icon:'▢'},
             {value:'4:3',icon:'▬'}, {value:'3:4',icon:'▯'}, {value:'21:9',icon:'▬'}
@@ -953,6 +1039,22 @@ function updateModelParams(model) {
             updateVideoRefStatus();
         }
     }
+    // --- Звук-образец и роль второй картинки (MiniMax H3): показываем только там, где поддерживается ---
+    const arsEl = document.getElementById('audioRefSection');
+    if (arsEl) {
+        arsEl.classList.toggle('hidden', !config.optionalAudioRef);
+        if (!config.optionalAudioRef && uploadedAudioRef) {
+            uploadedAudioRef = null;
+            if (audioRefInput) audioRefInput.value = '';
+            updateAudioRefStatus();
+        }
+    }
+    const h3rg = document.getElementById('h3RoleGroup');
+    const h3rh = document.getElementById('h3RoleHint');
+    if (h3rg) h3rg.classList.toggle('hidden', !config.imageRoles);
+    if (h3rh) h3rh.classList.toggle('hidden', !config.imageRoles);
+    if (!config.imageRoles) h3ImageRole = 'reference';
+
     // --- Ориентация персонажа (Kling Motion Control): чекбоксы под моделью, только для этой модели ---
     if (charOrientGroup) {
         charOrientGroup.classList.toggle('hidden', !config.requiresVideoRef);
@@ -1700,6 +1802,14 @@ generateBtn.addEventListener('click', async () => {
             if (videoConfig.optionalVideoRef && uploadedVideoRef) {
                 data.video = uploadedVideoRef.dataUrl;
                 data.ref_video_sec = uploadedVideoRef.duration;
+            }
+            // Звук-образец: у MiniMax он бесплатный, поэтому в цену не входит и в баллах не отражается.
+            if (videoConfig.optionalAudioRef && uploadedAudioRef) {
+                data.audio = uploadedAudioRef.dataUrl;
+            }
+            // Роль второй картинки: «последний кадр» переводит запрос в режим первый→последний кадр.
+            if (videoConfig.imageRoles && h3ImageRole === 'last' && uploadedImages.length >= 2) {
+                data.h3_last_frame = true;
             }
         } else {
             const imageConfig = modelConfigs[selectedModel] || {};

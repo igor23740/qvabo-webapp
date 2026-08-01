@@ -1463,6 +1463,33 @@
             <input type="file" id="videoRefInput" accept="video/mp4,video/quicktime">
         </div>
 
+        <!-- Звук-образец (MiniMax H3): необязательный, за него баллы не списываются -->
+        <div class="section hidden" id="audioRefSection">
+            <h2 class="section-title">Звук-образец</h2>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+                WAV или MP3, 2–15 секунд, до 15 МБ. Необязательно. Модель возьмёт из файла характер звучания. Баллы за него не списываются.
+            </p>
+            <div class="upload-area" id="audioRefArea" role="button" tabindex="0" aria-label="Загрузить звук-образец">
+                <div class="upload-icon">🎵</div>
+                <div class="upload-text"><span>Click here</span> загрузить аудио</div>
+                <div class="upload-count" id="audioRefStatus">Аудио не выбрано</div>
+            </div>
+            <input type="file" id="audioRefInput" accept="audio/wav,audio/x-wav,audio/mpeg,audio/mp3">
+        </div>
+
+        <!-- Роль второй картинки (MiniMax H3): образец стиля или финальный кадр ролика -->
+        <div class="orient-group hidden" id="h3RoleGroup" role="radiogroup" aria-label="Роль второй картинки">
+            <div class="orient-option active" data-value="reference" role="radio" aria-checked="true" tabindex="0">
+                <span class="orient-check"></span>
+                <span class="orient-text">Остальные фото — образцы</span>
+            </div>
+            <div class="orient-option" data-value="last" role="radio" aria-checked="false" tabindex="0">
+                <span class="orient-check"></span>
+                <span class="orient-text">Второе фото — последний кадр</span>
+            </div>
+        </div>
+        <div class="orient-hint hidden" id="h3RoleHint">Первое фото — начало ролика, второе — чем он закончится</div>
+
         <!-- Aspect Ratio -->
         <div class="section" id="aspectSection">
             <h2 class="section-title">Соотношение сторон</h2>
@@ -1580,6 +1607,6 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
-    <script src="index.js?v=20260801b"></script>
+    <script src="index.js?v=20260801c"></script>
 </body>
 </html>
