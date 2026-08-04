@@ -1011,6 +1011,97 @@
             box-shadow: var(--shadow-lg), 0 0 20px rgba(239, 68, 68, 0.2);
         }
 
+        /* Окно «файл не загружается» (05.08.2026): закрывается только кнопкой,
+           тост человек пролистывает не читая. Показывается вместо молчаливого
+           повтора отправки — повтор по мёртвому каналу жжёт наш приёмник впустую. */
+        .block-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15, 15, 26, 0.88);
+        }
+
+        .block-modal.show {
+            display: flex;
+        }
+
+        .block-modal-card {
+            width: 100%;
+            max-width: 380px;
+            background: linear-gradient(145deg, var(--bg-card) 0%, #1f1f38 100%);
+            border: 1px solid var(--error);
+            border-radius: 18px;
+            padding: 22px 20px 18px;
+            box-shadow: var(--shadow-lg), 0 0 24px rgba(239, 68, 68, 0.25);
+        }
+
+        .block-modal-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 14px;
+            line-height: 1.3;
+        }
+
+        .block-modal-speed {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--error);
+            margin-bottom: 14px;
+        }
+
+        .block-modal-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-primary);
+            margin-bottom: 14px;
+        }
+
+        .block-modal-list {
+            margin: 0 0 14px;
+            padding-left: 4px;
+            list-style: none;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        .block-modal-list li {
+            padding-left: 14px;
+            text-indent: -14px; /* перенос строки выравнивается по тексту, а не под маркер */
+        }
+
+        .block-modal-list li::before {
+            content: '• ';
+            color: var(--accent-hover);
+        }
+
+        .block-modal-note {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 18px;
+        }
+
+        .block-modal-btn {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 12px;
+            background: var(--accent);
+            color: var(--text-primary);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .block-modal-btn:active {
+            background: var(--accent-hover);
+        }
+
         /* Контекстное меню поля Prompt (десктоп-клиенты Telegram глушат системное) */
         .ctx-menu {
             position: fixed;
@@ -1607,6 +1698,19 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
-    <script src="index.js?v=20260801c"></script>
+    <!-- Окно «файл не загружается» (05.08.2026) -->
+    <div class="block-modal" id="blockModal">
+        <div class="block-modal-card">
+            <div class="block-modal-title" id="blockModalTitle"></div>
+            <div class="block-modal-speed" id="blockModalSpeed"></div>
+            <div class="block-modal-text" id="blockModalText"></div>
+            <div class="block-modal-text" id="blockModalLead"></div>
+            <ul class="block-modal-list" id="blockModalList"></ul>
+            <div class="block-modal-note" id="blockModalNote"></div>
+            <button class="block-modal-btn" id="blockModalBtn" type="button">Понятно</button>
+        </div>
+    </div>
+
+    <script src="index.js?v=20260805a"></script>
 </body>
 </html>

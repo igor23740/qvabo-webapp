@@ -1503,6 +1503,84 @@ function tusPartCount(size) {
     return Math.max(1, Math.min(TUS_PARTS, Math.floor(size / TUS_MIN_PART) || 1));
 }
 
+// === Замер канала и окно «файл не загружается» (05.08.2026) ===
+// Считаем байты, реально ушедшие в сеть, включая потерянные при обрыве: это
+// пропускная способность канала человека, а не наша оценка. Цифра нужна, чтобы
+// при обрыве показать её ему и остановить повторы: каждый повтор по мёртвому
+// каналу занимает наш приёмник на минуты и кончается тем же обрывом.
+const netMeter = {
+    t0: 0,
+    bytes: 0,
+    reset() { this.t0 = Date.now(); this.bytes = 0; },
+    add(n) { if (n > 0) this.bytes += n; },
+    /** @returns {number|null} КБ/с; null, если мерить не по чему */
+    kbps() {
+        const sec = (Date.now() - this.t0) / 1000;
+        if (sec < 1 || this.bytes <= 0) return null;
+        return this.bytes / 1024 / sec;
+    }
+};
+
+// набор файлов, уже провалившийся по каналу: повтор с ним в сеть не пускаем вообще
+let slowUploadKey = null;
+let slowUploadKbps = null;
+
+function currentFilesKey() {
+    const parts = uploadedImages.map(im => String((im.file && im.file.size) || 0));
+    if (uploadedVideoRef && uploadedVideoRef.file) parts.push('v' + uploadedVideoRef.file.size);
+    return parts.join('_');
+}
+
+/**
+ * Окно поверх экрана: закрывается только кнопкой (тост человек пролистывает не читая).
+ * @param {'slow'|'toobig'} kind
+ * @param {{kbps?: number|null, sizeMb?: number}} info
+ */
+function showBlockModal(kind, info) {
+    const box = document.getElementById('blockModal');
+    const title = document.getElementById('blockModalTitle');
+    const speed = document.getElementById('blockModalSpeed');
+    const text = document.getElementById('blockModalText');
+    const lead = document.getElementById('blockModalLead');
+    const list = document.getElementById('blockModalList');
+    const note = document.getElementById('blockModalNote');
+    if (!box || !title || !speed || !text || !lead || !list || !note) return;
+    while (list.firstChild) list.removeChild(list.firstChild);
+    if (kind === 'toobig') {
+        title.textContent = '⛔ Файл слишком тяжёлый';
+        speed.textContent = info.sizeMb ? ('Ваш файл ' + info.sizeMb + ' МБ, слишком большой!') : '';
+        speed.style.display = info.sizeMb ? '' : 'none';
+        text.textContent = 'СОЖМИТЕ видео или пришлите кусок покороче, иначе отправка будет отбита сразу.';
+        lead.style.display = 'none';
+        note.style.display = 'none';
+    } else {
+        title.textContent = '⛔ Файл не загружается!';
+        const k = info.kbps;
+        speed.textContent = k != null ? ('Ваша скорость сейчас ' + (k < 10 ? k.toFixed(1) : Math.round(k)) + ' КБ/с') : '';
+        speed.style.display = k != null ? '' : 'none';
+        text.textContent = 'Мешает ваш канал связи, поэтому повторные попытки результата не дадут: будет обрываться снова и снова.';
+        lead.textContent = 'Что реально поможет:';
+        lead.style.display = '';
+        ['Wi-Fi вместо мобильного интернета',
+            'Отключить VPN или сменить на быстрый',
+            'Одно фото вместо нескольких',
+            'Фото полегче, 1-2 МБ'].forEach(s => {
+                const li = document.createElement('li');
+                li.textContent = s;
+                list.appendChild(li);
+            });
+        note.textContent = 'Баллы не списаны, генерация не начиналась.';
+        note.style.display = '';
+    }
+    box.classList.add('show');
+}
+
+(function bindBlockModal() {
+    const btn = document.getElementById('blockModalBtn');
+    const box = document.getElementById('blockModal');
+    if (btn && box) btn.addEventListener('click', () => box.classList.remove('show'));
+})();
+
 function dataUrlToBlob(dataUrl) {
     const m = String(dataUrl).match(/^data:([^;]+);base64,(.+)$/);
     if (!m) return null;
@@ -1538,7 +1616,13 @@ function tusPatch(url, blob, onLoaded) {
         xhr.setRequestHeader('Tus-Resumable', '1.0.0');
         xhr.setRequestHeader('Upload-Offset', '0');
         xhr.setRequestHeader('Content-Type', 'application/offset+octet-stream');
-        xhr.upload.onprogress = (e) => { if (onLoaded && e.lengthComputable) onLoaded(e.loaded); };
+        let prevLoaded = 0;
+        xhr.upload.onprogress = (e) => {
+            if (!e.lengthComputable) return;
+            netMeter.add(e.loaded - prevLoaded); // дельта: при ретрае части счётчик xhr стартует заново
+            prevLoaded = e.loaded;
+            if (onLoaded) onLoaded(e.loaded);
+        };
         xhr.onload = () => (xhr.status === 204 ? resolve(null) : reject(new Error('tus patch ' + xhr.status)));
         xhr.onerror = () => reject(new Error('tus patch network'));
         xhr.ontimeout = () => reject(new Error('tus patch timeout'));
@@ -1720,7 +1804,16 @@ generateBtn.addEventListener('click', async () => {
             const cfg = modelConfigs[selectedModel] || {};
             const wantVideoRef = !!(currentMode === 'video' && (cfg.requiresVideoRef || cfg.optionalVideoRef) && uploadedVideoRef);
             const wantTus = selectedModel !== 'reve' && (uploadedImages.length > 0 || wantVideoRef);
+            // Тот же набор файлов уже провалился по каналу: второй заход дал бы тот же обрыв,
+            // поэтому в сеть не выходим вообще и сразу показываем окно (05.08.2026).
+            if (wantTus && slowUploadKey && slowUploadKey === currentFilesKey()) {
+                showBlockModal('slow', { kbps: slowUploadKbps });
+                resetButton();
+                return;
+            }
+            let tusTotalBytes = 0;
             if (wantTus) {
+                netMeter.reset();
                 try {
                     /** @type {{blob: Blob, mime: string, thumbIndex: number|null, isVideo: boolean}[]} */
                     const jobs = [];
@@ -1744,6 +1837,7 @@ generateBtn.addEventListener('click', async () => {
                         uploadedImages.forEach((im, i) => jobs.push({ blob: im.file, mime: im.file.type || 'image/jpeg', thumbIndex: i, isVideo: false }));
                     }
                     const totalBytes = jobs.reduce((s, j) => s + j.blob.size, 0);
+                    tusTotalBytes = totalBytes;
                     const done = new Array(jobs.length).fill(0);
                     const refresh = () => {
                         const sum = done.reduce((a, b) => a + b, 0);
@@ -1769,6 +1863,26 @@ generateBtn.addEventListener('click', async () => {
                     tusImageRefs = null;
                     tusVideoRef = null;
                     uploadedImages.forEach((_, i) => setThumbProgress(i, null));
+                    // Разбор причины (05.08.2026). Раньше отсюда молча уходили на base64-путь:
+                    // по мёртвому каналу он висит до 5 минут, кончается тем же обрывом и всё это
+                    // время держит наш вебхук. Теперь молчим только когда виноваты мы.
+                    const msg = String((e && e.message) || '');
+                    const tooBig = / 413$/.test(msg);
+                    if (tooBig) {
+                        showBlockModal('toobig', { sizeMb: Math.round(tusTotalBytes / 1024 / 1024) });
+                        resetButton();
+                        return;
+                    }
+                    if (netMeter.bytes > 0) {
+                        // байты в сеть пошли и всё равно оборвалось = канал человека
+                        slowUploadKbps = netMeter.kbps();
+                        slowUploadKey = currentFilesKey();
+                        showBlockModal('slow', { kbps: slowUploadKbps });
+                        resetButton();
+                        return;
+                    }
+                    // Ни байта не ушло: приёмник или запрет браузера, человек не виноват.
+                    // Тихо уезжаем старым путём, как раньше.
                 }
                 generateBtn.innerHTML = '<div class="spinner"></div><span>Generating...</span>';
             }
