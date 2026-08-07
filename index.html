@@ -421,6 +421,12 @@
             display: none;
         }
 
+        /* 07.08: поле выбора аудио заводили 01.08 вместе с H3 и забыли спрятать — системная кнопка
+           «Выбор файла» торчала под зоной загрузки. Клик идёт по пунктирной зоне, как у фото и видео. */
+        #audioRefInput {
+            display: none;
+        }
+
         /* Ориентация персонажа (Kling Motion Control): два чекбокса в одну строку, как в нативном Kling */
         .orient-group {
             display: flex;
@@ -1263,7 +1269,7 @@
             <div class="header-links">
                 <a href="faq.html?v=20260801a" class="faq-btn">❓ FAQ</a>
                 <a href="cabinet.html?v=20260709b" class="cabinet-btn">💰 Баланс</a>
-                <a href="tariffs.html?v=20260807a" class="tariffs-btn">💎 Тарифы</a>
+                <a href="tariffs.html?v=20260807b" class="tariffs-btn">💎 Тарифы</a>
             </div>
         </div>
 
@@ -1774,6 +1780,6 @@
         </div>
     </div>
 
-    <script src="index.js?v=20260807a"></script>
+    <script src="index.js?v=20260807b"></script>
 </body>
 </html>
