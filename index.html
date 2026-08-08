@@ -1267,9 +1267,9 @@
             <h1 id="headerTitle">🎨 AI Image Generator</h1>
             <p id="headerDesc">Создавайте потрясающие изображения с помощью передовых технологий искусственного интеллекта. Превращайте свои идеи в визуальные шедевры.</p>
             <div class="header-links">
-                <a href="faq.html?v=20260807a" class="faq-btn">❓ FAQ</a>
+                <a href="faq.html?v=20260808a" class="faq-btn">❓ FAQ</a>
                 <a href="cabinet.html?v=20260709b" class="cabinet-btn">💰 Баланс</a>
-                <a href="tariffs.html?v=20260807d" class="tariffs-btn">💎 Тарифы</a>
+                <a href="tariffs.html?v=20260808a" class="tariffs-btn">💎 Тарифы</a>
             </div>
         </div>
 
@@ -1371,11 +1371,11 @@
                             </div>
                         </div>
                     </div>
-                    <div class="dropdown-option" data-value="midjourney" data-name="Midjourney" data-desc="Midjourney · Оригинал, который все копируют" data-icon="midjourney" data-mode="image">
+                    <div class="dropdown-option" data-value="midjourney" data-name="Midjourney V8.2" data-desc="Midjourney · Оригинал, который все копируют" data-icon="midjourney" data-mode="image">
                         <div class="model-option-content">
                             <div class="model-icon midjourney">M</div>
                             <div class="model-info">
-                                <div class="model-name">Midjourney</div>
+                                <div class="model-name">Midjourney V8.2</div>
                                 <div class="model-desc">Midjourney · Оригинал, который все копируют</div>
                             </div>
                         </div>
@@ -1431,15 +1431,6 @@
                             <div class="model-info">
                                 <div class="model-name">Апскейл PRO</div>
                                 <div class="model-desc">Topaz · Восстановление деталей, до 4K</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="dropdown-option" data-value="midjourney-upscale" data-name="Midjourney Апскейл" data-desc="Midjourney · Увеличить кадр своего заказа" data-icon="midjourney" data-mode="image">
-                        <div class="model-option-content">
-                            <div class="model-icon midjourney">M</div>
-                            <div class="model-info">
-                                <div class="model-name">Midjourney Апскейл</div>
-                                <div class="model-desc">Midjourney · Увеличить кадр своего заказа</div>
                             </div>
                         </div>
                     </div>
@@ -1681,36 +1672,6 @@
             <p id="countWarning" style="display:none; font-size:12px; color:#f0a020; margin-top:10px; font-weight:600;"></p>
         </div>
 
-        <!-- Midjourney Апскейл: выбор своего заказа (последние ≤5 за 3 дня) + кадр 1–4.
-             job_id здесь не фигурирует — сервер сам находит заказ по номеру в списке (проверка владения на бэке). -->
-        <div class="section hidden" id="mjPickSection">
-            <h2 class="section-title">Какой заказ увеличить</h2>
-            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
-                Увеличивает кадр твоего заказа Midjourney за последние 3 дня (родной механизм MJ, ~×2).
-                Номер кадра — в подписи к файлам заказа (1–4).
-            </p>
-            <div class="dropdown" id="mjPickDropdown">
-                <div class="dropdown-selected" tabindex="0" role="button" aria-haspopup="listbox">
-                    <span id="mjPickValue">Последний заказ</span>
-                    <span class="dropdown-arrow">▾</span>
-                </div>
-                <div class="dropdown-options" role="listbox">
-                    <div class="dropdown-option" data-value="0">Последний заказ</div>
-                    <div class="dropdown-option" data-value="1">Предпоследний</div>
-                    <div class="dropdown-option" data-value="2">Третий с конца</div>
-                    <div class="dropdown-option" data-value="3">Четвёртый с конца</div>
-                    <div class="dropdown-option" data-value="4">Пятый с конца</div>
-                </div>
-            </div>
-            <h2 class="section-title" style="margin-top:16px;">Какой кадр</h2>
-            <div class="chips-container" id="mjFrameGrid">
-                <div class="chip active" data-mjframe="1">Кадр 1</div>
-                <div class="chip" data-mjframe="2">Кадр 2</div>
-                <div class="chip" data-mjframe="3">Кадр 3</div>
-                <div class="chip" data-mjframe="4">Кадр 4</div>
-            </div>
-        </div>
-
         <!-- Reve: Fast mode (Edit/Remix дешевле) -->
         <div class="section hidden" id="reveFastSection">
             <h2 class="section-title">Режим Reve</h2>
@@ -1780,6 +1741,6 @@
         </div>
     </div>
 
-    <script src="index.js?v=20260807d"></script>
+    <script src="index.js?v=20260808a"></script>
 </body>
 </html>

@@ -42,8 +42,6 @@ let currentMode = 'image';
 let selectedDuration = '8s';
 let generateAudio = true;
 let reveFast = false;
-let mjPick = 0;   // Midjourney Апскейл: какой заказ увеличиваем (0 = последний, до 4)
-let mjFrame = 1;  // Midjourney Апскейл: номер кадра в гриде 1–4
 
 // Elements
 const promptInput = document.getElementById('promptInput');
@@ -583,18 +581,6 @@ const modelConfigs = {
         defaultAspect: null,
         defaultRes: null
     },
-    'midjourney-upscale': {
-        // Родной MJ-апскейл (LegNext /v1/upscale, subtle ~×2 = ~1792×2688 для 2:3). Работает ТОЛЬКО
-        // по СВОЕМУ заказу midjourney за последние 3 дня: фото не принимаем, job_id на фронте не
-        // существует — сервер находит заказ по chat_id + mj_pick и проверяет владение (MJ Upscale Resolve).
-        utility: true,
-        noPrompt: true,
-        mjPick: true,
-        aspectRatios: [],
-        resolutions: [],
-        defaultAspect: null,
-        defaultRes: null
-    },
     'veo-3.1': {
         apiSlug: 'veo-3.1',
         provider: 'google',
@@ -1060,9 +1046,6 @@ function updateModelParams(model) {
     document.getElementById('audioSection').classList.toggle('hidden', !config.audioToggle);
     // Reve V2 (08.07.26): параметра fast в API нет — секция скрыта для всех моделей.
     document.getElementById('reveFastSection').classList.add('hidden');
-    // Midjourney Апскейл: секция выбора заказа/кадра видна только на своей вкладке (utility-ветка ниже)
-    const mjPickSectionEl = document.getElementById('mjPickSection');
-    if (mjPickSectionEl) mjPickSectionEl.classList.add('hidden');
 
     // --- Utility models (recraft remove-bg / upscale): photo in -> file out.
     // No prompt / aspect / resolution / count — only the photo upload, which is mandatory. ---
@@ -1076,13 +1059,6 @@ function updateModelParams(model) {
     document.getElementById('countSection').classList.toggle('hidden', isUtility || currentMode === 'video' || !!config.hideCount);
     if (isUtility) {
         const us = document.getElementById('uploadSection');
-        // Midjourney Апскейл: фото не нужно вообще — вместо загрузки выбор своего заказа и кадра
-        if (config.mjPick) {
-            us.classList.add('hidden');
-            if (mjPickSectionEl) mjPickSectionEl.classList.remove('hidden');
-            updateValidation();
-            return;
-        }
         us.classList.remove('hidden');
         const usTitle = us.querySelector('.section-title');
         const usHint = us.querySelector('p');
@@ -1302,33 +1278,6 @@ function setupDropdown(dropdownId, valueId, onSelect) {
 
 setupDropdown('resolutionDropdown', 'resolutionValue', (val) => selectedResolution = val);
 
-// --- Midjourney Апскейл: выбор заказа (лейбл в спан, индекс в mjPick) и кадра 1–4 ---
-(function initMjPick() {
-    const dd = document.getElementById('mjPickDropdown');
-    if (!dd) return;
-    const selectedEl = dd.querySelector('.dropdown-selected');
-    const valueSpan = document.getElementById('mjPickValue');
-    selectedEl.addEventListener('click', () => {
-        document.querySelectorAll('.dropdown').forEach(d => { if (d !== dd) d.classList.remove('open'); });
-        dd.classList.toggle('open');
-    });
-    dd.querySelectorAll('.dropdown-option').forEach(opt => {
-        opt.addEventListener('click', () => {
-            dd.querySelectorAll('.dropdown-option').forEach(o => o.classList.remove('active'));
-            opt.classList.add('active');
-            valueSpan.textContent = opt.textContent;
-            mjPick = parseInt(opt.dataset.value, 10) || 0;
-            dd.classList.remove('open');
-        });
-    });
-    document.querySelectorAll('#mjFrameGrid .chip').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('#mjFrameGrid .chip').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            mjFrame = parseInt(btn.dataset.mjframe, 10) || 1;
-        });
-    });
-})();
 // Count picker: keep selectedCount and surface an explicit cost warning when >1,
 // so nobody mistakes this for a resolution setting and gets charged multiple times.
 function updateCountWarning(val) {
@@ -2038,12 +1987,6 @@ generateBtn.addEventListener('click', async () => {
             // Topaz: ужать вход до 2048px (см. shrinkForTopaz), бэкенд берёт только 1-е фото
             if (selectedModel === 'topaz-upscale' && data.images.length) {
                 data.images = [await shrinkForTopaz(data.images[0])];
-            }
-            // Midjourney Апскейл: фото нет, сервер сам находит заказ по chat_id + mj_pick (0 = последний)
-            // и увеличивает кадр mj_frame (1–4). job_id в запросе не существует по устройству.
-            if (selectedModel === 'midjourney-upscale') {
-                data.mj_pick = mjPick;
-                data.mj_frame = mjFrame;
             }
         }
 
