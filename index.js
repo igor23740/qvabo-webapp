@@ -697,7 +697,10 @@ const modelConfigs = {
         ],
         defaultAspect: '1:1',
         defaultRes: '1K',
-        showcase: { logo: 'bfl.png?v=20260808', sub: 'Премиальное качество и работа со шрифтом' }
+        // Витрина — боевая генерация владельца 08.08 (прогон 81740, 2K, 16:9): кириллица чистая
+        // в обоих кеглях, тиснение фольгой с бликами по скосам букв, лён, гранёное стекло, капли,
+        // шёлк и отражения. Считалось меньше минуты. Исходник — docs/assets/flux2-max-showcase-source.jpg
+        showcase: { logo: 'bfl.png?v=20260808', image: 'flux2-max-preview.webp?v=20260808', sub: 'Пример — премиальная предметка с кириллицей' }
     },
     'flux-3-video': {
         // [DOC docs.bfl.ml/flux_3/flux3_video + их OpenAPI] FLUX 3 Video (08.08.2026): ПРЯМОЙ API
