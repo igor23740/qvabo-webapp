@@ -453,10 +453,10 @@ const modelConfigs = {
         // качество (HIGH, 1K) за 1 балл — четыре внутренние ступени качества модели ему не показываем.
         // ⛔ Работает ТОЛЬКО по описанию: i2i у модели нет, бэкенд при фото даёт внятный отказ.
         resolutions: [
-            {value:'LITE', label:'Лайт · 1 балл · дёшево и быстро'},
-            {value:'TURBO', label:'Turbo · 2 балла · быстро'},
-            {value:'DEFAULT', label:'Default · 4 балла · детальнее'},
-            {value:'QUALITY', label:'Quality · 7 баллов · максимум деталей'}
+            {value:'LITE', label:'Лайт'},
+            {value:'TURBO', label:'Turbo'},
+            {value:'DEFAULT', label:'Default'},
+            {value:'QUALITY', label:'Quality'}
         ],
         defaultAspect: '1:1',
         defaultRes: 'TURBO'
@@ -479,8 +479,8 @@ const modelConfigs = {
         resLabel: 'Качество',
         resHint: 'HD — нативные 2K-кадры Midjourney, детальнее и дороже',
         resolutions: [
-            {value:'STD', label:'Стандарт · 6 баллов · 4 кадра'},
-            {value:'HD', label:'HD 2K · 9 баллов · 4 кадра'}
+            {value:'STD', label:'Стандарт · 4 кадра'},
+            {value:'HD', label:'HD 2K · 4 кадра'}
         ],
         defaultAspect: '2:3',
         defaultRes: 'STD',
@@ -778,8 +778,8 @@ const modelConfigs = {
         // сравнивают строку в нижнем регистре с '768p', всё остальное считают и генерят как 2K.
         resHint: '768p готовится втрое быстрее и стоит почти вдвое дешевле; 2K — вчетверо больше пикселей',
         resolutions: [
-            {value:'768P', label:'768p · 6 баллов/с · втрое быстрее'},
-            {value:'2K', label:'2K · 10 баллов/с · максимум холста'}
+            {value:'768P', label:'768p'},
+            {value:'2K', label:'2K'}
         ],
         // Полный диапазон API: любое целое 4–15 (дока api-reference/video-generation-v2-create).
         // Урезать нельзя — у H3 длительность и есть главный рычаг цены (10 баллов за секунду).
