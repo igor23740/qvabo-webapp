@@ -594,7 +594,150 @@ const modelConfigs = {
             {value:'4k', label:'4K'}
         ],
         durations: [
-            {value:'5s', label:'5s'}, {value:'6s', label:'6s'}, {value:'7s', label:'7s'}, {value:'8s', label:'8s'}, {value:'9s', label:'9s'}, {value:'10s', label:'10s'}, {value:'11s', label:'11s'}, {value:'12s', label:'12s'}, {value:'13s', label:'13s'}, {value:'14s', label:'14s'}, {value:'15s', label:'15s'}, {value:'16s', label:'16s'}, {value:'17s', label:'17s'}, {value:'18s', label:'18s'}, {value:'19s', label:'19s'}, {value:'20s', label:'20s'}
+            {value:'4s', label:'4s'},
+            {value:'6s', label:'6s'},
+            {value:'8s', label:'8s'}
+        ],
+        defaultAspect: '16:9',
+        defaultRes: '720p',
+        defaultDuration: '8s'
+    },
+    'seedance-2-fast': {
+        apiSlug: 'bytedance/seedance-2.0-fast',
+        provider: 'openrouter',
+        audioToggle: true,
+        aspectRatios: [
+            {value:'1:1',icon:'▢'}, {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'}
+        ],
+        resolutions: [
+            {value:'480p', label:'480p'},
+            {value:'720p', label:'720p'}
+        ],
+        durations: [
+            {value:'5s', label:'5s'},
+            {value:'10s', label:'10s'},
+            {value:'15s', label:'15s'}
+        ],
+        defaultAspect: '16:9',
+        defaultRes: '720p',
+        defaultDuration: '15s'
+    },
+    'seedance-2': {
+        // [DOC docs.kie.ai/market/bytedance/seedance-2] bytedance/seedance-2 (СТАРШАЯ, 16.07.2026): t2v + i2v
+        // (1 фото = первый кадр), duration 4–15 c, generate_audio bool, aspect = палитра Mini + 21:9.
+        // Качества ТОЛЬКО 1080p/4k — развод линеек с Mini (480p/720p) без пересечения цен, решение владельца 16.07 вечер.
+        // Модель умеет референсы-видео/аудио и последний кадр — в v1 фронтом не выдаются (бэкенд-хвост по отмашке).
+        apiSlug: 'seedance-2',
+        provider: 'kie',
+        audioToggle: true,
+        maxFiles: 1,
+        aspectRatios: [
+            {value:'16:9',icon:'▬'}, {value:'21:9',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'1:1',icon:'▢'},
+            {value:'3:4',icon:'▯'}, {value:'9:16',icon:'▯'}, {value:'adaptive',icon:'▢'}
+        ],
+        resolutions: [
+            {value:'1080p', label:'1080p'},
+            {value:'4k', label:'4K · Ultra HD'}
+        ],
+        durations: [
+            {value:'4s', label:'4s'}, {value:'5s', label:'5s'}, {value:'6s', label:'6s'},
+            {value:'7s', label:'7s'}, {value:'8s', label:'8s'}, {value:'9s', label:'9s'},
+            {value:'10s', label:'10s'}, {value:'11s', label:'11s'}, {value:'12s', label:'12s'},
+            {value:'13s', label:'13s'}, {value:'14s', label:'14s'}, {value:'15s', label:'15s'}
+        ],
+        defaultAspect: '16:9',
+        defaultRes: '1080p',
+        defaultDuration: '5s',
+        showcase: { logo: 'bytedance.png?v=1', video: 'seedance2-preview.mp4', sub: 'Пример — ролик Seedance 2.0 со звуком' }
+    },
+    'seedance-2-mini': {
+        apiSlug: 'seedance-2-mini',
+        provider: 'kie',
+        audioToggle: true,
+        aspectRatios: [
+            {value:'16:9',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'1:1',icon:'▢'},
+            {value:'3:4',icon:'▯'}, {value:'9:16',icon:'▯'}, {value:'adaptive',icon:'▢'}
+        ],
+        resolutions: [
+            {value:'480p', label:'480p'},
+            {value:'720p', label:'720p'}
+        ],
+        durations: [
+            {value:'4s', label:'4s'}, {value:'5s', label:'5s'}, {value:'6s', label:'6s'},
+            {value:'7s', label:'7s'}, {value:'8s', label:'8s'}, {value:'9s', label:'9s'},
+            {value:'10s', label:'10s'}, {value:'11s', label:'11s'}, {value:'12s', label:'12s'},
+            {value:'13s', label:'13s'}, {value:'14s', label:'14s'}, {value:'15s', label:'15s'}
+        ],
+        defaultAspect: '16:9',
+        defaultRes: '720p',
+        defaultDuration: '5s',
+        showcase: { logo: 'bytedance.png?v=1', video: 'seedance-preview.mp4', sub: 'Пример — ролик по раскадровке (мотозаезд)' }
+    },
+    'flux-2-max': {
+        // [DOC docs.bfl.ml/flux_2] FLUX.2 [max] (08.08.2026): ПРЯМОЙ API Black Forest Labs.
+        // Премиальная ступень: у kie этой модели нет вовсе, поэтому вкладка отдельная.
+        // Цена снята боем: заказ списал 7 кредитов = $0,07 = 6,30 ₽ → вес 5 баллов (заработок 49,5%).
+        // ⛔ Фаза 1 — только по описанию: поле входного фото у FLUX.2 живьём не проверено,
+        // бэкенд при фото даёт внятный отказ ДО списания балла (паттерн «Лайта» 07.08).
+        // ⛔ Своих фильтров на модели нет — ограничения только её собственные (решение владельца).
+        apiSlug: 'flux-2-max',
+        provider: 'bfl',
+        textOnly: true,
+        aspectRatios: [
+            {value:'1:1',icon:'▢'}, {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'},
+            {value:'4:3',icon:'▬'}, {value:'3:4',icon:'▯'}, {value:'21:9',icon:'▬'}, {value:'2:1',icon:'▬'}
+        ],
+        // 2K у них дороже по мегапикселям, точная ставка не замерена — на вкладку не выпускаем,
+        // пока не увидим фактическую цену боевого заказа. Иначе рискуем продать ниже якоря.
+        // Их биллинг по мегапикселям: первый МП $0,07, каждый следующий $0,03 (1 МП = 1024×1024).
+        // Подтверждено ответами API: 1024×1024 = 7 кредитов, 2048×2048 = 16. Отсюда веса 5 и 10.
+        resolutions: [
+            {value:'1K', label:'1K · 5 баллов'},
+            {value:'2K', label:'2K · 10 баллов · вчетверо больше пикселей'}
+        ],
+        defaultAspect: '1:1',
+        defaultRes: '1K',
+        // Витрина — боевая генерация владельца 08.08 (прогон 81740, 2K, 16:9): кириллица чистая
+        // в обоих кеглях, тиснение фольгой с бликами по скосам букв, лён, гранёное стекло, капли,
+        // шёлк и отражения. Считалось меньше минуты. Исходник — docs/assets/flux2-max-showcase-source.jpg
+        showcase: { logo: 'bfl.png?v=20260808', image: 'flux2-max-preview.webp?v=20260808', sub: 'Пример — премиальная предметка с кириллицей' }
+    },
+    'flux-3-video': {
+        // [DOC docs.bfl.ml/flux_3/flux3_video + их OpenAPI] FLUX 3 Video (08.08.2026): ПРЯМОЙ API
+        // Black Forest Labs, мимо релеев — модели нет ни у kie, ни у Fal. t2v и i2v (кадры-опоры).
+        // duration целое 5–20 секунд, resolution hd|fhd, звук синхронный (generate_audio).
+        // ⚖️ Доступ с тарифа «Промо» и выше (решение владельца 08.08): младшим бэкенд отвечает
+        // отдельным текстом про тариф, а не ложным «не хватает баллов».
+        // ⏱ Ждём не дольше нашего стандарта: 6 минут, дальше честный отказ и возврат балла.
+        apiSlug: 'flux-3-video',
+        provider: 'bfl',
+        // Звук у модели включён по умолчанию, но выключаемый — тумблер человеку оставляем.
+        audioToggle: true,
+        // keyframes: один кадр начинает ролик, два — начинают и заканчивают, дальше распределяются.
+        maxFiles: 10,
+        aspectRatios: [
+            {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'}, {value:'1:1',icon:'▢'},
+            {value:'4:3',icon:'▬'}, {value:'3:4',icon:'▯'}, {value:'21:9',icon:'▬'}, {value:'2:1',icon:'▬'}
+        ],
+        // Ось качества вместо разрешения: у модели это ступени цены. Черновик — не «плохое видео»,
+        // а быстрая проба композиции: по нему потом досчитывается чистовой рендер той же сцены.
+        // ⚠️ Значения ОБЯЗАНЫ совпадать с бэкендом: Balance Cost Check (PTS_FLUX3) и BFL Video Prep
+        // сравнивают строку в нижнем регистре, всё незнакомое считают и генерят по самой дорогой.
+        resHint: 'Черновик — быстрая и дешёвая проба сцены. Понравилось — повтори в полном качестве.',
+        resolutions: [
+            {value:'draft', label:'Черновик · 4 балла/с · быстрая проба'},
+            {value:'hd', label:'Полный HD · 11 баллов/с'},
+            {value:'fhd', label:'Full HD · 18 баллов/с · для большого экрана'}
+        ],
+        // Полный ряд по их схеме: любое ЦЕЛОЕ от 5 до 20 секунд. Ряд не прореживать —
+        // длительность здесь главный рычаг цены, и урезать выбор человеку незачем.
+        durations: [
+            {value:'5s', label:'5s'}, {value:'6s', label:'6s'}, {value:'7s', label:'7s'},
+            {value:'8s', label:'8s'}, {value:'9s', label:'9s'}, {value:'10s', label:'10s'},
+            {value:'11s', label:'11s'}, {value:'12s', label:'12s'}, {value:'13s', label:'13s'},
+            {value:'14s', label:'14s'}, {value:'15s', label:'15s'}, {value:'16s', label:'16s'},
+            {value:'17s', label:'17s'}, {value:'18s', label:'18s'}, {value:'19s', label:'19s'},
+            {value:'20s', label:'20s'}
         ],
         defaultAspect: '16:9',
         // Дефолт — черновик: дешевле для человека и быстрее, а чистовик он закажет осознанно.
