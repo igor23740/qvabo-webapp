@@ -834,6 +834,16 @@
             mask-image: url('midjourney.png?v=20260806m');
         }
 
+        .model-icon.bfl {
+            /* Знак Black Forest Labs (файл владельца 08.08) — берём как есть, он уже фирменного
+               оранжевого цвета и читается на тёмном фоне без перекраски маской */
+            background: transparent url('bfl.png?v=20260808') center / contain no-repeat;
+            border: none;
+            color: transparent;
+            font-size: 0;
+            box-shadow: none;
+        }
+
         .model-icon.recraft {
             background: transparent url('recraft.png?v=1') center / contain no-repeat;
             border: none;
@@ -1452,6 +1462,15 @@
                             </div>
                         </div>
                     </div>
+                    <div class="dropdown-option" data-value="flux-3-video" data-name="FLUX 3 Video" data-desc="Black Forest Labs · До 20 секунд со звуком" data-icon="bfl" data-mode="video" style="display:none;">
+                        <div class="model-option-content">
+                            <div class="model-icon bfl">F</div>
+                            <div class="model-info">
+                                <div class="model-name">FLUX 3 Video</div>
+                                <div class="model-desc">Black Forest Labs · До 20 секунд со звуком</div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="dropdown-option" data-value="minimax-h3" data-name="MiniMax H3" data-desc="MiniMax · Hailuo 03 — 2K со звуком" data-icon="minimax" data-mode="video" style="display:none;">
                         <div class="model-option-content">
                             <div class="model-icon minimax">M</div>
@@ -1741,6 +1760,6 @@
         </div>
     </div>
 
-    <script src="index.js?v=20260808a"></script>
+    <script src="index.js?v=20260808b"></script>
 </body>
 </html>

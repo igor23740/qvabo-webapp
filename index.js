@@ -673,6 +673,47 @@ const modelConfigs = {
         defaultDuration: '5s',
         showcase: { logo: 'bytedance.png?v=1', video: 'seedance-preview.mp4', sub: 'Пример — ролик по раскадровке (мотозаезд)' }
     },
+    'flux-3-video': {
+        // [DOC docs.bfl.ml/flux_3/flux3_video + их OpenAPI] FLUX 3 Video (08.08.2026): ПРЯМОЙ API
+        // Black Forest Labs, мимо релеев — модели нет ни у kie, ни у Fal. t2v и i2v (кадры-опоры).
+        // duration целое 5–20 секунд, resolution hd|fhd, звук синхронный (generate_audio).
+        // ⚖️ Доступ с тарифа «Промо» и выше (решение владельца 08.08): младшим бэкенд отвечает
+        // отдельным текстом про тариф, а не ложным «не хватает баллов».
+        // ⏱ Ждём не дольше нашего стандарта: 6 минут, дальше честный отказ и возврат балла.
+        apiSlug: 'flux-3-video',
+        provider: 'bfl',
+        // Звук у модели включён по умолчанию, но выключаемый — тумблер человеку оставляем.
+        audioToggle: true,
+        // keyframes: один кадр начинает ролик, два — начинают и заканчивают, дальше распределяются.
+        maxFiles: 10,
+        aspectRatios: [
+            {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'}, {value:'1:1',icon:'▢'},
+            {value:'4:3',icon:'▬'}, {value:'3:4',icon:'▯'}, {value:'21:9',icon:'▬'}, {value:'2:1',icon:'▬'}
+        ],
+        // Ось качества вместо разрешения: у модели это ступени цены. Черновик — не «плохое видео»,
+        // а быстрая проба композиции: по нему потом досчитывается чистовой рендер той же сцены.
+        // ⚠️ Значения ОБЯЗАНЫ совпадать с бэкендом: Balance Cost Check (PTS_FLUX3) и BFL Video Prep
+        // сравнивают строку в нижнем регистре, всё незнакомое считают и генерят по самой дорогой.
+        resHint: 'Черновик — быстрая и дешёвая проба сцены. Понравилось — повтори в полном качестве.',
+        resolutions: [
+            {value:'draft', label:'Черновик · 4 балла/с · быстрая проба'},
+            {value:'hd', label:'Полный HD · 11 баллов/с'},
+            {value:'fhd', label:'Full HD · 18 баллов/с · для большого экрана'}
+        ],
+        durations: [
+            {value:'5s', label:'5s'}, {value:'6s', label:'6s'}, {value:'7s', label:'7s'},
+            {value:'8s', label:'8s'}, {value:'9s', label:'9s'}, {value:'10s', label:'10s'},
+            {value:'12s', label:'12s'}, {value:'14s', label:'14s'}, {value:'16s', label:'16s'},
+            {value:'18s', label:'18s'}, {value:'20s', label:'20s'}
+        ],
+        defaultAspect: '16:9',
+        // Дефолт — черновик: дешевле для человека и быстрее, а чистовик он закажет осознанно.
+        defaultRes: 'draft',
+        defaultDuration: '5s',
+        // Витрина-заглушка до первой боевой генерации (решение владельца 08.08): знак разработчика
+        // и подпись о том, что вкладка делает. Меняется на реальный ролик после его прогона.
+        showcase: { logo: 'bfl.png?v=20260808', sub: 'Ролики до 20 секунд со звуком' }
+    },
     'minimax-h3': {
         // [DOC platform.minimax.io/docs/api-reference/video-generation-v2-create] MiniMax H3 / Hailuo 03 (01.08.2026):
         // ПРЯМОЙ API MiniMax, не kie — первая наша видео-ветка без посредника. t2v + i2v (первый кадр).
@@ -1340,7 +1381,7 @@ modelOptions.forEach(option => {
 
         // Update icon
         modelIconEl.className = 'model-icon ' + option.dataset.icon;
-        modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','seedance':'S','openai':'O','grok':'X','ideogram':'✦','recraft':'R','reve':'◆','topaz':'T'}[option.dataset.icon] || 'S';
+        modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','seedance':'S','openai':'O','grok':'X','ideogram':'✦','recraft':'R','reve':'◆','topaz':'T','bfl':'F'}[option.dataset.icon] || 'S';
 
         modelDropdown.classList.remove('open');
         updateModelParams(selectedModel);
