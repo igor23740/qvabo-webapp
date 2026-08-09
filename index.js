@@ -654,7 +654,7 @@ const modelConfigs = {
         // Placeholder-витрина (решение владельца 10.08): БЕЗ ключа video блок остаётся заставкой на
         // логотипе (механизм ниже: video-элемент прячется, logo+sub видны). Демо-ролик владельца
         // станет витриной так: video: 'seedance25-preview.mp4?v=<дата>' + файл в корень репо.
-        showcase: { logo: 'bytedance.png?v=1', sub: 'Пример работы модели появится совсем скоро' }
+        showcase: { logo: 'bytedance.png?v=1', video: 'seedance25-preview.mp4?v=20260810b', sub: 'Пример — «Пыль в луче», 720p со звуком' }
     },
     'seedance-2': {
         // [DOC docs.kie.ai/market/bytedance/seedance-2] bytedance/seedance-2 (СТАРШАЯ, 16.07.2026): t2v + i2v
