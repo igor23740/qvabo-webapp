@@ -1016,9 +1016,9 @@ function switchMode(mode) {
 
     // Auto-select first visible model
     if (isVideo) {
-        selectedModel = 'seedance-2'; // 16.07 сессия 3: дефолт видео-режима = СТАРШАЯ (заказ владельца «главной вкладкой — Seedance 2.0»)
-        document.getElementById('modelName').textContent = 'Seedance 2.0';
-        document.getElementById('modelDesc').textContent = 'ByteDance · Видео-флагман, до 4K';
+        selectedModel = 'seedance-25'; // 10.08: дефолт видео-режима = СТАРШАЯ, теперь это Seedance 2.5 (та же логика, что 16.07 для 2.0; поправка владельца по скрину 10.08)
+        document.getElementById('modelName').textContent = 'Seedance 2.5';
+        document.getElementById('modelDesc').textContent = 'ByteDance · Новое поколение, до 15 секунд со звуком';
         const iconEl = document.querySelector('#modelDropdown .dropdown-selected .model-icon');
         iconEl.className = 'model-icon seedance';
         iconEl.textContent = 'S';
