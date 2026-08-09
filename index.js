@@ -622,6 +622,37 @@ const modelConfigs = {
         defaultRes: '720p',
         defaultDuration: '15s'
     },
+    'seedance-25': {
+        // [DOC replicate.com/bytedance/seedance-2.5] Seedance 2.5 (10.08.2026): канал REPLICATE, не kie —
+        // закупка по официальной ставке ByteDance (решение владельца 09.08). Схема снята живьём 10.08:
+        // resolution ТОЛЬКО 480p/720p (1080p в API нет — маркетинг площадок), duration 4–30 у модели,
+        // наш потолок 15 с на старте (решение владельца, страховка баланса), prompt ≤2000.
+        // Фото: 1 = первый кадр (i2v), 2–4 = референсы персонажа/стиля; смешивать режимы API запрещает.
+        // adaptive в AR не выдаём: при фото бэкенд ставит его сам (форма от фото), при тексте — выбор юзера.
+        apiSlug: 'seedance-25',
+        provider: 'replicate',
+        audioToggle: true,
+        maxFiles: 4,
+        promptLimit: 2000,
+        aspectRatios: [
+            {value:'16:9',icon:'▬'}, {value:'21:9',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'1:1',icon:'▢'},
+            {value:'3:4',icon:'▯'}, {value:'9:16',icon:'▯'}
+        ],
+        resolutions: [
+            {value:'480p', label:'480p'},
+            {value:'720p', label:'720p'}
+        ],
+        durations: [
+            {value:'4s', label:'4s'}, {value:'5s', label:'5s'}, {value:'6s', label:'6s'},
+            {value:'7s', label:'7s'}, {value:'8s', label:'8s'}, {value:'9s', label:'9s'},
+            {value:'10s', label:'10s'}, {value:'11s', label:'11s'}, {value:'12s', label:'12s'},
+            {value:'13s', label:'13s'}, {value:'14s', label:'14s'}, {value:'15s', label:'15s'}
+        ],
+        defaultAspect: '16:9',
+        defaultRes: '480p',
+        defaultDuration: '5s',
+        showcase: { logo: 'bytedance.png?v=1', video: 'seedance25-preview.mp4?v=20260810a', sub: 'Пример появится после первой генерации' }
+    },
     'seedance-2': {
         // [DOC docs.kie.ai/market/bytedance/seedance-2] bytedance/seedance-2 (СТАРШАЯ, 16.07.2026): t2v + i2v
         // (1 фото = первый кадр), duration 4–15 c, generate_audio bool, aspect = палитра Mini + 21:9.
