@@ -94,7 +94,10 @@ fileInput.addEventListener('change', (e) => {
     handleFiles(e.target.files);
 });
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 МБ
+// 10.08.2026 («да» владельца, кейс 4K-постера 12,8 МБ): 10 → 20 МБ. Стена 10 МБ была наследием
+// base64-пути (тело вебхука 16 МБ); основной путь давно tus (подтверждён логом tusd), а base64-фолбэк
+// защищён штатно — перебор бюджета WEBHOOK_IMAGES_BUDGET пережимается на месте перед отправкой.
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 МБ
 
 function handleFiles(files) {
     const maxFiles = (modelConfigs[selectedModel] && modelConfigs[selectedModel].maxFiles) || 10;
@@ -106,7 +109,7 @@ function handleFiles(files) {
             return;
         }
         if (file.size > MAX_FILE_SIZE) {
-            showToast('Фото больше 10 МБ — выберите меньше', 'error');
+            showToast('Фото больше 20 МБ — выберите меньше', 'error');
             return;
         }
         if (file.size > 4 * 1024 * 1024) {
@@ -189,20 +192,43 @@ function handleVideoRef(file) {
     }
     const probe = document.createElement('video');
     probe.preload = 'metadata';
+    probe.muted = true;
+    probe.playsInline = true;
     probe.onloadedmetadata = () => {
         const dur = probe.duration;
-        URL.revokeObjectURL(probe.src);
         if (!isFinite(dur) || dur < 3 || dur > 30) {
+            URL.revokeObjectURL(probe.src);
             showToast('Длительность видео должна быть от 3 до 30 секунд', 'error');
             videoRefInput.value = '';
             return;
         }
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            uploadedVideoRef = { file: file, dataUrl: ev.target.result, duration: Math.ceil(dur) };
-            updateVideoRefStatus();
+        // 10.08.2026 (заказ владельца): миниатюра-кадр как у фото — свидетельство, что видео принято.
+        // Кадр берём с 0.3 c; если кодек не отдал кадр за 1.5 c — превью-плитка будет с 🎬 вместо кадра.
+        const finish = (thumb) => {
+            URL.revokeObjectURL(probe.src);
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                uploadedVideoRef = { file: file, dataUrl: ev.target.result, duration: Math.ceil(dur), thumb: thumb };
+                updateVideoRefStatus();
+            };
+            reader.readAsDataURL(file);
         };
-        reader.readAsDataURL(file);
+        let done = false;
+        const grab = () => {
+            if (done) return; done = true;
+            try {
+                const c = document.createElement('canvas');
+                const side = 160;
+                c.width = side; c.height = side;
+                const vw = probe.videoWidth || side, vh = probe.videoHeight || side;
+                const s = Math.max(side / vw, side / vh);
+                c.getContext('2d').drawImage(probe, (side - vw * s) / 2, (side - vh * s) / 2, vw * s, vh * s);
+                finish(c.toDataURL('image/jpeg', 0.8));
+            } catch (e) { finish(null); }
+        };
+        probe.onseeked = grab;
+        setTimeout(() => { if (!done) { done = true; finish(null); } }, 1500);
+        try { probe.currentTime = 0.3; } catch (e) { grab(); }
     };
     probe.onerror = () => {
         URL.revokeObjectURL(probe.src);
@@ -219,7 +245,43 @@ function updateVideoRefStatus() {
             ? '✓ ' + (uploadedVideoRef.file.name || 'видео') + ' · ' + uploadedVideoRef.duration + ' сек'
             : 'Видео не выбрано';
     }
+    // Миниатюра с крестиком — тот же паттерн, что у фото (preview-item / preview-remove).
+    const pv = document.getElementById('videoRefPreview');
+    if (pv) {
+        pv.textContent = '';
+        if (uploadedVideoRef) {
+            const item = document.createElement('div');
+            item.className = 'preview-item';
+            if (uploadedVideoRef.thumb) {
+                const imgEl = document.createElement('img');
+                imgEl.width = 80;
+                imgEl.height = 80;
+                imgEl.src = uploadedVideoRef.thumb;
+                imgEl.alt = 'Кадр видео';
+                item.appendChild(imgEl);
+            } else {
+                const ph = document.createElement('div');
+                ph.style.cssText = 'width:80px;height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;';
+                ph.textContent = '🎬';
+                item.appendChild(ph);
+            }
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'preview-remove';
+            btn.textContent = '×';
+            btn.setAttribute('aria-label', 'Удалить видео');
+            btn.addEventListener('click', removeVideoRef);
+            item.appendChild(btn);
+            pv.appendChild(item);
+        }
+    }
     updateValidation();
+}
+
+function removeVideoRef() {
+    uploadedVideoRef = null;
+    if (videoRefInput) videoRefInput.value = '';
+    updateVideoRefStatus();
 }
 
 // --- Звук-образец (MiniMax H3, reference_audio) ---
