@@ -930,7 +930,9 @@ const modelConfigs = {
         defaultDuration: '4s',
         // Placeholder-витрина (паттерн Seedance 2.5): без ключа video блок остаётся заставкой на логотипе.
         // Демо-ролик владельца станет витриной: video: 'veo31-preview.mp4?v=<дата>' + файл в корень репо.
-        showcase: { logo: 'veo.png?v=1', sub: 'Витрина появится после первой генерации' }
+        // Витрина = ролик владельца 13.08 («VEO 3.1.mp4», 8 с 720p со звуком), сжат 9,25 МБ → 493 КБ
+        // (720×406, crf 34, звук 48k) по прецеденту Seedance/Omni. Исходник: docs/assets/veo31/.
+        showcase: { logo: 'veo.png?v=1', video: 'veo31-preview.mp4?v=20260813c', sub: 'Пример — гонка сквозь грозу, вид из кабины; звук из модели' }
     },
     'gemini-omni-video': {
         // [DOC docs.kie.ai/market/gemini-omni-video] gemini-omni-video (22.07.2026): t2v + i2v (1 фото-референс),
