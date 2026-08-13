@@ -898,6 +898,40 @@ const modelConfigs = {
         // переходы мягкие; сжато до 720p/523 КБ по прецеденту Seedance и Omni. Звук убран — витрина немая.
         showcase: { logo: 'minimax-h3.png?v=20260801', video: 'minimax-h3-preview.mp4?v=20260801', sub: 'Пример — экшен-сцена в 2K' }
     },
+    'veo-31': {
+        // [DOC apidoc.cometapi.com/api/video/veo3] Veo 3.1 (13.08.2026): канал COMETAPI (боевой релей,
+        // −20% от прайса Google), запасной слот Replicate — паттерн MJ. Контракт: multipart /v1/videos,
+        // model=veo3.1, seconds СТРОГО 4|6|8 (потолок самой модели — 8 с), size из 4 значений.
+        // Звук у Veo 3.1 всегда включён (флага нет), цена от звука не зависит.
+        // Фото: максимум 1 = первый кадр (i2v) — мульти-референсов маршрут /v1/videos не даёт.
+        // ⚠️ Вертикаль 9:16 существует ТОЛЬКО в 720p → подана ПУНКТОМ РАЗРЕШЕНИЯ '720p-v', отдельного
+        // AR-выбора нет — это исключает «выбрал 9:16+4K: списали за 4K, сгенерили 720p». Бэкенд-пара:
+        // VEO Prep ('720p-v' → 720x1280) и Balance Cost Check (uhd только '4k', '720p-v' = обычный вес).
+        apiSlug: 'veo-31',
+        provider: 'cometapi',
+        audioToggle: false,
+        maxFiles: 1,
+        refHint: 'Одно фото станет первым кадром ролика. Модель принимает максимум 1 изображение.',
+        resHint: 'Вертикальный ролик для Shorts/TikTok — пункт «720p · вертикаль 9:16»',
+        aspectRatios: [
+            {value:'16:9',icon:'▬'}
+        ],
+        resolutions: [
+            {value:'720p', label:'720p'},
+            {value:'720p-v', label:'720p · вертикаль 9:16'},
+            {value:'1080p', label:'1080p'},
+            {value:'4K', label:'4K · Ultra HD'}
+        ],
+        durations: [
+            {value:'4s', label:'4s'}, {value:'6s', label:'6s'}, {value:'8s', label:'8s'}
+        ],
+        defaultAspect: '16:9',
+        defaultRes: '720p',
+        defaultDuration: '4s',
+        // Placeholder-витрина (паттерн Seedance 2.5): без ключа video блок остаётся заставкой на логотипе.
+        // Демо-ролик владельца станет витриной: video: 'veo31-preview.mp4?v=<дата>' + файл в корень репо.
+        showcase: { logo: 'gemini.png?v=1', sub: 'Витрина появится после первой генерации' }
+    },
     'gemini-omni-video': {
         // [DOC docs.kie.ai/market/gemini-omni-video] gemini-omni-video (22.07.2026): t2v + i2v (1 фото-референс),
         // duration ТОЛЬКО 4/6/8/10 (enum kie, строка), AR только 16:9|9:16, качества 720p/1080p/4k.
@@ -1512,7 +1546,7 @@ modelOptions.forEach(option => {
 
         // Update icon
         modelIconEl.className = 'model-icon ' + option.dataset.icon;
-        modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','seedance':'S','openai':'O','grok':'X','ideogram':'✦','recraft':'R','reve':'◆','topaz':'T','bfl':'F'}[option.dataset.icon] || 'S';
+        modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','seedance':'S','openai':'O','grok':'X','ideogram':'✦','recraft':'R','reve':'◆','topaz':'T','bfl':'F','veo':'V'}[option.dataset.icon] || 'S';
 
         modelDropdown.classList.remove('open');
         updateModelParams(selectedModel);
