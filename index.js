@@ -689,13 +689,12 @@ const modelConfigs = {
         // закупка по официальной ставке ByteDance (решение владельца 09.08). Схема снята живьём 10.08:
         // resolution ТОЛЬКО 480p/720p (1080p в API нет — маркетинг площадок), duration 4–30 у модели,
         // наш потолок 15 с на старте (решение владельца, страховка баланса), prompt ≤2000.
-        // Фото: 1 = первый кадр (i2v), 2–10 = референсы персонажа/стиля; смешивать режимы API запрещает.
-        // 16.08: лимит 4 → 10 (заказ владельца «все функции»; схема Replicate позволяет до 30, бэкенд-слайс 30).
+        // Фото: 1 = первый кадр (i2v), 2–4 = референсы персонажа/стиля; смешивать режимы API запрещает.
         // adaptive в AR не выдаём: при фото бэкенд ставит его сам (форма от фото), при тексте — выбор юзера.
         apiSlug: 'seedance-25',
         provider: 'replicate',
         audioToggle: true,
-        maxFiles: 10,
+        maxFiles: 4,
         promptLimit: 2000,
         aspectRatios: [
             {value:'16:9',icon:'▬'}, {value:'21:9',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'1:1',icon:'▢'},
@@ -724,11 +723,11 @@ const modelConfigs = {
         // (1 фото = первый кадр), duration 4–15 c, generate_audio bool, aspect = палитра Mini + 21:9.
         // Качества ТОЛЬКО 1080p/4k — развод линеек с Mini (480p/720p) без пересечения цен, решение владельца 16.07 вечер.
         // Модель умеет референсы-видео/аудио и последний кадр — в v1 фронтом не выдаются (бэкенд-хвост по отмашке).
-        // 16.08: 1 фото = первый кадр, 2–9 = референсы (reference_image_urls, потолок ByteDance 9; ветка SD Assets Convert).
+        // 16.08: мульти-референсы обкатываются СНАЧАЛА на Mini (решение владельца) — здесь остаётся 1 фото.
         apiSlug: 'seedance-2',
         provider: 'kie',
         audioToggle: true,
-        maxFiles: 9,
+        maxFiles: 1,
         aspectRatios: [
             {value:'16:9',icon:'▬'}, {value:'21:9',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'1:1',icon:'▢'},
             {value:'3:4',icon:'▯'}, {value:'9:16',icon:'▯'}, {value:'adaptive',icon:'▢'}
@@ -2074,11 +2073,26 @@ generateBtn.addEventListener('click', async () => {
                     const jobs = [];
                     if (currentMode === 'video') {
                         if (uploadedImages.length) {
-                            const im = uploadedImages[0];
-                            // Kling motion: kie валидирует расширение — webp и прочее конвертируем в JPEG (ERR-20260715-001)
-                            const blob = cfg.requiresVideoRef ? dataUrlToBlob(await ensureJpegPng(im.dataUrl)) : im.file;
-                            if (!blob) throw new Error('blob convert fail');
-                            jobs.push({ blob, mime: blob.type || im.file.type || 'image/jpeg', thumbIndex: 0, isVideo: false });
+                            // ⛔ КОРЕНЬ БАГА (найден 16.08): здесь стояла жёсткая обрезка uploadedImages[0] —
+                            // второе и последующие фото не покидали телефон, хотя интерфейс их принимал.
+                            // Правка от 01.08 (slice по maxFiles) лечила только base64-фолбэк, а он почти
+                            // никогда не наступает: с 04.08 закачка идёт через tus, то есть через ЭТУ ветку.
+                            // 16.08 (решение владельца): мульти-референсы включаем ТОЛЬКО у Seedance 2.0 Mini.
+                            // Все прочие видео-модели работают ровно как раньше — первое фото и только оно.
+                            const multiRef = selectedModel === 'seedance-2-mini' && !cfg.requiresVideoRef;
+                            if (multiRef) {
+                                const mfv = Math.max(1, Number(cfg.maxFiles) || 1);
+                                uploadedImages.slice(0, mfv).forEach((im, i) => {
+                                    if (!im.file) throw new Error('blob convert fail');
+                                    jobs.push({ blob: im.file, mime: im.file.type || 'image/jpeg', thumbIndex: i, isVideo: false });
+                                });
+                            } else {
+                                const im = uploadedImages[0];
+                                // Kling motion: kie валидирует расширение — webp и прочее конвертируем в JPEG (ERR-20260715-001)
+                                const blob = cfg.requiresVideoRef ? dataUrlToBlob(await ensureJpegPng(im.dataUrl)) : im.file;
+                                if (!blob) throw new Error('blob convert fail');
+                                jobs.push({ blob, mime: blob.type || im.file.type || 'image/jpeg', thumbIndex: 0, isVideo: false });
+                            }
                         }
                         if (wantVideoRef) {
                             jobs.push({ blob: uploadedVideoRef.file, mime: uploadedVideoRef.file.type || 'video/mp4', thumbIndex: null, isVideo: true });
