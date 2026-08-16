@@ -41,7 +41,6 @@ let selectedModel = 'nano-banana-pro';
 let currentMode = 'image';
 let selectedDuration = '8s';
 let generateAudio = true;
-let reveFast = false;
 
 // Elements
 const promptInput = document.getElementById('promptInput');
@@ -553,25 +552,6 @@ const modelConfigs = {
         // Счётчик количества скрыт (решение владельца 06.08): 1 нажатие = 1 заказ = 4 кадра;
         // единица оплаты — заказ, generic-текст счётчика («каждая картинка отдельно») тут врал бы.
         hideCount: true
-    },
-    'reve': {
-        // Reve 2.1 (V2 API) НАПРЯМУЮ через api.reve.com (мимо kie): v2/image/create|edit, включён per-account 08.07.26.
-        // Режим по числу фото: 0 = Create (t2i), 1 = Edit (фото+инструкция), 2-8 = Create с references. Фото опционально.
-        // Палитра форматов V2 подтверждена живыми пробами 08.07 (15 значений + auto). Тумблера Fast в V2 нет.
-        isReve: true,
-        maxFiles: 8,        // V2 references: до 8 фото
-        promptLimit: 4000,  // Лимит V2 (живой проб 08.07: «prompt length must be no more than 4000 characters»)
-        aspectRatios: [
-            {value:'auto',icon:'▢'},
-            {value:'4:1',icon:'▬'}, {value:'3:1',icon:'▬'}, {value:'21:9',icon:'▬'}, {value:'2:1',icon:'▬'},
-            {value:'17:9',icon:'▬'}, {value:'16:9',icon:'▬'}, {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'},
-            {value:'1:1',icon:'▢'},
-            {value:'3:4',icon:'▯'}, {value:'2:3',icon:'▯'}, {value:'9:16',icon:'▯'},
-            {value:'1:2',icon:'▯'}, {value:'1:3',icon:'▯'}, {value:'1:4',icon:'▯'}
-        ],
-        resolutions: [],
-        defaultAspect: '1:1',
-        defaultRes: null
     },
     'recraft-v41-pro': {
         // [DOC recraft.ai /v1/images/generations] ПРЯМОЙ Recraft API (мимо kie). Только t2i (Фаза 1:
@@ -1238,7 +1218,7 @@ function updateModelParams(model) {
     }
 
     // --- Per-model prompt length limit ---
-    // Reve V2 API hard-caps the prompt at 4000 chars (HTTP 400 otherwise). Other models default to 5000.
+    // У части моделей API жёстко режет промпт (HTTP 400 при переборе) — лимит задаётся promptLimit в конфиге, остальным дефолт 5000.
     // Enforce in the field (maxlength blocks typing past the cap), reflect the cap in the counter,
     // and show an explicit note under the prompt so nobody pastes a longer prompt and hits a failure.
     const DEFAULT_PROMPT_LIMIT = 5000;
@@ -1260,8 +1240,6 @@ function updateModelParams(model) {
 
     // --- Audio toggle visibility (only for models that support audio on/off) ---
     document.getElementById('audioSection').classList.toggle('hidden', !config.audioToggle);
-    // Reve V2 (08.07.26): параметра fast в API нет — секция скрыта для всех моделей.
-    document.getElementById('reveFastSection').classList.add('hidden');
 
     // --- Utility models (recraft remove-bg / upscale): photo in -> file out.
     // No prompt / aspect / resolution / count — only the photo upload, which is mandatory. ---
@@ -1395,7 +1373,7 @@ function updateModelParams(model) {
         // "null"/"undefined" на экране никогда не появится (блок resolutionDropdown к тому
         // же display:none, вместо него показан resNote с фиксированным текстом-объяснением).
         // null уходит только в исходящий payload генерации для моделей без оси разрешения
-        // (grok/ideogram-v4/reve/recraft-*); как это поле трактует бэкенд (Kie Mapper) — вне
+        // (grok/ideogram-v4/recraft-*); как это поле трактует бэкенд (Kie Mapper) — вне
         // области этого фронтенд-аудита, не проверялось.
         selectedResolution = null;
         return;
@@ -1520,15 +1498,6 @@ function toggleAudio() {
 audioToggleEl.addEventListener('click', toggleAudio);
 audioToggleEl.addEventListener('keydown', onActivateKey(toggleAudio));
 
-// Reve Fast toggle
-const reveFastToggleEl = document.getElementById('reveFastToggle');
-function toggleReveFast() {
-    reveFastToggleEl.classList.toggle('active');
-    reveFast = reveFastToggleEl.classList.contains('active');
-    reveFastToggleEl.setAttribute('aria-checked', reveFast ? 'true' : 'false');
-}
-reveFastToggleEl.addEventListener('click', toggleReveFast);
-reveFastToggleEl.addEventListener('keydown', onActivateKey(toggleReveFast));
 
 // Model dropdown (custom handler for complex options)
 const modelDropdown = document.getElementById('modelDropdown');
@@ -1556,7 +1525,7 @@ modelOptions.forEach(option => {
 
         // Update icon
         modelIconEl.className = 'model-icon ' + option.dataset.icon;
-        modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','seedance':'S','openai':'O','grok':'X','ideogram':'✦','recraft':'R','reve':'◆','topaz':'T','bfl':'F','veo':'V'}[option.dataset.icon] || 'S';
+        modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','seedance':'S','openai':'O','grok':'X','ideogram':'✦','recraft':'R','topaz':'T','bfl':'F','veo':'V'}[option.dataset.icon] || 'S';
 
         modelDropdown.classList.remove('open');
         updateModelParams(selectedModel);
@@ -2036,7 +2005,7 @@ generateBtn.addEventListener('click', async () => {
          * Тело запроса на генерацию — форма отличается по ветке (video/image), поэтому
          * все поля кроме action/prompt/model/aspectRatio/resolution/count/images
          * помечены опциональными: provider/duration/generateAudio кладёт только видео-
-         * ветка, provider(image)/reve_fast — image-ветка, и то не всегда (см. if ниже).
+         * ветка, provider(image) — image-ветка, и то не всегда (см. if ниже).
          * @typedef {Object} GeneratePayload
          * @property {string} action
          * @property {string} prompt
@@ -2050,19 +2019,17 @@ generateBtn.addEventListener('click', async () => {
          * @property {string[]} images
          * @property {string} [video]
          * @property {string} [character_orientation]
-         * @property {boolean} [reve_fast]
          * @property {{id: string, size: number, mime: string}[]} [image_uploads]
          * @property {{id: string, size: number, mime: string}} [video_upload]
          */
         // === Параллельная отправка референсов через tus-приёмник (22.07.2026) ===
-        // Reve остаётся на старом пути: его HTTP-нода читает base64 прямо из body.
         // Сбой закачки/недоступный приёмник -> tusImageRefs=null -> старый base64-путь ниже.
         let tusImageRefs = null;
         let tusVideoRef = null;
         {
             const cfg = modelConfigs[selectedModel] || {};
             const wantVideoRef = !!(currentMode === 'video' && (cfg.requiresVideoRef || cfg.optionalVideoRef) && uploadedVideoRef);
-            const wantTus = selectedModel !== 'reve' && (uploadedImages.length > 0 || wantVideoRef);
+            const wantTus = (uploadedImages.length > 0 || wantVideoRef);
             // Тот же набор файлов уже провалился по каналу: второй заход дал бы тот же обрыв,
             // поэтому в сеть не выходим вообще и сразу показываем окно (05.08.2026).
             if (wantTus && slowUploadKey && slowUploadKey === currentFilesKey()) {

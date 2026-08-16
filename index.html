@@ -808,7 +808,6 @@
         }
 
         .model-icon.ideogram,
-        .model-icon.reve,
         .model-icon.midjourney,
         .model-icon.topaz {
             border: none;
@@ -827,12 +826,6 @@
             background: #5b8cff;
             -webkit-mask-image: url('ideogram.png?v=1');
             mask-image: url('ideogram.png?v=1');
-        }
-
-        .model-icon.reve {
-            background: #22d3ee;
-            -webkit-mask-image: url('reve.png?v=1');
-            mask-image: url('reve.png?v=1');
         }
 
         .model-icon.midjourney {
@@ -1408,7 +1401,6 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Reve 2.1 снята 13.08.2026: публичный API Reve закрыт 14.08 (письмо 06.08, решение владельца). Конфиг в index.js оставлен намеренно — откат = вернуть этот блок. -->
                     <div class="dropdown-option" data-value="recraft-v41-pro" data-name="Recraft V4.1 Pro" data-desc="Recraft · Полиграфия и детализация, до 3K" data-icon="recraft" data-mode="image">
                         <div class="model-option-content">
                             <div class="model-icon recraft">R</div>
@@ -1725,15 +1717,6 @@
             <p id="countWarning" style="display:none; font-size:12px; color:#f0a020; margin-top:10px; font-weight:600;"></p>
         </div>
 
-        <!-- Reve: Fast mode (Edit/Remix дешевле) -->
-        <div class="section hidden" id="reveFastSection">
-            <h2 class="section-title">Режим Reve</h2>
-            <div class="toggle-row">
-                <span class="toggle-label" id="reveFastLabel">⚡ Быстрый режим — дешевле (для правок и ремикса фото)</span>
-                <div class="toggle-switch" id="reveFastToggle" role="switch" tabindex="0" aria-checked="false" aria-labelledby="reveFastLabel"></div>
-            </div>
-        </div>
-
         <!-- Duration (Video only) -->
         <div class="section hidden" id="durationSection">
             <h2 class="section-title">Duration</h2>
@@ -1794,6 +1777,6 @@
         </div>
     </div>
 
-    <script src="index.js?v=20260817a"></script>
+    <script src="index.js?v=20260817b"></script>
 </body>
 </html>
