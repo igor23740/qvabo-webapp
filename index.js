@@ -689,12 +689,13 @@ const modelConfigs = {
         // закупка по официальной ставке ByteDance (решение владельца 09.08). Схема снята живьём 10.08:
         // resolution ТОЛЬКО 480p/720p (1080p в API нет — маркетинг площадок), duration 4–30 у модели,
         // наш потолок 15 с на старте (решение владельца, страховка баланса), prompt ≤2000.
-        // Фото: 1 = первый кадр (i2v), 2–4 = референсы персонажа/стиля; смешивать режимы API запрещает.
+        // Фото: 1 = первый кадр (i2v), 2–10 = референсы персонажа/стиля; смешивать режимы API запрещает.
+        // 16.08 (заказ владельца): лимит 4 → 10, схема Replicate позволяет до 30 (бэкенд-слайс 30).
         // adaptive в AR не выдаём: при фото бэкенд ставит его сам (форма от фото), при тексте — выбор юзера.
         apiSlug: 'seedance-25',
         provider: 'replicate',
         audioToggle: true,
-        maxFiles: 4,
+        maxFiles: 10,
         promptLimit: 2000,
         aspectRatios: [
             {value:'16:9',icon:'▬'}, {value:'21:9',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'1:1',icon:'▢'},
@@ -723,11 +724,11 @@ const modelConfigs = {
         // (1 фото = первый кадр), duration 4–15 c, generate_audio bool, aspect = палитра Mini + 21:9.
         // Качества ТОЛЬКО 1080p/4k — развод линеек с Mini (480p/720p) без пересечения цен, решение владельца 16.07 вечер.
         // Модель умеет референсы-видео/аудио и последний кадр — в v1 фронтом не выдаются (бэкенд-хвост по отмашке).
-        // 16.08: мульти-референсы обкатываются СНАЧАЛА на Mini (решение владельца) — здесь остаётся 1 фото.
+        // 16.08 (заказ владельца): 1 фото = первый кадр, 2–9 = референсы (reference_image_urls, потолок ByteDance 9).
         apiSlug: 'seedance-2',
         provider: 'kie',
         audioToggle: true,
-        maxFiles: 1,
+        maxFiles: 9,
         aspectRatios: [
             {value:'16:9',icon:'▬'}, {value:'21:9',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'1:1',icon:'▢'},
             {value:'3:4',icon:'▯'}, {value:'9:16',icon:'▯'}, {value:'adaptive',icon:'▢'}
@@ -2077,9 +2078,10 @@ generateBtn.addEventListener('click', async () => {
                             // второе и последующие фото не покидали телефон, хотя интерфейс их принимал.
                             // Правка от 01.08 (slice по maxFiles) лечила только base64-фолбэк, а он почти
                             // никогда не наступает: с 04.08 закачка идёт через tus, то есть через ЭТУ ветку.
-                            // 16.08 (решение владельца): мульти-референсы включаем ТОЛЬКО у Seedance 2.0 Mini.
-                            // Все прочие видео-модели работают ровно как раньше — первое фото и только оно.
-                            const multiRef = selectedModel === 'seedance-2-mini' && !cfg.requiresVideoRef;
+                            // 16.08 (заказ владельца): мульти-референсы у линейки Seedance — Mini, старшая 2.0
+                            // и 2.5. Все прочие видео-модели работают ровно как раньше: первое фото и только оно.
+                            const MULTI_REF_MODELS = ['seedance-2-mini', 'seedance-2', 'seedance-25'];
+                            const multiRef = MULTI_REF_MODELS.indexOf(selectedModel) !== -1 && !cfg.requiresVideoRef;
                             if (multiRef) {
                                 const mfv = Math.max(1, Number(cfg.maxFiles) || 1);
                                 uploadedImages.slice(0, mfv).forEach((im, i) => {
