@@ -1668,6 +1668,9 @@ async function shrinkForTopaz(dataUrl) {
 // фото от самого тяжёлого к меньшим (2048px / JPEG 0.92, как вход Topaz) — качество
 // оригинала страдает только там, где без этого запрос вообще не дошёл бы.
 const WEBHOOK_IMAGES_BUDGET = 14 * 1024 * 1024;
+// Cloudinary (заливка референсов) принимает картинку до 10 МБ — реф 12,9 МБ дал Bad request
+// и валил прогон (инцидент 90585, 17.08). Всё тяжелее лимита жмём на месте ДО отправки.
+const CLOUD_IMG_LIMIT = 9.5 * 1024 * 1024;
 
 async function shrinkReference(dataUrl) {
     try {
@@ -2056,14 +2059,19 @@ generateBtn.addEventListener('click', async () => {
                             const multiRef = MULTI_REF_MODELS.indexOf(selectedModel) !== -1 && !cfg.requiresVideoRef;
                             if (multiRef) {
                                 const mfv = Math.max(1, Number(cfg.maxFiles) || 1);
-                                uploadedImages.slice(0, mfv).forEach((im, i) => {
+                                const picked = uploadedImages.slice(0, mfv);
+                                for (let i = 0; i < picked.length; i++) {
+                                    const im = picked[i];
                                     if (!im.file) throw new Error('blob convert fail');
-                                    jobs.push({ blob: im.file, mime: im.file.type || 'image/jpeg', thumbIndex: i, isVideo: false });
-                                });
+                                    const blob = im.file.size > CLOUD_IMG_LIMIT ? dataUrlToBlob(await shrinkReference(im.dataUrl)) : im.file;
+                                    if (!blob) throw new Error('blob convert fail');
+                                    jobs.push({ blob, mime: blob.type || im.file.type || 'image/jpeg', thumbIndex: i, isVideo: false });
+                                }
                             } else {
                                 const im = uploadedImages[0];
                                 // Kling motion: kie валидирует расширение — webp и прочее конвертируем в JPEG (ERR-20260715-001)
-                                const blob = cfg.requiresVideoRef ? dataUrlToBlob(await ensureJpegPng(im.dataUrl)) : im.file;
+                                let blob = cfg.requiresVideoRef ? dataUrlToBlob(await ensureJpegPng(im.dataUrl)) : im.file;
+                                if (!cfg.requiresVideoRef && blob && blob.size > CLOUD_IMG_LIMIT) blob = dataUrlToBlob(await shrinkReference(im.dataUrl));
                                 if (!blob) throw new Error('blob convert fail');
                                 jobs.push({ blob, mime: blob.type || im.file.type || 'image/jpeg', thumbIndex: 0, isVideo: false });
                             }
@@ -2077,7 +2085,11 @@ generateBtn.addEventListener('click', async () => {
                         if (!blob) throw new Error('blob convert fail');
                         jobs.push({ blob, mime: blob.type || 'image/jpeg', thumbIndex: 0, isVideo: false });
                     } else {
-                        uploadedImages.forEach((im, i) => jobs.push({ blob: im.file, mime: im.file.type || 'image/jpeg', thumbIndex: i, isVideo: false }));
+                        for (let i = 0; i < uploadedImages.length; i++) {
+                            const im = uploadedImages[i];
+                            const blob = (im.file && im.file.size > CLOUD_IMG_LIMIT) ? dataUrlToBlob(await shrinkReference(im.dataUrl)) : im.file;
+                            jobs.push({ blob, mime: (blob && blob.type) || (im.file && im.file.type) || 'image/jpeg', thumbIndex: i, isVideo: false });
+                        }
                     }
                     const totalBytes = jobs.reduce((s, j) => s + j.blob.size, 0);
                     tusTotalBytes = totalBytes;
