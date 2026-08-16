@@ -411,7 +411,8 @@ const modelConfigs = {
             {value:'4K', label:'4K'}
         ],
         defaultAspect: '1:1',
-        defaultRes: '1K'
+        defaultRes: '1K',
+        maxFiles: 14          // 17.08: потолок разработчика (kie image_input ≤14; Nano Direct тоже slice 14)
     },
     'gpt-image-2': {
         aspectRatios: [
@@ -426,7 +427,8 @@ const modelConfigs = {
             {value:'4K', label:'4K'}
         ],
         defaultAspect: '1:1',
-        defaultRes: '1K'
+        defaultRes: '1K',
+        maxFiles: 16          // 17.08: потолок разработчика (kie input_urls ≤16)
     },
     'flux-2-pro': {
         aspectRatios: [
@@ -439,7 +441,8 @@ const modelConfigs = {
             {value:'2K', label:'2K'}
         ],
         defaultAspect: '1:1',
-        defaultRes: '1K'
+        defaultRes: '1K',
+        maxFiles: 8           // 17.08: потолок разработчика (kie input_urls ≤8; раньше дефолт 10 — лишние 2 файла молча выбрасывались)
     },
     'seedream-5': {
         aspectRatios: [
@@ -454,7 +457,8 @@ const modelConfigs = {
             {value:'4K', label:'4K'}
         ],
         defaultAspect: '1:1',
-        defaultRes: '1K'
+        defaultRes: '1K',
+        maxFiles: 14          // 17.08: потолок разработчика (kie image_urls ≤14)
     },
     'seedream-5-pro': {
         // Seedream 5 Pro (V2) — флагман ByteDance. Basic=1K / High=2K (4K нет). До 10 фото (i2i). nsfw_checker вкл (Фаза 1).
@@ -689,13 +693,13 @@ const modelConfigs = {
         // закупка по официальной ставке ByteDance (решение владельца 09.08). Схема снята живьём 10.08:
         // resolution ТОЛЬКО 480p/720p (1080p в API нет — маркетинг площадок), duration 4–30 у модели,
         // наш потолок 15 с на старте (решение владельца, страховка баланса), prompt ≤2000.
-        // Фото: 1 = первый кадр (i2v), 2–10 = референсы персонажа/стиля; смешивать режимы API запрещает.
-        // 16.08 (заказ владельца): лимит 4 → 10, схема Replicate позволяет до 30 (бэкенд-слайс 30).
+        // Фото: 1 = первый кадр (i2v), 2–30 = референсы персонажа/стиля; смешивать режимы API запрещает.
+        // 17.08 (заказ владельца «мощности как у разработчика»): 10 → 30 = потолок схемы Replicate (RC Prep slice 30, RC Assets Convert 30).
         // adaptive в AR не выдаём: при фото бэкенд ставит его сам (форма от фото), при тексте — выбор юзера.
         apiSlug: 'seedance-25',
         provider: 'replicate',
         audioToggle: true,
-        maxFiles: 10,
+        maxFiles: 30,
         promptLimit: 2000,
         aspectRatios: [
             {value:'16:9',icon:'▬'}, {value:'21:9',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'1:1',icon:'▢'},
@@ -2079,8 +2083,9 @@ generateBtn.addEventListener('click', async () => {
                             // Правка от 01.08 (slice по maxFiles) лечила только base64-фолбэк, а он почти
                             // никогда не наступает: с 04.08 закачка идёт через tus, то есть через ЭТУ ветку.
                             // 16.08 (заказ владельца): мульти-референсы у линейки Seedance — Mini, старшая 2.0
-                            // и 2.5. Все прочие видео-модели работают ровно как раньше: первое фото и только оно.
-                            const MULTI_REF_MODELS = ['seedance-2-mini', 'seedance-2', 'seedance-25'];
+                            // и 2.5. 17.08: + minimax-h3 (фронт обещал 5 фото, уезжало 1; бэкенд 53-prep/55-convert
+                            // к 5 фото готов с 01.08). Остальные видео-модели: первое фото и только оно (их API так хочет).
+                            const MULTI_REF_MODELS = ['seedance-2-mini', 'seedance-2', 'seedance-25', 'minimax-h3'];
                             const multiRef = MULTI_REF_MODELS.indexOf(selectedModel) !== -1 && !cfg.requiresVideoRef;
                             if (multiRef) {
                                 const mfv = Math.max(1, Number(cfg.maxFiles) || 1);
