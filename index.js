@@ -689,12 +689,13 @@ const modelConfigs = {
         // закупка по официальной ставке ByteDance (решение владельца 09.08). Схема снята живьём 10.08:
         // resolution ТОЛЬКО 480p/720p (1080p в API нет — маркетинг площадок), duration 4–30 у модели,
         // наш потолок 15 с на старте (решение владельца, страховка баланса), prompt ≤2000.
-        // Фото: 1 = первый кадр (i2v), 2–4 = референсы персонажа/стиля; смешивать режимы API запрещает.
+        // Фото: 1 = первый кадр (i2v), 2–10 = референсы персонажа/стиля; смешивать режимы API запрещает.
+        // 16.08: лимит 4 → 10 (заказ владельца «все функции»; схема Replicate позволяет до 30, бэкенд-слайс 30).
         // adaptive в AR не выдаём: при фото бэкенд ставит его сам (форма от фото), при тексте — выбор юзера.
         apiSlug: 'seedance-25',
         provider: 'replicate',
         audioToggle: true,
-        maxFiles: 4,
+        maxFiles: 10,
         promptLimit: 2000,
         aspectRatios: [
             {value:'16:9',icon:'▬'}, {value:'21:9',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'1:1',icon:'▢'},
@@ -723,10 +724,11 @@ const modelConfigs = {
         // (1 фото = первый кадр), duration 4–15 c, generate_audio bool, aspect = палитра Mini + 21:9.
         // Качества ТОЛЬКО 1080p/4k — развод линеек с Mini (480p/720p) без пересечения цен, решение владельца 16.07 вечер.
         // Модель умеет референсы-видео/аудио и последний кадр — в v1 фронтом не выдаются (бэкенд-хвост по отмашке).
+        // 16.08: 1 фото = первый кадр, 2–9 = референсы (reference_image_urls, потолок ByteDance 9; ветка SD Assets Convert).
         apiSlug: 'seedance-2',
         provider: 'kie',
         audioToggle: true,
-        maxFiles: 1,
+        maxFiles: 9,
         aspectRatios: [
             {value:'16:9',icon:'▬'}, {value:'21:9',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'1:1',icon:'▢'},
             {value:'3:4',icon:'▯'}, {value:'9:16',icon:'▯'}, {value:'adaptive',icon:'▢'}
@@ -750,6 +752,8 @@ const modelConfigs = {
         apiSlug: 'seedance-2-mini',
         provider: 'kie',
         audioToggle: true,
+        // 16.08: 1 фото = первый кадр, 2–9 = референсы (reference_image_urls, потолок ByteDance 9; ветка SD Assets Convert).
+        maxFiles: 9,
         aspectRatios: [
             {value:'16:9',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'1:1',icon:'▢'},
             {value:'3:4',icon:'▯'}, {value:'9:16',icon:'▯'}, {value:'adaptive',icon:'▢'}
