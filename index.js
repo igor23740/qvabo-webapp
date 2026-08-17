@@ -475,6 +475,24 @@ const modelConfigs = {
         defaultRes: '1K',
         maxFiles: 10
     },
+    'grok-image-2': {
+        // [DOC replicate.com/xai/grok-imagine-image-2] ПРЯМОЙ канал Replicate (мимо kie, 17.08.2026).
+        // Досье: QvaboWiki/RELAYS/GROK_IMAGE_2_CHANNELS_2026-08-17.md. Бэкенд всегда шлёт quality=medium
+        // + resolution=2k (цена Replicate плоская, тир не влияет) — осей качества/разрешения юзеру нет,
+        // resolutions:[] скрывает блок. AR — из схемы модели (без телефонной экзотики 19.5:9/20:9).
+        // ⛔ Фильтр xAI неотключаем (ручки в API нет) — «без фильтра» НЕ обещать ни на одном тарифе.
+        // i2i: модель принимает РОВНО ОДНО фото (у kie в Image 2.0 своё фото подать нельзя вообще).
+        maxFiles: 1,
+        uploadHint: 'Можно приложить 1 фото — модель отредактирует его по описанию: меняет то, что попросите, остальное сохраняет.',
+        aspectRatios: [
+            {value:'2:1',icon:'▬'}, {value:'16:9',icon:'▬'}, {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'},
+            {value:'1:1',icon:'▢'},
+            {value:'3:4',icon:'▯'}, {value:'2:3',icon:'▯'}, {value:'9:16',icon:'▯'}, {value:'1:2',icon:'▯'}
+        ],
+        resolutions: [],
+        defaultAspect: '1:1',
+        defaultRes: null
+    },
     'grok': {
         // [DOC kie.ai grok-imagine] t2i: только aspect_ratio (1:1,16:9,9:16,2:3,3:2),
         // НЕТ resolution; i2i — 1 референс. resolutions:[] -> блок Resolution скрывается.
