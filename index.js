@@ -485,6 +485,7 @@ const modelConfigs = {
         // Витрина = placeholder на логотипе (слово владельца 17.08: «изображение закинем для витрины»):
         // image не задан -> механизм показывает лого + подпись; при появлении кадра добавить image + новый sub.
         showcase: { logo: 'grok.png', sub: 'Grok Imagine 2.0 — точная правка фото и чёткий 2K' },
+        resNoteText: '✨ Разрешение всегда максимальное — 2K, выбирать ничего не нужно.',
         maxFiles: 1,
         uploadHint: 'Можно приложить 1 фото — модель отредактирует его по описанию: меняет то, что попросите, остальное сохраняет.',
         aspectRatios: [
@@ -1388,6 +1389,10 @@ function updateModelParams(model) {
     if (!config.resolutions || config.resolutions.length === 0) {
         resHint.style.display = 'none';
         resDropdownEl.style.display = 'none';
+        // 17.08 (замечание владельца): у Grok Imagine 2.0 разрешение не «отсутствует», а всегда
+        // максимальное (2K зашит на бэке) — текст плашки переопределяется конфигом resNoteText;
+        // дефолт = прежняя формулировка для остальных моделей без оси (grok/recraft-*).
+        resNote.textContent = config.resNoteText || '🔒 У этой модели разрешение не настраивается — доступен только выбор количества ниже.';
         resNote.style.display = 'block';
         // ВЕРДИКТ (аудит index.js:600): не UI-баг. Ранний return сразу после этой строки
         // пропускает единственный код ниже, который пишет resValue.textContent — значит
