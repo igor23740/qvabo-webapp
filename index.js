@@ -484,7 +484,7 @@ const modelConfigs = {
         // i2i: модель принимает РОВНО ОДНО фото (у kie в Image 2.0 своё фото подать нельзя вообще).
         // Витрина = кадр владельца 17.08 (QVABO_90990, гонщица у болида): исходник 2816×1584 —
         // модель отдала даже больше заявленных 2K. Оригинал: docs/assets/grok-image2/QVABO_90990_source.jpg.
-        showcase: { logo: 'grok.png', image: 'grok-image2-preview.webp?v=20260817f', sub: 'Пример — Grok Imagine 2.0, детализация 2K' },
+        showcase: { logo: 'grok.png', image: 'grok-image2-preview.webp?v=20260817f', sub: 'Пример — Grok Imagine 2.0: чёткий 2K и точная правка вашего фото' },
         resNoteText: '✨ Разрешение всегда максимальное — 2K, выбирать ничего не нужно.',
         maxFiles: 1,
         uploadHint: 'Можно приложить 1 фото — модель отредактирует его по описанию: меняет то, что попросите, остальное сохраняет.',
