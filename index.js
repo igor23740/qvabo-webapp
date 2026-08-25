@@ -938,7 +938,7 @@ const modelConfigs = {
         defaultDuration: '5s',
         // Placeholder-витрина (как у 2.5 10.08): БЕЗ ключа video блок остаётся заставкой на логотипе.
         // Демо-ролик владельца станет витриной так: video: 'wan3-preview.mp4?v=<дата>' + файл в корень репо.
-        showcase: { logo: 'wan.svg?v=20260825a', sub: 'Витрина появится после первого ролика' }
+        showcase: { logo: 'wan.png?v=20260825b', sub: 'Витрина появится после первого ролика' }
     },
     'veo-31': {
         // [DOC apidoc.cometapi.com/api/video/veo3] Veo 3.1 (13.08.2026): канал COMETAPI (боевой релей,
