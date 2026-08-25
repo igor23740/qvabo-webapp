@@ -908,6 +908,38 @@ const modelConfigs = {
         // переходы мягкие; сжато до 720p/523 КБ по прецеденту Seedance и Omni. Звук убран — витрина немая.
         showcase: { logo: 'minimax-h3.png?v=20260801', video: 'minimax-h3-preview.mp4?v=20260801', sub: 'Пример — экшен-сцена в 2K' }
     },
+    'wan-3': {
+        // [DOC docs.kie.ai/market/wan/3-0-video] Wan 3.0 (Alibaba) через kie (25.08.2026): текст + до 10 фото-образцов
+        // (reference_image_urls — ВСЕ фото уходят образцами, первого кадра у модели нет), качество 480P/720P/1080P,
+        // длительность 1–30 у модели, наш потолок 15 с на старте (страховка баланса, как у 2.5), звук тумблером,
+        // форматы кадра: adaptive/16:9/9:16/1:1/4:3/3:4 (палитра kie 25.08). Видео/звук-образцы и документы — не в v1.
+        // ⚠️ Значения ОБЯЗАНЫ совпадать с бэкендом: Balance Cost Check (PTS_WAN3 3/6/12 б/с) и ветка wan-3 в Seedance VIDEO PREP.
+        apiSlug: 'wan-3',
+        provider: 'kie',
+        audioToggle: true,
+        maxFiles: 10,
+        aspectRatios: [
+            {value:'16:9',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'1:1',icon:'▢'},
+            {value:'3:4',icon:'▯'}, {value:'9:16',icon:'▯'}, {value:'adaptive',icon:'▢'}
+        ],
+        resolutions: [
+            {value:'480p', label:'480p'},
+            {value:'720p', label:'720p'},
+            {value:'1080p', label:'1080p'}
+        ],
+        durations: [
+            {value:'4s', label:'4s'}, {value:'5s', label:'5s'}, {value:'6s', label:'6s'},
+            {value:'7s', label:'7s'}, {value:'8s', label:'8s'}, {value:'9s', label:'9s'},
+            {value:'10s', label:'10s'}, {value:'11s', label:'11s'}, {value:'12s', label:'12s'},
+            {value:'13s', label:'13s'}, {value:'14s', label:'14s'}, {value:'15s', label:'15s'}
+        ],
+        defaultAspect: '16:9',
+        defaultRes: '480p',
+        defaultDuration: '5s',
+        // Placeholder-витрина (как у 2.5 10.08): БЕЗ ключа video блок остаётся заставкой на логотипе.
+        // Демо-ролик владельца станет витриной так: video: 'wan3-preview.mp4?v=<дата>' + файл в корень репо.
+        showcase: { logo: 'wan.svg?v=20260825a', sub: 'Витрина появится после первого ролика' }
+    },
     'veo-31': {
         // [DOC apidoc.cometapi.com/api/video/veo3] Veo 3.1 (13.08.2026): канал COMETAPI (боевой релей,
         // −20% от прайса Google), запасной слот Replicate — паттерн MJ. Контракт: multipart /v1/videos,
@@ -1551,7 +1583,7 @@ modelOptions.forEach(option => {
 
         // Update icon
         modelIconEl.className = 'model-icon ' + option.dataset.icon;
-        modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','seedance':'S','openai':'O','grok':'X','ideogram':'✦','recraft':'R','topaz':'T','bfl':'F','veo':'V'}[option.dataset.icon] || 'S';
+        modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','seedance':'S','openai':'O','grok':'X','ideogram':'✦','recraft':'R','topaz':'T','bfl':'F','veo':'V','wan':'W'}[option.dataset.icon] || 'S';
 
         modelDropdown.classList.remove('open');
         updateModelParams(selectedModel);
@@ -2081,7 +2113,7 @@ generateBtn.addEventListener('click', async () => {
                             // 16.08 (заказ владельца): мульти-референсы у линейки Seedance — Mini, старшая 2.0
                             // и 2.5. 17.08: + minimax-h3 (фронт обещал 5 фото, уезжало 1; бэкенд 53-prep/55-convert
                             // к 5 фото готов с 01.08). Остальные видео-модели: первое фото и только оно (их API так хочет).
-                            const MULTI_REF_MODELS = ['seedance-2-mini', 'seedance-2', 'seedance-25', 'minimax-h3'];
+                            const MULTI_REF_MODELS = ['seedance-2-mini', 'seedance-2', 'seedance-25', 'minimax-h3', 'wan-3']; // 25.08: Wan 3.0 — до 10 образцов
                             const multiRef = MULTI_REF_MODELS.indexOf(selectedModel) !== -1 && !cfg.requiresVideoRef;
                             if (multiRef) {
                                 const mfv = Math.max(1, Number(cfg.maxFiles) || 1);
