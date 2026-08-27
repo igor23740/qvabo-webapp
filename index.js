@@ -978,9 +978,10 @@ const modelConfigs = {
         defaultAspect: '16:9',
         defaultRes: '720p',
         defaultDuration: '5s',
-        // Витрина = демо-ролик владельца на Mix (26.08, вертикаль, 8 с, звук из модели); исходник docs/assets/vidu/.
+        // Витрина = первый боевой прогон владельца в боте (exec 103843, 28.08): Mix, 15 с, 720p, 16:9, по одному фото,
+        // сценарий K2 с тайм-кодами, звук из модели; исходник docs/assets/vidu/k2/. Сжато до 960×540 по прецеденту Wan.
         // Иконка — логотип от владельца (vidu.png 512px, прозрачный), исходник docs/assets/vidu/vidu-logo-owner-2026-08-27.png.
-        showcase: { logo: 'vidu.png?v=20260827a', video: 'vidu-preview.mp4?v=20260827a', sub: 'Пример: ролик владельца на Vidu Q3 Mix, 8 с, вертикаль, звук из модели' }
+        showcase: { logo: 'vidu.png?v=20260827a', video: 'vidu-preview.mp4?v=20260828a', sub: 'Пример: ролик владельца на Vidu Q3 Mix, 15 с в 720p по одному фото, звук из модели' }
     },
     'veo-31': {
         // [DOC apidoc.cometapi.com/api/video/veo3] Veo 3.1 (13.08.2026): канал COMETAPI (боевой релей,
