@@ -789,6 +789,15 @@
             box-shadow: none;
         }
 
+        .model-icon.vidu {
+            /* Лого Vidu (файл владельца 27.08, ужат до 512px, прозрачный фон) — без подложки, как у Wan/Veo/MiniMax */
+            background: transparent url('vidu.png?v=20260827a') center / contain no-repeat;
+            border: none;
+            color: transparent;
+            font-size: 0;
+            box-shadow: none;
+        }
+
         .model-icon.wan {
             /* Лого Wan (файл владельца 25.08, ужат до 512px, прозрачный фон) */
             background: transparent url('wan.png?v=20260825b') center / contain no-repeat;
@@ -1287,9 +1296,9 @@
             <h1 id="headerTitle">🎨 AI Image Generator</h1>
             <p id="headerDesc">Создавайте потрясающие изображения с помощью передовых технологий искусственного интеллекта. Превращайте свои идеи в визуальные шедевры.</p>
             <div class="header-links">
-                <a href="faq.html?v=20260817a" class="faq-btn">❓ FAQ</a>
+                <a href="faq.html?v=20260827a" class="faq-btn">❓ FAQ</a>
                 <a href="cabinet.html?v=20260709b" class="cabinet-btn">💰 Баланс</a>
-                <a href="tariffs.html?v=20260821a" class="tariffs-btn">💎 Тарифы</a>
+                <a href="tariffs.html?v=20260827a" class="tariffs-btn">💎 Тарифы</a>
             </div>
         </div>
 
@@ -1504,6 +1513,15 @@
                     </div>
                     -->
 
+                    <div class="dropdown-option" data-value="vidu-q3" data-name="Vidu Q3 Mix" data-desc="Vidu · Персонаж по фото говорит и двигается, со звуком" data-icon="vidu" data-mode="video" style="display:none;">
+                        <div class="model-option-content">
+                            <div class="model-icon vidu">V</div>
+                            <div class="model-info">
+                                <div class="model-name">Vidu Q3 Mix</div>
+                                <div class="model-desc">Vidu · Персонаж по фото говорит и двигается, со звуком</div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="dropdown-option" data-value="minimax-h3" data-name="MiniMax H3" data-desc="MiniMax · Hailuo 03 — 2K со звуком" data-icon="minimax" data-mode="video" style="display:none;">
                         <div class="model-option-content">
                             <div class="model-icon minimax">M</div>
@@ -1700,6 +1718,14 @@
             </div>
         </div>
 
+        <!-- Модификация модели (27.08): одна вкладка, несколько версий одной модели (Vidu Q3: Mix, позже Ad и Drama).
+             Чипы рендерятся из modelConfigs[model].variants; секция скрыта, если у модели вариантов нет. В запрос уходит поле variant. -->
+        <div class="section hidden" id="variantSection">
+            <h2 class="section-title" id="variantTitle">Версия модели</h2>
+            <p id="variantHint" style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;"></p>
+            <div class="chips-container" id="variantChips"></div>
+        </div>
+
         <!-- Resolution -->
         <div class="section" id="resolutionSection">
             <h2 class="section-title" id="resolutionTitle">Разрешение</h2>
@@ -1803,6 +1829,6 @@
         </div>
     </div>
 
-    <script src="index.js?v=20260825c"></script>
+    <script src="index.js?v=20260827a"></script>
 </body>
 </html>

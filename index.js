@@ -35,6 +35,7 @@ if (tg && tg.initDataUnsafe?.user && !hasBotWriteAccess()) {
 let uploadedImages = [];
 let uploadedVideoRef = null; // {file, dataUrl, duration} — референс движения для Kling Motion Control
 let selectedAspectRatio = '1:1';
+let selectedVariant = ''; // 27.08: версия модели внутри вкладки (modelConfigs[model].variants), уходит полем variant
 let selectedResolution = '1K';
 let selectedCount = '1';
 let selectedModel = 'nano-banana-pro';
@@ -940,6 +941,43 @@ const modelConfigs = {
         // Демо-ролик владельца станет витриной так: video: 'wan3-preview.mp4?v=<дата>' + файл в корень репо.
         showcase: { logo: 'wan.png?v=20260825b', video: 'wan3-preview.mp4?v=20260825c', sub: 'Пример — ролик владельца 10 с в 720p, звук из модели' }
     },
+    'vidu-q3': {
+        // [DOC platform.vidu.com/docs/reference-to-video] Vidu Q3 Mix (ShengShu) ПРЯМЫМ API (27.08.2026): reference-to-video —
+        // от 1 до 7 фото-образцов ОБЯЗАТЕЛЬНЫ (текст без фото модель не принимает), звук всегда включён (речь + фон по промпту,
+        // тумблера нет — липсинк и есть смысл модели), 720p/1080p (540p есть в прайсе, включим после ворот), длительность 1–16 у модели,
+        // наш потолок 15 с, форматы 16:9 / 1:1 / 9:16 (3:4 и 4:3 только у q2). Версии Q3 (Mix / позже Ad, Drama) — ОДНА вкладка,
+        // выбор чипами «Версия модели» (variants → поле variant → белый список в ноде Vidu VIDEO PREP).
+        // ⚠️ Значения ОБЯЗАНЫ совпадать с бэкендом: Balance Cost Check (PTS_VIDU 7/9/11 б/с) и нода Vidu VIDEO PREP (ветка Vidu *).
+        apiSlug: 'vidu-q3',
+        provider: 'vidu',
+        audioToggle: false,
+        maxFiles: 7,
+        requiresReference: true,
+        refHint: 'Загрузите от 1 до 7 фото персонажа, предмета или места: модель соберёт сцену по ним. Без фото генерация не начнётся.',
+        variants: [
+            { value: 'mix', label: 'Mix', hint: 'Сцена по вашим фото, речь и звук из модели' }
+        ],
+        variantHint: 'Версии одной модели внутри вкладки. Сейчас доступна Mix.',
+        aspectRatios: [
+            {value:'16:9',icon:'▬'}, {value:'1:1',icon:'▢'}, {value:'9:16',icon:'▯'}
+        ],
+        resolutions: [
+            {value:'720p', label:'720p'},
+            {value:'1080p', label:'1080p'}
+        ],
+        durations: [
+            {value:'4s', label:'4s'}, {value:'5s', label:'5s'}, {value:'6s', label:'6s'},
+            {value:'7s', label:'7s'}, {value:'8s', label:'8s'}, {value:'9s', label:'9s'},
+            {value:'10s', label:'10s'}, {value:'11s', label:'11s'}, {value:'12s', label:'12s'},
+            {value:'13s', label:'13s'}, {value:'14s', label:'14s'}, {value:'15s', label:'15s'}
+        ],
+        defaultAspect: '16:9',
+        defaultRes: '720p',
+        defaultDuration: '5s',
+        // Витрина = демо-ролик владельца на Mix (26.08, вертикаль, 8 с, звук из модели); исходник docs/assets/vidu/.
+        // Иконка — логотип от владельца (vidu.png 512px, прозрачный), исходник docs/assets/vidu/vidu-logo-owner-2026-08-27.png.
+        showcase: { logo: 'vidu.png?v=20260827a', video: 'vidu-preview.mp4?v=20260827a', sub: 'Пример: ролик владельца на Vidu Q3 Mix, 8 с, вертикаль, звук из модели' }
+    },
     'veo-31': {
         // [DOC apidoc.cometapi.com/api/video/veo3] Veo 3.1 (13.08.2026): канал COMETAPI (боевой релей,
         // −20% от прайса Google), запасной слот Replicate — паттерн MJ. Контракт: multipart /v1/videos,
@@ -1407,6 +1445,32 @@ function updateModelParams(model) {
         chipsContainer.appendChild(chip);
     });
     selectedAspectRatio = config.defaultAspect;
+
+    // --- Версия модели внутри вкладки (27.08): чипы из config.variants (Vidu Q3: mix / позже ad, drama) ---
+    // Секция скрыта у моделей без variants; выбранное значение уходит полем variant (см. сборку тела generate_video).
+    const variantSection = document.getElementById('variantSection');
+    const variantChips = document.getElementById('variantChips');
+    if (variantSection && variantChips) {
+        const variants = Array.isArray(config.variants) ? config.variants : [];
+        variantChips.innerHTML = '';
+        variants.forEach((v, idx) => {
+            const chip = document.createElement('div');
+            chip.className = 'chip' + (idx === 0 ? ' active' : '');
+            chip.dataset.value = v.value;
+            chip.textContent = v.label || v.value;
+            if (v.hint) chip.title = v.hint;
+            chip.addEventListener('click', () => {
+                variantChips.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                selectedVariant = v.value;
+            });
+            variantChips.appendChild(chip);
+        });
+        selectedVariant = variants.length ? variants[0].value : '';
+        const variantHint = document.getElementById('variantHint');
+        if (variantHint) { variantHint.textContent = config.variantHint || ''; variantHint.style.display = config.variantHint ? '' : 'none'; }
+        variantSection.classList.toggle('hidden', variants.length === 0);
+    }
 
     // --- Update Resolution dropdown ---
     // Models without a resolution axis (e.g. Grok Imagine) keep the block VISIBLE
@@ -2113,7 +2177,7 @@ generateBtn.addEventListener('click', async () => {
                             // 16.08 (заказ владельца): мульти-референсы у линейки Seedance — Mini, старшая 2.0
                             // и 2.5. 17.08: + minimax-h3 (фронт обещал 5 фото, уезжало 1; бэкенд 53-prep/55-convert
                             // к 5 фото готов с 01.08). Остальные видео-модели: первое фото и только оно (их API так хочет).
-                            const MULTI_REF_MODELS = ['seedance-2-mini', 'seedance-2', 'seedance-25', 'minimax-h3', 'wan-3']; // 25.08: Wan 3.0 — до 10 образцов
+                            const MULTI_REF_MODELS = ['seedance-2-mini', 'seedance-2', 'seedance-25', 'minimax-h3', 'wan-3', 'vidu-q3']; // 25.08: Wan 3.0 — до 10 образцов; 27.08: Vidu Q3 Mix — до 7
                             const multiRef = MULTI_REF_MODELS.indexOf(selectedModel) !== -1 && !cfg.requiresVideoRef;
                             if (multiRef) {
                                 const mfv = Math.max(1, Number(cfg.maxFiles) || 1);
@@ -2218,6 +2282,8 @@ generateBtn.addEventListener('click', async () => {
                 // он равен 1 (поведение не меняется), у MiniMax H3 — 5 (столько MiniMax отдаёт бесплатно).
                 images: uploadedImages.slice(0, Math.max(1, Number(videoConfig.maxFiles) || 1)).map(img => img.dataUrl)
             };
+            // 27.08: версия модели внутри вкладки (Vidu Q3: mix / позже ad, drama) — только если у модели есть variants.
+            if (Array.isArray(videoConfig.variants) && videoConfig.variants.length && selectedVariant) data.variant = selectedVariant;
             // Kling Motion Control: длительность = замеренная длина референс-видео,
             // сам референс уходит отдельным полем video (data-URL, ≤9 МБ — проверено при выборе файла).
             if (videoConfig.requiresVideoRef && uploadedVideoRef) {
