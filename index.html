@@ -755,6 +755,17 @@
             box-shadow: none;
         }
 
+        /* 08.09: GPT Image 2.5 Sunburst — знак OpenAI в фирменном зелёном (логотип от владельца): маска по альфе openai.png */
+        .model-icon.openai-green {
+            background: #10a37f;
+            -webkit-mask: url('openai.png?v=1') center / contain no-repeat;
+            mask: url('openai.png?v=1') center / contain no-repeat;
+            border: none;
+            color: transparent;
+            font-size: 0;
+            box-shadow: none;
+        }
+
         .model-icon.grok {
             background: #000 url('grok.png') center / cover no-repeat;
             border: 1px solid #555;
@@ -1346,6 +1357,16 @@
                             </div>
                         </div>
                     </div>
+                    <!-- 08.09.2026: GPT Image 2.5 Sunburst (OpenAI через Replicate). Между Nano-Banana 2 и GPT Image 2 по слову владельца. -->
+                    <div class="dropdown-option" data-value="gpt-image-25" data-name="GPT Image 2.5 Sunburst" data-desc="OpenAI · Точный текст и правка" data-icon="openai-green" data-mode="image">
+                        <div class="model-option-content">
+                            <div class="model-icon openai-green">O</div>
+                            <div class="model-info">
+                                <div class="model-name">GPT Image 2.5 Sunburst</div>
+                                <div class="model-desc">OpenAI · Точный текст и правка</div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="dropdown-option" data-value="gpt-image-2" data-name="GPT Image 2" data-desc="OpenAI · Текст и кириллица" data-icon="openai" data-mode="image">
                         <div class="model-option-content">
                             <div class="model-icon openai">O</div>
@@ -1829,6 +1850,6 @@
         </div>
     </div>
 
-    <script src="index.js?v=20260827a"></script>
+    <script src="index.js?v=20260908a"></script>
 </body>
 </html>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" width="1280" height="720" role="img" aria-label="GPT Image 2.5 Sunburst">
+  <!-- Плейсхолдер витрины GPT Image 2.5 Sunburst (08.09.2026): палитра фронта QVABO
+       (bg #1a1a2e/#252542, accent #7c3aed/#8b5cf6, text #fff/#9ca3af, border #3d3d5c), знак OpenAI #10a37f.
+       Заменяется картинкой владельца (gpt-image-25-preview.webp) после первой генерации. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#252542"/>
+      <stop offset="1" stop-color="#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="acc" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#10a37f"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect x="24" y="24" width="1232" height="672" rx="28" fill="none" stroke="#3d3d5c" stroke-width="3"/>
+  <rect x="24" y="24" width="1232" height="8" rx="4" fill="url(#acc)"/>
+  <g transform="translate(640 250)" fill="none" stroke="#10a37f" stroke-width="30" stroke-linecap="round">
+    <path d="M -70 -90 L 70 -90 L 140 30 L 70 150 L -70 150 L -140 30 Z" transform="scale(0.9)" stroke-linejoin="round"/>
+    <circle r="46"/>
+  </g>
+  <text x="640" y="470" text-anchor="middle" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="56" font-weight="700" fill="#ffffff">GPT Image 2.5 Sunburst</text>
+  <text x="640" y="530" text-anchor="middle" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="30" fill="#9ca3af">Точный текст и кириллица, правка по описанию</text>
+  <text x="640" y="610" text-anchor="middle" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="26" fill="#8b5cf6">Пример появится здесь после первой генерации</text>
+</svg>

@@ -414,6 +414,37 @@ const modelConfigs = {
         defaultRes: '1K',
         maxFiles: 14          // 17.08: потолок разработчика (kie image_input ≤14; Nano Direct тоже slice 14)
     },
+    'gpt-image-25': {
+        // [DOC replicate.com/openai/gpt-image-2.5-sunburst] GPT Image 2.5 Sunburst через Replicate (08.09.2026).
+        // Решение владельца 08.09: канал только Replicate (свой ключ OpenAI в паблик не выпускаем).
+        // Ось качества вместо разрешения: у Replicate цена за кадр зависит ТОЛЬКО от quality
+        // (low 0,012 / medium 0,047 / high 0,128 / xhigh 0,25 / max 0,50 $, чек Billing 08.09), формат задаёт aspect_ratio.
+        // ⚖️ low и medium — на всех тарифах; high, xhigh и max — с тарифа «Промо» и выше (решение владельца 08.09):
+        // младшим бэкенд отвечает отдельным текстом про качество, а не ложным «не хватает баллов».
+        // ⏱ Замер ворот 08.09: low 13 с · medium 15 с · high 32 с · xhigh 75 с · max 97 с; кириллица точная на всех уровнях.
+        // Референсы: до 10 картинок (правка и совмещение), уходят публичными URL как у Grok Image 2.
+        // Витрина: плейсхолдер 16:9 до первой генерации владельца (заменить на gpt-image-25-preview.webp).
+        showcase: { logo: 'openai.png?v=1', logoTint: '#10a37f', image: 'gpt-image-25-placeholder.svg?v=20260908', sub: 'Пример: точный текст и кириллица, GPT Image 2.5 Sunburst' },
+        maxFiles: 10,
+        uploadHint: 'Можно приложить до 10 картинок: модель отредактирует их по описанию или совместит в один кадр. Напишите, что оставить без изменений.',
+        promptLimit: 5000,
+        aspectRatios: [
+            {value:'auto',icon:'▢'}, {value:'16:9',icon:'▬'}, {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'},
+            {value:'1:1',icon:'▢'},
+            {value:'3:4',icon:'▯'}, {value:'2:3',icon:'▯'}, {value:'9:16',icon:'▯'}
+        ],
+        resLabel: 'Качество',
+        resHint: 'Чем выше качество, тем больше деталей, дольше ожидание и дороже. Высокое и выше открыты с тарифа «Промо».',
+        resolutions: [
+            {value:'low', label:'Низкое · low'},
+            {value:'medium', label:'Среднее · medium'},
+            {value:'high', label:'Высокое · high'},
+            {value:'xhigh', label:'Очень высокое · xhigh'},
+            {value:'max', label:'Максимум · max'}
+        ],
+        defaultAspect: '1:1',
+        defaultRes: 'medium'
+    },
     'gpt-image-2': {
         aspectRatios: [
             {value:'auto',icon:'▢'}, {value:'21:9',icon:'▬'}, {value:'16:9',icon:'▬'},
