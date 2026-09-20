@@ -152,7 +152,7 @@
                 var uid = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
                 if (true) { // вайтлист снят 2026-07-06: видео-тарифы видны всем
                     // 05.07: + большие видео-пакеты «Промо»/«Трейлер»/«Блокбастер» — открываются вместе с видео
-                    ['videoPlan', 'promoPlan', 'proPlan', 'maxPlan'].forEach(function (id) {
+                    ['videoPlan', 'promoPlan', 'proPlan', 'maxPlan', 'studioPlan'].forEach(function (id) {
                         var el = document.getElementById(id);
                         if (el) el.style.display = '';
                     });

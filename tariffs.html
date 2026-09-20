@@ -772,6 +772,64 @@
                 </button>
             </div>
 
+            <!-- ТАРИФ «Киностудия» (key studio) — верхний якорь, 21.09.2026 по слову владельца «выкатывай»:
+                 11 900 ₽ / 3 800 баллов (балл 3,13, дороже Блокбастера, «самый дешёвый балл» НЕ писать), крючок = рефералка,
+                 единственная карточка с её упоминанием. Пакет и цена на бэке берутся из web_tariff_registry (Buy Prepare). -->
+            <div class="plan active" id="studioPlan" style="display:none;">
+                <span class="plan-ribbon">Для студий</span>
+                <div class="plan-head">
+                    <span class="plan-emoji">🎦</span>
+                    <div>
+                        <div class="plan-name">Киностудия</div>
+                        <div class="plan-tagline">Когда видео и есть работа</div>
+                    </div>
+                </div>
+                <div class="plan-price">
+                    <span class="amount">11&nbsp;900&nbsp;₽</span>
+                    <span class="unit">разовый платёж</span>
+                </div>
+                <ul class="plan-features">
+                    <li><span class="check">✓</span><span><b>3&nbsp;800 баллов</b> одним платежом: запас на месяц ежедневной генерации видео</span></li>
+                    <li><span class="check">✓</span><span><b>В 27 раз</b> больше баллов, чем на «Старте»</span></li>
+                    <li><span class="check">✓</span><span>Сколько роликов, зависит от длины и качества (расписание ниже)</span></li>
+                    <li><span class="check">✓</span><span>Все модели картинок + <b>Veo 3.1</b>, <b>Wan 3.0</b>, <b>Vidu Q3</b> (Mix, Ad, Turbo), <b>Seedance 2.5</b>, <b>Seedance 2.0</b>, <b>Seedance 2.0 Mini</b>, <b>MiniMax H3</b>, <b>Gemini Omni Video</b>, <b>Grok Imagine Video 1.5</b>, <b>Kling 3.0</b> и <b>Kling Motion Control</b></span></li>
+                    <li><span class="check">✓</span><span>Фильтр отключён на этом тарифе у всех моделей, где это возможно технически. Чувствительные темы не блокируются. <a href="faq.html?v=20260917a">Подробнее в справке</a></span></li>
+                    <li><span class="check">✓</span><span><b>Баланс не сгорает</b>, тратьте когда удобно</span></li>
+                    <li><span class="check">✓</span><span><b>Реферальная программа «Платят оба»:</b> 20&nbsp;% с пакета каждого приглашённого Лайтами, со статусом «Амбассадор» 40&nbsp;%, с пакета от 1&nbsp;000 баллов видео обоим. <a href="https://qvabo.studio/app/referral" target="_blank" rel="noopener noreferrer">Подробнее о программе</a></span></li>
+                </ul>
+                <div class="vid-rate">
+                    <div class="vr-title">🎬 Стоимость генерации в баллах</div>
+                    <div class="vr-row"><span class="m">Veo 3.1 · видео со звуком</span><span class="b">720p/1080p 108–216 · 4K 168–336</span></div>
+                    <div class="vr-row"><span class="m">Wan 3.0 · видео со звуком</span><span class="b">480p 12–45 · 720p 24–90 · 1080p 48–180</span></div>
+                    <div class="vr-row"><span class="m">Vidu Q3 Mix и Ad · видео со звуком</span><span class="b">720p 32–120 · 1080p 36–135</span></div>
+                    <div class="vr-row"><span class="m">Vidu Q3 Turbo · видео со звуком</span><span class="b">720p 16–60 · 1080p 20–75</span></div>
+                    <div class="vr-row"><span class="m">Seedance 2.5 · видео со звуком</span><span class="b">480p 40–150 · 720p 88–330</span></div>
+                    <div class="vr-row"><span class="m">Seedance 2.0</span><span class="b">1080p 175–525 · 4K 360–1080</span></div>
+                    <div class="vr-row"><span class="m">Seedance 2.0 Mini</span><span class="b">480p 15–45 · 720p 32–96</span></div>
+                    <div class="vr-row"><span class="m">Gemini Omni · видео со звуком</span><span class="b">720p/1080p 20–40 · 4K 46–66</span></div>
+                    <div class="vr-row"><span class="m">MiniMax H3 · видео со звуком</span><span class="b">768p 24–90 · 2K 40–150</span></div>
+                    <div class="vr-row"><span class="m">Grok 1.5 · оживить фото</span><span class="b">480p 4–12 · 720p 7–21</span></div>
+                    <div class="vr-row"><span class="m">Kling 3.0 · видео со звуком</span><span class="b">Std 13–94 · Pro 17–127 · 4K 63–314</span></div>
+                    <div class="vr-row"><span class="m">Kling Motion Control</span><span class="b">720p 19–188 · 1080p 25–253</span></div>
+                    <div class="vr-row"><span class="m">Midjourney V8.2 · заказ = 4 кадра</span><span class="b">Стандарт 6 · HD 9</span></div>
+                    <div class="vr-row"><span class="m">FLUX.2 MAX · премиум-картинка</span><span class="b">1K 5 · 2K 10</span></div>
+                    <div class="vr-row"><span class="m">FLUX 3 Video · до 20 секунд со звуком</span><span class="b">Черновик 4 · HD 11 · Full HD 18 за секунду</span></div>
+                    <div class="vr-row"><span class="m">Recraft V4.1 Pro · картинка</span><span class="b">11 за штуку</span></div>
+                    <div class="vr-row"><span class="m">Recraft V4.1 Vector · SVG-файл</span><span class="b">16 за штуку</span></div>
+                    <div class="vr-row"><span class="m">GPT Image 2.5 Sunburst · точный текст</span><span class="b">low 1 · medium 4 · high 10 · xhigh 19 · max 37</span></div>
+                    <div class="vr-row"><span class="m">Ideogram V4 · надписи и постеры</span><span class="b">Лайт 1 · Turbo 2 · Default 4 · Quality 7</span></div>
+                    <div class="vr-row"><span class="m">Seedream 5 Pro · картинка</span><span class="b">1K - 3 · 2K - 5</span></div>
+                    <div class="vr-row"><span class="m">Seedream 5 Lite · картинка</span><span class="b">2 за штуку</span></div>
+                    <div class="vr-row"><span class="m">Grok Imagine 2.0 · картинка 2K</span><span class="b">3 · правка фото 4</span></div>
+                    <div class="vr-row"><span class="m">Nano-Banana 2 · без фильтра</span><span class="b">1K 4 · 2K 6–7 · 4K 8–9</span></div>
+                    <div class="vr-row"><span class="m">Grok Imagine · картинка · без фильтра</span><span class="b">2 · по промпту 4 кадра · по фото 1</span></div>
+                    <div class="vr-foot">За ролик 3–15 секунд по выбранной длительности и качеству; Motion Control — по длине вашего видео (3–30 сек). Gemini Omni: ролики 4, 6, 8 или 10 секунд, фильтр контента Google не отключается. Nano-Banana 2: верх вилки при детальном промпте (от 1500 знаков) или 3+ фото. MiniMax H3: ролики 4–15 секунд со звуком, на выбор 768p (готовится втрое быстрее) или 2K; фильтр контента у модели не отключается. Seedance 2.5: ролики 4–15 секунд со звуком, 480p или 720p; фото-референсы до 4 штук. Veo 3.1: ролики 4, 6 или 8 секунд со звуком; вертикаль 9:16 — в 720p; одно фото = первый кадр.</div>
+                </div>
+                <button class="pay-btn" data-package="studio">
+                    Оплатить <span class="price-tag">11&nbsp;900&nbsp;₽</span>
+                </button>
+            </div>
+
         </div>
 
         <!-- Бесплатный вариант -->
@@ -800,6 +858,6 @@
 
     <div class="toast" id="toast">Открываю оплату…</div>
 
-    <script src="tariffs.js?v=20260722c"></script>
+    <script src="tariffs.js?v=20260921a"></script>
 </body>
 </html>
