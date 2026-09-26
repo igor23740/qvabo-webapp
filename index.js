@@ -462,6 +462,29 @@ const modelConfigs = {
         defaultRes: '1K',
         maxFiles: 16          // 17.08: потолок разработчика (kie input_urls ≤16)
     },
+    'qwen-image-21': {
+        // [DOC docs.kie.ai/market/qwen2-1/text-to-image | image-to-image] Qwen Image 2.1 (Alibaba) через kie, 26.09.2026.
+        // Схема: 9 соотношений (+auto у правки по фото; без фото бэкенд отдаёт auto как 1:1), 1K/2K (4K у модели нет),
+        // промпт ≤5000, до 10 референсов (kie советует ≤4, если важна точность). Вес 1K 2 / 2K 3 (Gen Weight).
+        // Фильтр по тарифу решает бэкенд (nsfw_off с «Промо», админы всегда без фильтра). Результат приходит файлом.
+        // qwenOptions: тумблеры «Прозрачный фон» и «Детализация сцены» (секция qwenOptionsSection).
+        // Витрина (showcase) — боевой кадр владельца после его прогонов; до этого вкладка data-owner-only.
+        qwenOptions: true,
+        aspectRatios: [
+            {value:'auto',icon:'▢'}, {value:'21:9',icon:'▬'}, {value:'16:9',icon:'▬'},
+            {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'1:1',icon:'▢'},
+            {value:'3:4',icon:'▯'}, {value:'2:3',icon:'▯'}, {value:'9:16',icon:'▯'},
+            {value:'9:21',icon:'▯'}
+        ],
+        resolutions: [
+            {value:'1K', label:'1K'},
+            {value:'2K', label:'2K'}
+        ],
+        resHint: '2K: вчетверо больше пикселей, ждать дольше, около минуты',
+        defaultAspect: '1:1',
+        defaultRes: '1K',
+        maxFiles: 10
+    },
     'flux-2-pro': {
         aspectRatios: [
             {value:'16:9',icon:'▬'}, {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'},
@@ -1369,6 +1392,8 @@ function updateModelParams(model) {
 
     // --- Audio toggle visibility (only for models that support audio on/off) ---
     document.getElementById('audioSection').classList.toggle('hidden', !config.audioToggle);
+    // --- 26.09: тумблеры Qwen Image 2.1 (прозрачный фон, детализация сцены) ---
+    document.getElementById('qwenOptionsSection').classList.toggle('hidden', !config.qwenOptions);
 
     // --- Utility models (recraft remove-bg / upscale): photo in -> file out.
     // No prompt / aspect / resolution / count — only the photo upload, which is mandatory. ---
@@ -1657,6 +1682,39 @@ function toggleAudio() {
 audioToggleEl.addEventListener('click', toggleAudio);
 audioToggleEl.addEventListener('keydown', onActivateKey(toggleAudio));
 
+// 26.09: тумблеры Qwen Image 2.1 (config.qwenOptions) — «Прозрачный фон» (kie background) и
+// «Детализация сцены» (kie enhance_prompt). Оба по умолчанию выключены. Прозрачный фон гасит детализацию:
+// по доке kie фон или сцена в описании срывают прозрачность, а детализация как раз дописывает сцену.
+// Бэкенд (Kie Mapper) повторяет то же правило, клиенту не доверяем.
+let qwenTransparent = false;
+let qwenEnhance = false;
+const qwenTransparentEl = document.getElementById('qwenTransparentToggle');
+const qwenEnhanceEl = document.getElementById('qwenEnhanceToggle');
+const qwenEnhanceRowEl = document.getElementById('qwenEnhanceRow');
+function syncQwenToggles() {
+    qwenTransparentEl.classList.toggle('active', qwenTransparent);
+    qwenTransparentEl.setAttribute('aria-checked', qwenTransparent ? 'true' : 'false');
+    qwenEnhanceEl.classList.toggle('active', qwenEnhance && !qwenTransparent);
+    qwenEnhanceEl.setAttribute('aria-checked', (qwenEnhance && !qwenTransparent) ? 'true' : 'false');
+    qwenEnhanceEl.setAttribute('aria-disabled', qwenTransparent ? 'true' : 'false');
+    qwenEnhanceRowEl.classList.toggle('toggle-disabled', qwenTransparent);
+}
+function toggleQwenTransparent() { qwenTransparent = !qwenTransparent; syncQwenToggles(); }
+function toggleQwenEnhance() { if (qwenTransparent) return; qwenEnhance = !qwenEnhance; syncQwenToggles(); }
+qwenTransparentEl.addEventListener('click', toggleQwenTransparent);
+qwenTransparentEl.addEventListener('keydown', onActivateKey(toggleQwenTransparent));
+qwenEnhanceEl.addEventListener('click', toggleQwenEnhance);
+qwenEnhanceEl.addEventListener('keydown', onActivateKey(toggleQwenEnhance));
+
+// 26.09: мягкий запуск. Вкладки с data-owner-only видят только два админских аккаунта (VIDEO_WHITELIST);
+// остальным опция удаляется из DOM ДО навешивания обработчиков ниже, поэтому переключение режимов её не вернёт.
+// Это витрина, а не защита: бэкенд модель уже знает. Открыть всем = убрать атрибут в index.html.
+(function hideOwnerOnlyModels() {
+    let uid = null;
+    try { uid = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id; } catch (e) {}
+    if (VIDEO_WHITELIST.includes(Number(uid))) return;
+    document.querySelectorAll('#modelDropdown .dropdown-option[data-owner-only]').forEach(el => el.remove());
+})();
 
 // Model dropdown (custom handler for complex options)
 const modelDropdown = document.getElementById('modelDropdown');
@@ -1684,7 +1742,7 @@ modelOptions.forEach(option => {
 
         // Update icon
         modelIconEl.className = 'model-icon ' + option.dataset.icon;
-        modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','seedance':'S','openai':'O','grok':'X','ideogram':'✦','recraft':'R','topaz':'T','bfl':'F','veo':'V','wan':'W'}[option.dataset.icon] || 'S';
+        modelIconEl.textContent = {'google':'G','flux':'F','seedream':'S','seedance':'S','openai':'O','grok':'X','ideogram':'✦','recraft':'R','topaz':'T','bfl':'F','veo':'V','wan':'W','qwen':'Q'}[option.dataset.icon] || 'S';
 
         modelDropdown.classList.remove('open');
         updateModelParams(selectedModel);
@@ -2357,6 +2415,11 @@ generateBtn.addEventListener('click', async () => {
                 images: uploadedImages.map(img => img.dataUrl)
             };
             if (imageConfig.provider) data.provider = imageConfig.provider;
+            // 26.09: Qwen Image 2.1 — тумблеры строго boolean (Kie Mapper включает только по === true)
+            if (imageConfig.qwenOptions) {
+                data.transparent = qwenTransparent === true;
+                data.enhance = qwenEnhance === true && qwenTransparent !== true;
+            }
             // Topaz: ужать вход до 2048px (см. shrinkForTopaz), бэкенд берёт только 1-е фото
             if (selectedModel === 'topaz-upscale' && data.images.length) {
                 data.images = [await shrinkForTopaz(data.images[0])];

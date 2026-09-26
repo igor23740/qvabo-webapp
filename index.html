@@ -379,6 +379,21 @@
             transform: translateX(22px);
         }
 
+        /* 26.09: подписи под тумблерами Qwen и погашенная «Детализация» при прозрачном фоне */
+        .toggle-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin: 8px 2px 14px;
+        }
+
+        .toggle-row.toggle-disabled {
+            opacity: 0.45;
+        }
+
+        .toggle-row.toggle-disabled .toggle-switch {
+            cursor: not-allowed;
+        }
+
         /* Hidden sections */
         .section.hidden {
             display: none;
@@ -868,6 +883,16 @@
             /* Знак Black Forest Labs (файл владельца 08.08) — берём как есть, он уже фирменного
                оранжевого цвета и читается на тёмном фоне без перекраски маской */
             background: transparent url('bfl.png?v=20260808') center / contain no-repeat;
+            border: none;
+            color: transparent;
+            font-size: 0;
+            box-shadow: none;
+        }
+
+        .model-icon.qwen {
+            /* 26.09: знак Qwen (официальный, аватар github.com/QwenLM) — берём как есть, фирменный
+               фиолетовый читается на тёмном фоне без перекраски маской, как у BFL */
+            background: transparent url('qwen.png?v=20260926') center / contain no-repeat;
             border: none;
             color: transparent;
             font-size: 0;
@@ -1376,6 +1401,17 @@
                             </div>
                         </div>
                     </div>
+                    <!-- 26.09.2026: Qwen Image 2.1 (Alibaba через kie). Между GPT Image 2 и FLUX.2 MAX по слову владельца.
+                         data-owner-only = мягкий запуск: видят только два админских аккаунта; открыть всем = убрать атрибут. -->
+                    <div class="dropdown-option" data-value="qwen-image-21" data-name="Qwen Image 2.1" data-desc="Alibaba · Прозрачный фон и правка фото" data-icon="qwen" data-mode="image" data-owner-only>
+                        <div class="model-option-content">
+                            <div class="model-icon qwen">Q</div>
+                            <div class="model-info">
+                                <div class="model-name">Qwen Image 2.1</div>
+                                <div class="model-desc">Alibaba · Прозрачный фон и правка фото</div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="dropdown-option" data-value="flux-2-max" data-name="FLUX.2 MAX" data-desc="Black Forest Labs · Премиум, шрифты и детали" data-icon="bfl" data-mode="image">
                         <div class="model-option-content">
                             <div class="model-icon bfl">F</div>
@@ -1769,6 +1805,21 @@
             </p>
         </div>
 
+        <!-- 26.09: Qwen Image 2.1 — прозрачный фон и детализация сцены (config.qwenOptions), оба по умолчанию выкл -->
+        <div class="section hidden" id="qwenOptionsSection">
+            <h2 class="section-title">Дополнительно</h2>
+            <div class="toggle-row">
+                <span class="toggle-label" id="qwenTransparentLabel">Прозрачный фон</span>
+                <div class="toggle-switch" id="qwenTransparentToggle" role="switch" tabindex="0" aria-checked="false" aria-labelledby="qwenTransparentLabel"></div>
+            </div>
+            <p class="toggle-hint">PNG без фона: для стикеров, логотипов и товаров. Опишите только сам объект, без окружения.</p>
+            <div class="toggle-row" id="qwenEnhanceRow">
+                <span class="toggle-label" id="qwenEnhanceLabel">Детализация сцены</span>
+                <div class="toggle-switch" id="qwenEnhanceToggle" role="switch" tabindex="0" aria-checked="false" aria-labelledby="qwenEnhanceLabel"></div>
+            </div>
+            <p class="toggle-hint">Модель сама допишет описание перед генерацией: кадр обычно богаче, но может отойти от вашего текста. С прозрачным фоном выключается.</p>
+        </div>
+
         <!-- Number of Images -->
         <div class="section" id="countSection">
             <h2 class="section-title">Количество изображений</h2>
@@ -1850,6 +1901,6 @@
         </div>
     </div>
 
-    <script src="index.js?v=20260908a"></script>
+    <script src="index.js?v=20260926a"></script>
 </body>
 </html>
