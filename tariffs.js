@@ -42,7 +42,7 @@
 
         // ===== Бэкенд-связь =====
         // Контракт сверен с живым воркфлоу O1JO6wxE0PfzWPrOvaN8S (coaladot.fun):
-        //   buy:        { action:'buy', package:'start'|'teaser'|'promo'|'pro'|'max', chat_id:<number> }
+        //   buy:        { action:'buy', package:'start'|'teaser'|'scene'|'promo'|'pro'|'max'|'studio', chat_id:<number> }
         //               ('max' = «Блокбастер»: карточка-витрина без кнопки, ключа на бэке пока нет)
         //   claim_free: { action:'claim_free', chat_id:<number> }
         // HTTP-ответ пустой — ссылка на оплату / результат подписки приходят
@@ -152,7 +152,7 @@
                 var uid = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
                 if (true) { // вайтлист снят 2026-07-06: видео-тарифы видны всем
                     // 05.07: + большие видео-пакеты «Промо»/«Трейлер»/«Блокбастер» — открываются вместе с видео
-                    ['videoPlan', 'promoPlan', 'proPlan', 'maxPlan', 'studioPlan'].forEach(function (id) {
+                    ['videoPlan', 'scenePlan', 'promoPlan', 'proPlan', 'maxPlan', 'studioPlan'].forEach(function (id) {
                         var el = document.getElementById(id);
                         if (el) el.style.display = '';
                     });
