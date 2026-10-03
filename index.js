@@ -708,47 +708,6 @@ const modelConfigs = {
         defaultAspect: null,
         defaultRes: null
     },
-    'veo-3.1': {
-        apiSlug: 'veo-3.1',
-        provider: 'google',
-        audioToggle: false,
-        aspectRatios: [
-            {value:'1:1',icon:'▢'}, {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'}
-        ],
-        resolutions: [
-            {value:'720p', label:'720p'},
-            {value:'1080p', label:'1080p'},
-            {value:'4k', label:'4K'}
-        ],
-        durations: [
-            {value:'4s', label:'4s'},
-            {value:'6s', label:'6s'},
-            {value:'8s', label:'8s'}
-        ],
-        defaultAspect: '16:9',
-        defaultRes: '720p',
-        defaultDuration: '8s'
-    },
-    'seedance-2-fast': {
-        apiSlug: 'bytedance/seedance-2.0-fast',
-        provider: 'openrouter',
-        audioToggle: true,
-        aspectRatios: [
-            {value:'1:1',icon:'▢'}, {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'}
-        ],
-        resolutions: [
-            {value:'480p', label:'480p'},
-            {value:'720p', label:'720p'}
-        ],
-        durations: [
-            {value:'5s', label:'5s'},
-            {value:'10s', label:'10s'},
-            {value:'15s', label:'15s'}
-        ],
-        defaultAspect: '16:9',
-        defaultRes: '720p',
-        defaultDuration: '15s'
-    },
     'seedance-25': {
         // [DOC replicate.com/bytedance/seedance-2.5] Seedance 2.5 (10.08.2026): канал REPLICATE, не kie —
         // закупка по официальной ставке ByteDance (решение владельца 09.08). Схема снята живьём 10.08:
@@ -866,53 +825,6 @@ const modelConfigs = {
         // в обоих кеглях, тиснение фольгой с бликами по скосам букв, лён, гранёное стекло, капли,
         // шёлк и отражения. Считалось меньше минуты. Исходник — docs/assets/flux2-max-showcase-source.jpg
         showcase: { logo: 'bfl.png?v=20260808', image: 'flux2-max-preview.webp?v=20260808', sub: 'Пример — премиальная предметка с кириллицей' }
-    },
-    'flux-3-video': {
-        // [DOC docs.bfl.ml/flux_3/flux3_video + их OpenAPI] FLUX 3 Video (08.08.2026): ПРЯМОЙ API
-        // Black Forest Labs, мимо релеев — модели нет ни у kie, ни у Fal. t2v и i2v (кадры-опоры).
-        // duration целое 5–20 секунд, resolution hd|fhd, звук синхронный (generate_audio).
-        // ⚖️ Доступ с тарифа «Промо» и выше (решение владельца 08.08): младшим бэкенд отвечает
-        // отдельным текстом про тариф, а не ложным «не хватает баллов».
-        // ⏱ Ждём не дольше нашего стандарта: 6 минут, дальше честный отказ и возврат балла.
-        apiSlug: 'flux-3-video',
-        provider: 'bfl',
-        // Звук у модели включён по умолчанию, но выключаемый — тумблер человеку оставляем.
-        audioToggle: true,
-        // keyframes: один кадр начинает ролик, два — начинают и заканчивают, дальше распределяются.
-        maxFiles: 10,
-        aspectRatios: [
-            {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'}, {value:'1:1',icon:'▢'},
-            {value:'4:3',icon:'▬'}, {value:'3:4',icon:'▯'}, {value:'21:9',icon:'▬'}, {value:'2:1',icon:'▬'}
-        ],
-        // Ось качества вместо разрешения: у модели это ступени цены. Черновик — не «плохое видео»,
-        // а быстрая проба композиции: по нему потом досчитывается чистовой рендер той же сцены.
-        // ⚠️ Значения ОБЯЗАНЫ совпадать с бэкендом: Balance Cost Check (PTS_FLUX3) и BFL Video Prep
-        // сравнивают строку в нижнем регистре, всё незнакомое считают и генерят по самой дорогой.
-        resHint: 'Черновик — быстрая и дешёвая проба сцены. Понравилось — повтори в полном качестве.',
-        resolutions: [
-            {value:'draft', label:'Черновик'},
-            {value:'hd', label:'Полный HD'},
-            {value:'fhd', label:'Full HD'}
-        ],
-        // Полный ряд по их схеме: любое ЦЕЛОЕ от 5 до 20 секунд. Ряд не прореживать —
-        // длительность здесь главный рычаг цены, и урезать выбор человеку незачем.
-        durations: [
-            {value:'5s', label:'5s'}, {value:'6s', label:'6s'}, {value:'7s', label:'7s'},
-            {value:'8s', label:'8s'}, {value:'9s', label:'9s'}, {value:'10s', label:'10s'},
-            {value:'11s', label:'11s'}, {value:'12s', label:'12s'}, {value:'13s', label:'13s'},
-            {value:'14s', label:'14s'}, {value:'15s', label:'15s'}, {value:'16s', label:'16s'},
-            {value:'17s', label:'17s'}, {value:'18s', label:'18s'}, {value:'19s', label:'19s'},
-            {value:'20s', label:'20s'}
-        ],
-        defaultAspect: '16:9',
-        // Дефолт — черновик: дешевле для человека и быстрее, а чистовик он закажет осознанно.
-        defaultRes: 'draft',
-        defaultDuration: '5s',
-        // Витрина — боевой ролик владельца 09.08 (задача 5a6a9106, 15 с, fhd, звук включён):
-        // велокурьер и карта сокровищ, погоня. Генерация у BFL заняла ~10,5 минут; ролик спасён
-        // по polling_url из gen_log после ложного отказа (окно ожидания истекало раньше). Исходник
-        // 35 МБ сжат до 4,2 МБ (720p, faststart) — WebView грузит витрину через VPN юзера.
-        showcase: { logo: 'bfl.png?v=20260808', video: 'flux3-video-preview.mp4?v=20260809', sub: 'Пример: велокурьер и карта сокровищ, звук из ролика' }
     },
     'minimax-h3': {
         // [DOC platform.minimax.io/docs/api-reference/video-generation-v2-create] MiniMax H3 / Hailuo 03 (01.08.2026):
