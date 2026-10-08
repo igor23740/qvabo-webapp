@@ -36,6 +36,13 @@ let uploadedImages = [];
 let uploadedVideoRef = null; // {file, dataUrl, duration} — референс движения для Kling Motion Control
 let selectedAspectRatio = '1:1';
 let selectedVariant = ''; // 27.08: версия модели внутри вкладки (modelConfigs[model].variants), уходит полем variant
+// 09.10.2026: настройки модели с поправкой на выбранную версию (Vidu: Q4 по фото / Q4 с кадра / Ad / Turbo):
+// modelConfigs[model].variantConfigs[selectedVariant] перекрывает поля базы (лимит фото, разрешения, длины, форматы, голос).
+function cfgOf(model) {
+    const base = modelConfigs[model] || modelConfigs['nano-banana-pro'];
+    const vc = base && base.variantConfigs && selectedVariant ? base.variantConfigs[selectedVariant] : null;
+    return vc ? Object.assign({}, base, vc) : base;
+}
 let selectedResolution = '1K';
 let selectedCount = '1';
 let selectedModel = 'nano-banana-pro';
@@ -100,7 +107,7 @@ fileInput.addEventListener('change', (e) => {
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 МБ
 
 function handleFiles(files) {
-    const maxFiles = (modelConfigs[selectedModel] && modelConfigs[selectedModel].maxFiles) || 10;
+    const maxFiles = (cfgOf(selectedModel) && cfgOf(selectedModel).maxFiles) || 10;
     const remaining = maxFiles - uploadedImages.length;
     const toAdd = Array.from(files).slice(0, Math.max(0, remaining));
 
@@ -290,39 +297,66 @@ function removeVideoRef() {
 const MAX_AUDIO_REF_SIZE = 9 * 1024 * 1024;   // 9 МБ — не их лимит, а наш: тело вебхука n8n 16 МБ, base64 +37%
 const AUDIO_REF_MIME = ['audio/wav', 'audio/x-wav', 'audio/wave', 'audio/mpeg', 'audio/mp3'];
 let uploadedAudioRef = null;
+// 09.10.2026, Vidu Q4 «по фото»: до 3 записей голоса (config.audioRefs: mp3, 3–12 с), уходят полем sounds.
+let uploadedAudioRefs = [];
 const audioRefArea = document.getElementById('audioRefArea');
 const audioRefInput = document.getElementById('audioRefInput');
 if (audioRefArea && audioRefInput) {
-    audioRefArea.addEventListener('click', () => audioRefInput.click());
-    audioRefArea.addEventListener('keydown', onActivateKey(() => audioRefInput.click()));
-    audioRefInput.addEventListener('change', (e) => handleAudioRef(e.target.files && e.target.files[0]));
+    const openAudioPicker = () => {
+        const ac = cfgOf(selectedModel).audioRefs;
+        if (ac && uploadedAudioRefs.length >= ac.max) { showToast('Уже ' + ac.max + ' записи. Чтобы заменить, нажмите «Убрать записи»', 'error'); return; }
+        audioRefInput.click();
+    };
+    audioRefArea.addEventListener('click', openAudioPicker);
+    audioRefArea.addEventListener('keydown', onActivateKey(openAudioPicker));
+    audioRefInput.addEventListener('change', (e) => {
+        const fl = e.target.files ? Array.from(e.target.files) : [];
+        const ac = cfgOf(selectedModel).audioRefs;
+        if (ac) fl.slice(0, Math.max(0, ac.max - uploadedAudioRefs.length)).forEach((f) => handleAudioRef(f));
+        else handleAudioRef(fl[0]);
+    });
+}
+const audioRefClear = document.getElementById('audioRefClear');
+if (audioRefClear) {
+    audioRefClear.addEventListener('click', (e) => {
+        e.stopPropagation();
+        uploadedAudioRefs = []; uploadedAudioRef = null;
+        if (audioRefInput) audioRefInput.value = '';
+        updateAudioRefStatus();
+    });
 }
 
 function handleAudioRef(file) {
     if (!file) return;
-    if (AUDIO_REF_MIME.indexOf(String(file.type).toLowerCase()) === -1) {
-        showToast('Нужен файл WAV или MP3', 'error');
+    // 09.10.2026: у Vidu Q4 свои правила (config.audioRefs): только MP3, 3–12 с, до 3 МБ, несколько записей.
+    const ac = cfgOf(selectedModel).audioRefs || null;
+    if ((ac ? ac.mime : AUDIO_REF_MIME).indexOf(String(file.type).toLowerCase()) === -1) {
+        showToast(ac ? 'Нужен файл MP3' : 'Нужен файл WAV или MP3', 'error');
         audioRefInput.value = '';
         return;
     }
-    if (file.size > MAX_AUDIO_REF_SIZE) {
-        showToast('Аудио больше 9 МБ — возьмите файл покороче или сожмите', 'error');
+    if (file.size > (ac ? ac.maxBytes : MAX_AUDIO_REF_SIZE)) {
+        showToast(ac ? 'Запись больше ' + Math.round(ac.maxBytes / 1048576) + ' МБ — возьмите короче' : 'Аудио больше 9 МБ — возьмите файл покороче или сожмите', 'error');
         audioRefInput.value = '';
         return;
     }
+    const minSec = ac ? ac.minSec : 2, maxSec = ac ? ac.maxSec : 15;
     const probe = document.createElement('audio');
     probe.preload = 'metadata';
     probe.onloadedmetadata = () => {
         const dur = probe.duration;
         URL.revokeObjectURL(probe.src);
-        if (!isFinite(dur) || dur < 2 || dur > 15) {
-            showToast('Длительность аудио должна быть от 2 до 15 секунд', 'error');
+        if (!isFinite(dur) || dur < minSec || dur > maxSec) {
+            showToast('Длительность аудио должна быть от ' + minSec + ' до ' + maxSec + ' секунд', 'error');
             audioRefInput.value = '';
             return;
         }
         const reader = new FileReader();
         reader.onload = (ev) => {
-            uploadedAudioRef = { file: file, dataUrl: ev.target.result, duration: Math.ceil(dur) };
+            const item = { file: file, dataUrl: ev.target.result, duration: Math.ceil(dur) };
+            if (ac) { if (uploadedAudioRefs.length < ac.max) uploadedAudioRefs.push(item); }
+            else uploadedAudioRef = item;
+            audioRefInput.value = '';
             updateAudioRefStatus();
         };
         reader.readAsDataURL(file);
@@ -337,11 +371,20 @@ function handleAudioRef(file) {
 
 function updateAudioRefStatus() {
     const st = document.getElementById('audioRefStatus');
+    const ac = cfgOf(selectedModel).audioRefs || null;
     if (st) {
-        st.textContent = uploadedAudioRef
-            ? '✓ ' + (uploadedAudioRef.file.name || 'аудио') + ' · ' + uploadedAudioRef.duration + ' сек'
-            : 'Аудио не выбрано';
+        if (ac) {
+            st.textContent = uploadedAudioRefs.length
+                ? '✓ ' + uploadedAudioRefs.map((a) => (a.file.name || 'запись') + ' · ' + a.duration + ' сек').join(', ') + ' (' + uploadedAudioRefs.length + ' из ' + ac.max + ')'
+                : 'Записи не выбраны';
+        } else {
+            st.textContent = uploadedAudioRef
+                ? '✓ ' + (uploadedAudioRef.file.name || 'аудио') + ' · ' + uploadedAudioRef.duration + ' сек'
+                : 'Аудио не выбрано';
+        }
     }
+    const clr = document.getElementById('audioRefClear');
+    if (clr) clr.classList.toggle('hidden', !(ac ? uploadedAudioRefs.length : uploadedAudioRef));
 }
 
 // --- Роль второй картинки (MiniMax H3): образец стиля или последний кадр ролика ---
@@ -413,6 +456,28 @@ const modelConfigs = {
         defaultAspect: '1:1',
         defaultRes: '1K',
         maxFiles: 14          // 17.08: потолок разработчика (kie image_input ≤14; Nano Direct тоже slice 14)
+    },
+    'nano-banana-21': {
+        // 09.10.2026 (слово владельца): Nano-Banana 2.1 (Google) через CometAPI, формат Gemini generateContent (в боте ветка Nano Comet *).
+        // Только после покупки пакета: на бесплатных баллах бэкенд отвечает отказом по тарифу, бесплатные генерации остаются на Nano-Banana 2.
+        // Веса 1K / 2K / 4K = 2 / 3 / 4 балла (Gen Weight 'nano-banana-21'), пол 45 % чистыми. Форматы: палитра 2.1 (14 и auto, с 1:4, 4:1, 1:8, 8:1).
+        // До 14 фото (CometAPI: «up to 14 reference images»). Витрина: картинка владельца после первой генерации, до неё заглушка в палитре фронта.
+        aspectRatios: [
+            {value:'auto',icon:'▢'}, {value:'8:1',icon:'▬'}, {value:'4:1',icon:'▬'}, {value:'21:9',icon:'▬'}, {value:'16:9',icon:'▬'},
+            {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'5:4',icon:'▢'},
+            {value:'1:1',icon:'▢'}, {value:'4:5',icon:'▯'}, {value:'3:4',icon:'▯'},
+            {value:'2:3',icon:'▯'}, {value:'9:16',icon:'▯'}, {value:'1:4',icon:'▯'}, {value:'1:8',icon:'▯'}
+        ],
+        resolutions: [
+            {value:'1K', label:'1K'},
+            {value:'2K', label:'2K'},
+            {value:'4K', label:'4K'}
+        ],
+        defaultAspect: '1:1',
+        defaultRes: '1K',
+        maxFiles: 14,
+        notice: 'Nano-Banana 2.1 открывается после покупки любого пакета баллов. На бесплатных баллах работает Nano-Banana 2.',
+        showcase: { logo: 'gemini.png?v=1', image: 'nano-banana-21-placeholder.svg?v=20261009', sub: 'Пример появится после первой генерации' }
     },
     'gpt-image-25': {
         // [DOC replicate.com/openai/gpt-image-2.5-sunburst] GPT Image 2.5 Sunburst через Replicate (08.09.2026).
@@ -1000,26 +1065,62 @@ const modelConfigs = {
         showcase: { logo: 'wan.png?v=20260825b', video: 'wan3-preview.mp4?v=20260825c', sub: 'Пример — ролик владельца 10 с в 720p, звук из модели' }
     },
     'vidu-q3': {
-        // [DOC platform.vidu.com/docs/reference-to-video] Vidu Q3 Mix (ShengShu) ПРЯМЫМ API (27.08.2026): reference-to-video —
-        // от 1 до 7 фото-образцов ОБЯЗАТЕЛЬНЫ (текст без фото модель не принимает), звук всегда включён (речь + фон по промпту,
-        // тумблера нет — липсинк и есть смысл модели), 720p/1080p (540p есть в прайсе, включим после ворот), длительность 1–16 у модели,
-        // наш потолок 15 с, форматы 16:9 / 1:1 / 9:16 (3:4 и 4:3 только у q2). Версии Q3 (Mix / позже Ad, Drama) — ОДНА вкладка,
-        // выбор чипами «Версия модели» (variants → поле variant → белый список в ноде Vidu VIDEO PREP).
-        // ⚠️ Значения ОБЯЗАНЫ совпадать с бэкендом: Balance Cost Check (PTS_VIDU 7/9/11 б/с) и нода Vidu VIDEO PREP (ветка Vidu *).
+        // [DOC platform.vidu.com/docs/api-reference/video-models/vidu-q4-preview] 09.10.2026 (слово владельца): Vidu Q4 preview вместо Mix,
+        // Ad и Turbo остаются на Q3 («где Q3 не менялось, оставляем»). Слаг прежний (vidu-q3), версия уходит полем variant:
+        //   q4      «Q4 по фото»: 1–15 фото обязательны, до 3 записей голоса (mp3 3–12 с, полем sounds), 540p–4K, 3–16 с, пять форматов.
+        //   q4frame «Q4 с кадра»: 1 фото = первый кадр ролика, формат берётся с фото, 540p–4K, 3–16 с.
+        //   ad / turbo Vidu Q3 как было: 1–7 фото, 720p/1080p, 4–15 с, 16:9 / 1:1 / 9:16.
+        // ⚠️ Значения ОБЯЗАНЫ совпадать с бэкендом: Balance Cost Check (PTS_VIDU: Q4 4/8,2/10,4/16,4/33,6 б/с, Ad 8,7/10,4, Turbo 4,4/5,7),
+        // Vidu VIDEO PREP, Vidu Assets Convert (лимит фото), Vidu AV Convert (голос). Звук в ролике всегда (тумблера нет).
+        // Поля версии лежат в variantConfigs и перекрывают базу через cfgOf(); база = Q3 (Ad и Turbo).
         apiSlug: 'vidu-q3',
         provider: 'vidu',
         audioToggle: false,
         maxFiles: 7,
         requiresReference: true,
         refHint: 'Загрузите от 1 до 7 фото персонажа, предмета или места: модель соберёт сцену по ним. Без фото генерация не начнётся.',
-        // Решение владельца 27.08: в боте три версии (Mix / Ad / Turbo), Drama только на сайт. Вход у всех один (1–7 фото + промпт).
-        // Веса по версиям на бэке (28.08, к полу 45 %): mix/ad 6/8/9, turbo 2/4/5 б/с (Balance Cost Check PTS_VIDU[variant]).
         variants: [
-            { value: 'mix', label: 'Mix', hint: 'Баланс качества и цены: сцена по вашим фото, речь и звук из модели' },
-            { value: 'ad', label: 'Ad', hint: 'Рекламный ролик: монтажные склейки и ритм, лучше всего 5–8 секунд' },
-            { value: 'turbo', label: 'Turbo', hint: 'Самая быстрая и дешёвая: черновики и подбор промпта' }
+            { value: 'q4', label: 'Q4 · по фото', hint: 'Vidu Q4: сцена по 1–15 фото, можно добавить до 3 записей голоса героя. До 4K, от 3 до 16 секунд.' },
+            { value: 'q4frame', label: 'Q4 · с кадра', hint: 'Vidu Q4: ваше фото станет первым кадром, модель его оживит. Формат ролика берётся с фото. До 4K, от 3 до 16 секунд.' },
+            { value: 'ad', label: 'Ad · Q3', hint: 'Vidu Q3 Ad: рекламный ролик с монтажными склейками, лучше всего 5–8 секунд.' },
+            { value: 'turbo', label: 'Turbo · Q3', hint: 'Vidu Q3 Turbo: быстрее и дешевле, для черновиков и подбора промпта.' }
         ],
-        variantHint: 'Три версии одной модели, вход одинаковый. Mix: баланс. Ad: рекламные ролики 5–8 с. Turbo: быстрее и дешевле, для черновиков.',
+        variantHint: 'Q4 — новая версия Vidu. Ad и Turbo остаются на Q3.',
+        variantConfigs: {
+            q4: {
+                maxFiles: 15,
+                refHint: 'Загрузите от 1 до 15 фото персонажа, предмета или места: модель соберёт сцену по ним. Без фото генерация не начнётся.',
+                aspectRatios: [ {value:'16:9',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'1:1',icon:'▢'}, {value:'3:4',icon:'▯'}, {value:'9:16',icon:'▯'} ],
+                resolutions: [
+                    {value:'540p', label:'540p'}, {value:'720p', label:'720p'}, {value:'1080p', label:'1080p'},
+                    {value:'2K', label:'2K'}, {value:'4K', label:'4K'}
+                ],
+                durations: [
+                    {value:'3s', label:'3s'}, {value:'4s', label:'4s'}, {value:'5s', label:'5s'}, {value:'6s', label:'6s'},
+                    {value:'7s', label:'7s'}, {value:'8s', label:'8s'}, {value:'9s', label:'9s'}, {value:'10s', label:'10s'},
+                    {value:'11s', label:'11s'}, {value:'12s', label:'12s'}, {value:'13s', label:'13s'}, {value:'14s', label:'14s'},
+                    {value:'15s', label:'15s'}, {value:'16s', label:'16s'}
+                ],
+                audioRefs: { max: 3, minSec: 3, maxSec: 12, maxBytes: 3 * 1024 * 1024, mime: ['audio/mpeg', 'audio/mp3'], title: 'Голос героя',
+                    hint: 'MP3, от 3 до 12 секунд, до 3 записей. Необязательно: модель возьмёт голос и манеру речи из записи. Баллы за запись не списываются.' }
+            },
+            q4frame: {
+                maxFiles: 1,
+                refHint: 'Загрузите фото: оно станет первым кадром ролика. Без фото генерация не начнётся.',
+                aspectRatios: [ {value:'auto',icon:'▢'} ],
+                defaultAspect: 'auto',
+                resolutions: [
+                    {value:'540p', label:'540p'}, {value:'720p', label:'720p'}, {value:'1080p', label:'1080p'},
+                    {value:'2K', label:'2K'}, {value:'4K', label:'4K'}
+                ],
+                durations: [
+                    {value:'3s', label:'3s'}, {value:'4s', label:'4s'}, {value:'5s', label:'5s'}, {value:'6s', label:'6s'},
+                    {value:'7s', label:'7s'}, {value:'8s', label:'8s'}, {value:'9s', label:'9s'}, {value:'10s', label:'10s'},
+                    {value:'11s', label:'11s'}, {value:'12s', label:'12s'}, {value:'13s', label:'13s'}, {value:'14s', label:'14s'},
+                    {value:'15s', label:'15s'}, {value:'16s', label:'16s'}
+                ]
+            }
+        },
         aspectRatios: [
             {value:'16:9',icon:'▬'}, {value:'1:1',icon:'▢'}, {value:'9:16',icon:'▯'}
         ],
@@ -1036,9 +1137,7 @@ const modelConfigs = {
         defaultAspect: '16:9',
         defaultRes: '720p',
         defaultDuration: '5s',
-        // Витрина = первый боевой прогон владельца в боте (exec 103843, 28.08): Mix, 15 с, 720p, 16:9, по одному фото,
-        // сценарий K2 с тайм-кодами, звук из модели; исходник docs/assets/vidu/k2/. Сжато до 960×540 по прецеденту Wan.
-        // Иконка — логотип от владельца (vidu.png 512px, прозрачный), исходник docs/assets/vidu/vidu-logo-owner-2026-08-27.png.
+        // Витрина пока прежняя (ролик владельца на Q3 Mix, подпись честная); после проверочных роликов Q4 заменить примером Q4.
         showcase: { logo: 'vidu.png?v=20260827a', video: 'vidu-preview.mp4?v=20260828a', sub: 'Пример: ролик владельца на Vidu Q3 Mix, 15 с в 720p по одному фото, звук из модели' }
     },
     'veo-31': {
@@ -1290,8 +1389,12 @@ document.querySelectorAll('.mode-tab').forEach(tab => {
     tab.addEventListener('click', () => switchMode(tab.dataset.mode));
 });
 
-function updateModelParams(model) {
-    const config = modelConfigs[model] || modelConfigs['nano-banana-pro'];
+function updateModelParams(model, keepVariant) {
+    // 09.10.2026: версия модели выбирается ДО сборки пульта, чтобы её поправки (variantConfigs) попали в config.
+    const _baseCfg = modelConfigs[model] || modelConfigs['nano-banana-pro'];
+    const _vars = Array.isArray(_baseCfg.variants) ? _baseCfg.variants : [];
+    if (!keepVariant || !_vars.some((v) => v.value === selectedVariant)) selectedVariant = _vars.length ? _vars[0].value : '';
+    const config = cfgOf(model);
 
     // --- Per-model notice (e.g. Grok high-demand warning) ---
     const noticeEl = document.getElementById('modelNotice');
@@ -1435,12 +1538,22 @@ function updateModelParams(model) {
     // --- Звук-образец и роль второй картинки (MiniMax H3): показываем только там, где поддерживается ---
     const arsEl = document.getElementById('audioRefSection');
     if (arsEl) {
-        arsEl.classList.toggle('hidden', !config.optionalAudioRef);
+        // 09.10.2026: у Vidu Q4 «по фото» до 3 записей голоса (config.audioRefs), у MiniMax H3 одна (optionalAudioRef).
+        arsEl.classList.toggle('hidden', !(config.optionalAudioRef || config.audioRefs));
         if (!config.optionalAudioRef && uploadedAudioRef) {
             uploadedAudioRef = null;
             if (audioRefInput) audioRefInput.value = '';
-            updateAudioRefStatus();
         }
+        if (!config.audioRefs && uploadedAudioRefs.length) uploadedAudioRefs = [];
+        const arTitle = document.getElementById('audioRefTitle');
+        const arHint = document.getElementById('audioRefHint');
+        if (arTitle) arTitle.textContent = config.audioRefs ? config.audioRefs.title : 'Звук-образец';
+        if (arHint) arHint.textContent = config.audioRefs ? config.audioRefs.hint : 'WAV или MP3, 2–15 секунд, до 15 МБ. Необязательно. Модель возьмёт из файла характер звучания. Баллы за него не списываются.';
+        if (audioRefInput) {
+            audioRefInput.accept = config.audioRefs ? 'audio/mpeg,audio/mp3,.mp3' : 'audio/wav,audio/x-wav,audio/mpeg,audio/mp3';
+            audioRefInput.multiple = !!config.audioRefs;
+        }
+        updateAudioRefStatus();
     }
     const h3rg = document.getElementById('h3RoleGroup');
     const h3rh = document.getElementById('h3RoleHint');
@@ -1518,22 +1631,23 @@ function updateModelParams(model) {
     if (variantSection && variantChips) {
         const variants = Array.isArray(config.variants) ? config.variants : [];
         variantChips.innerHTML = '';
-        variants.forEach((v, idx) => {
+        variants.forEach((v) => {
             const chip = document.createElement('div');
-            chip.className = 'chip' + (idx === 0 ? ' active' : '');
+            chip.className = 'chip' + (v.value === selectedVariant ? ' active' : '');
             chip.dataset.value = v.value;
             chip.textContent = v.label || v.value;
             if (v.hint) chip.title = v.hint;
             chip.addEventListener('click', () => {
-                variantChips.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-                chip.classList.add('active');
+                if (selectedVariant === v.value) return;
                 selectedVariant = v.value;
+                // 09.10.2026: у версий свои лимиты фото, разрешения, длины и голос — пульт пересобирается под версию.
+                updateModelParams(selectedModel, true);
             });
             variantChips.appendChild(chip);
         });
-        selectedVariant = variants.length ? variants[0].value : '';
         const variantHint = document.getElementById('variantHint');
-        if (variantHint) { variantHint.textContent = config.variantHint || ''; variantHint.style.display = config.variantHint ? '' : 'none'; }
+        const vHint = (variants.find((v) => v.value === selectedVariant) || {}).hint || config.variantHint || '';
+        if (variantHint) { variantHint.textContent = vHint; variantHint.style.display = vHint ? '' : 'none'; }
         variantSection.classList.toggle('hidden', variants.length === 0);
     }
 
@@ -1765,7 +1879,7 @@ document.addEventListener('click', (e) => {
 
 // Validation
 function updateValidation() {
-    const cfg = modelConfigs[selectedModel] || {};
+    const cfg = cfgOf(selectedModel) || {};
     const noPrompt = !!cfg.noPrompt;          // утилиты (recraft) — промпт не нужен
     const needsRef = !!cfg.requiresReference; // обязательно фото
     const needsVideoRef = !!cfg.requiresVideoRef; // обязательно видео с движением (Kling Motion Control)
@@ -2198,7 +2312,7 @@ improveBtn.addEventListener('click', async () => {
 
 // Generate button
 generateBtn.addEventListener('click', async () => {
-    const genCfg = modelConfigs[selectedModel] || {};
+    const genCfg = cfgOf(selectedModel) || {};
     if (!genCfg.noPrompt && !promptInput.value.trim()) {
         showToast('Please enter a description', 'error');
         return;
@@ -2241,6 +2355,7 @@ generateBtn.addEventListener('click', async () => {
          * @property {number|string} count
          * @property {string[]} images
          * @property {string} [video]
+         * @property {string[]} [sounds]
          * @property {string} [character_orientation]
          * @property {{id: string, size: number, mime: string}[]} [image_uploads]
          * @property {{id: string, size: number, mime: string}} [video_upload]
@@ -2250,7 +2365,7 @@ generateBtn.addEventListener('click', async () => {
         let tusImageRefs = null;
         let tusVideoRef = null;
         {
-            const cfg = modelConfigs[selectedModel] || {};
+            const cfg = cfgOf(selectedModel) || {};
             const wantVideoRef = !!(currentMode === 'video' && (cfg.requiresVideoRef || cfg.optionalVideoRef) && uploadedVideoRef);
             const wantTus = (uploadedImages.length > 0 || wantVideoRef);
             // Тот же набор файлов уже провалился по каналу: второй заход дал бы тот же обрыв,
@@ -2275,7 +2390,7 @@ generateBtn.addEventListener('click', async () => {
                             // 16.08 (заказ владельца): мульти-референсы у линейки Seedance — Mini, старшая 2.0
                             // и 2.5. 17.08: + minimax-h3 (фронт обещал 5 фото, уезжало 1; бэкенд 53-prep/55-convert
                             // к 5 фото готов с 01.08). Остальные видео-модели: первое фото и только оно (их API так хочет).
-                            const MULTI_REF_MODELS = ['seedance-2-mini', 'seedance-2', 'seedance-25', 'minimax-h3', 'wan-3', 'vidu-q3']; // 25.08: Wan 3.0 — до 10 образцов; 27.08: Vidu Q3 Mix — до 7
+                            const MULTI_REF_MODELS = ['seedance-2-mini', 'seedance-2', 'seedance-25', 'minimax-h3', 'wan-3', 'vidu-q3']; // 09.10: Vidu Q4 по фото до 15, с кадра 1 (cfgOf); 25.08: Wan 3.0 — до 10 образцов; 27.08: Vidu Q3 Mix — до 7
                             const multiRef = MULTI_REF_MODELS.indexOf(selectedModel) !== -1 && !cfg.requiresVideoRef;
                             if (multiRef) {
                                 const mfv = Math.max(1, Number(cfg.maxFiles) || 1);
@@ -2365,7 +2480,7 @@ generateBtn.addEventListener('click', async () => {
         /** @type {GeneratePayload} */
         let data;
         if (currentMode === 'video') {
-            const videoConfig = modelConfigs[selectedModel] || {};
+            const videoConfig = cfgOf(selectedModel) || {};
             data = {
                 action: 'generate_video',
                 prompt: promptInput.value,
@@ -2402,12 +2517,16 @@ generateBtn.addEventListener('click', async () => {
             if (videoConfig.optionalAudioRef && uploadedAudioRef) {
                 data.audio = uploadedAudioRef.dataUrl;
             }
+            // 09.10.2026, Vidu Q4 «по фото»: до 3 записей голоса (mp3 3–12 с) полем sounds; бэкенд (Vidu AV Convert) заливает их в Cloudinary.
+            if (videoConfig.audioRefs && uploadedAudioRefs.length) {
+                data.sounds = uploadedAudioRefs.slice(0, videoConfig.audioRefs.max).map((a) => a.dataUrl);
+            }
             // Роль второй картинки: «последний кадр» переводит запрос в режим первый→последний кадр.
             if (videoConfig.imageRoles && h3ImageRole === 'last' && uploadedImages.length >= 2) {
                 data.h3_last_frame = true;
             }
         } else {
-            const imageConfig = modelConfigs[selectedModel] || {};
+            const imageConfig = cfgOf(selectedModel) || {};
             data = {
                 action: 'generate',
                 prompt: promptInput.value,

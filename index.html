@@ -1332,9 +1332,9 @@
             <h1 id="headerTitle">🎨 AI Image Generator</h1>
             <p id="headerDesc">Создавайте потрясающие изображения с помощью передовых технологий искусственного интеллекта. Превращайте свои идеи в визуальные шедевры.</p>
             <div class="header-links">
-                <a href="faq.html?v=20260926a" class="faq-btn">❓ FAQ</a>
+                <a href="faq.html?v=20261009a" class="faq-btn">❓ FAQ</a>
                 <a href="cabinet.html?v=20260709b" class="cabinet-btn">💰 Баланс</a>
-                <a href="tariffs.html?v=20261002g" class="tariffs-btn">💎 Тарифы</a>
+                <a href="tariffs.html?v=20261009a" class="tariffs-btn">💎 Тарифы</a>
             </div>
         </div>
 
@@ -1379,6 +1379,16 @@
                             <div class="model-info">
                                 <div class="model-name">Nano-Banana 2</div>
                                 <div class="model-desc">Google Gemini · Рендеринг текста</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 09.10.2026: Nano-Banana 2.1 (Google через CometAPI), сразу за Nano-Banana 2. Только после покупки пакета. -->
+                    <div class="dropdown-option" data-value="nano-banana-21" data-name="Nano-Banana 2.1" data-desc="Google Gemini · Новая версия, после покупки пакета" data-icon="google" data-mode="image">
+                        <div class="model-option-content">
+                            <div class="model-icon google">G</div>
+                            <div class="model-info">
+                                <div class="model-name">Nano-Banana 2.1</div>
+                                <div class="model-desc">Google Gemini · Новая версия, после покупки пакета</div>
                             </div>
                         </div>
                     </div>
@@ -1570,12 +1580,12 @@
                     </div>
                     -->
 
-                    <div class="dropdown-option" data-value="vidu-q3" data-name="Vidu Q3" data-desc="Vidu · Mix, Ad, Turbo: персонаж по фото говорит и двигается, со звуком" data-icon="vidu" data-mode="video" style="display:none;">
+                    <div class="dropdown-option" data-value="vidu-q3" data-name="Vidu Q4" data-desc="Vidu · Q4 по фото и с кадра, Ad и Turbo: персонаж говорит и двигается, со звуком" data-icon="vidu" data-mode="video" style="display:none;">
                         <div class="model-option-content">
                             <div class="model-icon vidu">V</div>
                             <div class="model-info">
-                                <div class="model-name">Vidu Q3</div>
-                                <div class="model-desc">Vidu · Mix, Ad, Turbo: персонаж по фото говорит и двигается, со звуком</div>
+                                <div class="model-name">Vidu Q4</div>
+                                <div class="model-desc">Vidu · Q4 по фото и с кадра, Ad и Turbo: персонаж говорит и двигается, со звуком</div>
                             </div>
                         </div>
                     </div>
@@ -1731,9 +1741,10 @@
         </div>
 
         <!-- Звук-образец (MiniMax H3): необязательный, за него баллы не списываются -->
+        <!-- 09.10.2026: заголовок и подсказка секции по модели (MiniMax H3: звук-образец; Vidu Q4 «по фото»: до 3 записей голоса). -->
         <div class="section hidden" id="audioRefSection">
-            <h2 class="section-title">Звук-образец</h2>
-            <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+            <h2 class="section-title" id="audioRefTitle">Звук-образец</h2>
+            <p id="audioRefHint" style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
                 WAV или MP3, 2–15 секунд, до 15 МБ. Необязательно. Модель возьмёт из файла характер звучания. Баллы за него не списываются.
             </p>
             <div class="upload-area" id="audioRefArea" role="button" tabindex="0" aria-label="Загрузить звук-образец">
@@ -1742,6 +1753,7 @@
                 <div class="upload-count" id="audioRefStatus">Аудио не выбрано</div>
             </div>
             <input type="file" id="audioRefInput" accept="audio/wav,audio/x-wav,audio/mpeg,audio/mp3">
+            <button type="button" class="hidden" id="audioRefClear" style="margin-top: 8px; background: none; border: none; padding: 4px 0; color: var(--text-secondary); font-size: 12px; text-decoration: underline; cursor: pointer;">Убрать записи</button>
         </div>
 
         <!-- Роль второй картинки (MiniMax H3): образец стиля или финальный кадр ролика -->
@@ -1775,7 +1787,7 @@
             </div>
         </div>
 
-        <!-- Модификация модели (27.08): одна вкладка, несколько версий одной модели (Vidu Q3: Mix, позже Ad и Drama).
+        <!-- Модификация модели (27.08): одна вкладка, несколько версий одной модели (09.10: Vidu — Q4 по фото, Q4 с кадра, Ad и Turbo на Q3).
              Чипы рендерятся из modelConfigs[model].variants; секция скрыта, если у модели вариантов нет. В запрос уходит поле variant. -->
         <div class="section hidden" id="variantSection">
             <h2 class="section-title" id="variantTitle">Версия модели</h2>
@@ -1901,6 +1913,6 @@
         </div>
     </div>
 
-    <script src="index.js?v=20260926b"></script>
+    <script src="index.js?v=20261009a"></script>
 </body>
 </html>
