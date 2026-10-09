@@ -36,7 +36,7 @@ let uploadedImages = [];
 let uploadedVideoRef = null; // {file, dataUrl, duration} — референс движения для Kling Motion Control
 let selectedAspectRatio = '1:1';
 let selectedVariant = ''; // 27.08: версия модели внутри вкладки (modelConfigs[model].variants), уходит полем variant
-// 09.10.2026: настройки модели с поправкой на выбранную версию (Vidu: Q4 по фото / Q4 с кадра / Ad / Turbo):
+// 09.10.2026: настройки модели с поправкой на выбранную версию (Vidu Q4: «Сцена по фото» / «Оживить фото»):
 // modelConfigs[model].variantConfigs[selectedVariant] перекрывает поля базы (лимит фото, разрешения, длины, форматы, голос).
 function cfgOf(model) {
     const base = modelConfigs[model] || modelConfigs['nano-banana-pro'];
@@ -1064,48 +1064,27 @@ const modelConfigs = {
         // Демо-ролик владельца станет витриной так: video: 'wan3-preview.mp4?v=<дата>' + файл в корень репо.
         showcase: { logo: 'wan.png?v=20260825b', video: 'wan3-preview.mp4?v=20260825c', sub: 'Пример — ролик владельца 10 с в 720p, звук из модели' }
     },
-    'vidu-q3': {
-        // [DOC platform.vidu.com/docs/api-reference/video-models/vidu-q4-preview] 09.10.2026 (слово владельца): Vidu Q4 preview вместо Mix,
-        // Ad и Turbo остаются на Q3 («где Q3 не менялось, оставляем»). Слаг прежний (vidu-q3), версия уходит полем variant:
-        //   q4      «Q4 по фото»: 1–15 фото обязательны, до 3 записей голоса (mp3 3–12 с, полем sounds), 540p–4K, 3–16 с, пять форматов.
-        //   q4frame «Q4 с кадра»: 1 фото = первый кадр ролика, формат берётся с фото, 540p–4K, 3–16 с.
-        //   ad / turbo Vidu Q3 как было: 1–7 фото, 720p/1080p, 4–15 с, 16:9 / 1:1 / 9:16.
-        // ⚠️ Значения ОБЯЗАНЫ совпадать с бэкендом: Balance Cost Check (PTS_VIDU: Q4 4/8,2/10,4/16,4/33,6 б/с, Ad 8,7/10,4, Turbo 4,4/5,7),
-        // Vidu VIDEO PREP, Vidu Assets Convert (лимит фото), Vidu AV Convert (голос). Звук в ролике всегда (тумблера нет).
-        // Поля версии лежат в variantConfigs и перекрывают базу через cfgOf(); база = Q3 (Ad и Turbo).
+    'vidu-q4': {
+        // [DOC platform.vidu.com/docs/api-reference/video-models/vidu-q4-preview] 09.10.2026 (слово владельца): Vidu Q4 preview вместо Mix;
+        // 09.10 вечер: Q4 отдельной вкладкой со своими кнопками. Боту вкладка уходит как vidu-q3 (apiSlug), версия полем variant:
+        //   q4      «Сцена по фото»: 1–15 фото обязательны, до 3 записей голоса (mp3 3–12 с, полем sounds), 540p–4K, 3–16 с, пять форматов.
+        //   q4frame «Оживить фото»: 1 фото = первый кадр ролика, формат берётся с фото, 540p–4K, 3–16 с.
+        // ⚠️ Значения ОБЯЗАНЫ совпадать с бэкендом: Balance Cost Check (PTS_VIDU: Q4 4/8,2/10,4/16,4/33,6 б/с), Vidu VIDEO PREP,
+        // Vidu Assets Convert (лимит фото), Vidu AV Convert (голос); Gen Log пишет q4/q4frame в журнал как vidu-q4 (учёт Q4 отдельно).
+        // Звук в ролике всегда (тумблера нет). База = «Сцена по фото», поправки версий в variantConfigs (cfgOf).
         apiSlug: 'vidu-q3',
         provider: 'vidu',
         audioToggle: false,
-        maxFiles: 7,
+        maxFiles: 15,
         requiresReference: true,
-        refHint: 'Загрузите от 1 до 7 фото персонажа, предмета или места: модель соберёт сцену по ним. Без фото генерация не начнётся.',
-        // 09.10 после показа (слово владельца: кнопки как были, второй ряд устраивает): три чипа Q4 / Ad / Turbo, как Mix / Ad / Turbo
-        // до 09.10; у Q4 второй ряд «Как снять» (modes): «Сцена по фото» = q4, «Оживить фото» = q4frame. В запрос уходит значение режима.
+        refHint: 'Загрузите от 1 до 15 фото персонажа, предмета или места: модель соберёт сцену по ним. Без фото генерация не начнётся.',
         variants: [
-            { value: 'q4', label: 'Q4', modes: [
-                { value: 'q4', label: 'Сцена по фото', hint: 'Vidu Q4: сцена по 1–15 фото, можно добавить до 3 записей голоса героя. До 4K, от 3 до 16 секунд.' },
-                { value: 'q4frame', label: 'Оживить фото', hint: 'Vidu Q4: ваше фото станет первым кадром, модель его оживит. Формат ролика берётся с фото. До 4K, от 3 до 16 секунд.' }
-            ] },
-            { value: 'ad', label: 'Ad', hint: 'Vidu Q3 Ad: рекламный ролик с монтажными склейками, лучше всего 5–8 секунд.' },
-            { value: 'turbo', label: 'Turbo', hint: 'Vidu Q3 Turbo: быстрее и дешевле, для черновиков и подбора промпта.' }
+            { value: 'q4', label: 'Сцена по фото', hint: 'Vidu Q4: сцена по 1–15 фото, можно добавить до 3 записей голоса героя. До 4K, от 3 до 16 секунд.' },
+            { value: 'q4frame', label: 'Оживить фото', hint: 'Vidu Q4: ваше фото станет первым кадром, модель его оживит. Формат ролика берётся с фото. До 4K, от 3 до 16 секунд.' }
         ],
-        variantModesTitle: 'Как снять',
-        variantHint: 'Q4: новая версия Vidu. Ad и Turbo работают на Vidu Q3.',
+        variantHint: 'Vidu Q4: новое поколение Vidu.',
         variantConfigs: {
             q4: {
-                maxFiles: 15,
-                refHint: 'Загрузите от 1 до 15 фото персонажа, предмета или места: модель соберёт сцену по ним. Без фото генерация не начнётся.',
-                aspectRatios: [ {value:'16:9',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'1:1',icon:'▢'}, {value:'3:4',icon:'▯'}, {value:'9:16',icon:'▯'} ],
-                resolutions: [
-                    {value:'540p', label:'540p'}, {value:'720p', label:'720p'}, {value:'1080p', label:'1080p'},
-                    {value:'2K', label:'2K'}, {value:'4K', label:'4K'}
-                ],
-                durations: [
-                    {value:'3s', label:'3s'}, {value:'4s', label:'4s'}, {value:'5s', label:'5s'}, {value:'6s', label:'6s'},
-                    {value:'7s', label:'7s'}, {value:'8s', label:'8s'}, {value:'9s', label:'9s'}, {value:'10s', label:'10s'},
-                    {value:'11s', label:'11s'}, {value:'12s', label:'12s'}, {value:'13s', label:'13s'}, {value:'14s', label:'14s'},
-                    {value:'15s', label:'15s'}, {value:'16s', label:'16s'}
-                ],
                 audioRefs: { max: 3, minSec: 3, maxSec: 12, maxBytes: 3 * 1024 * 1024, mime: ['audio/mpeg', 'audio/mp3'], title: 'Голос героя',
                     hint: 'MP3, от 3 до 12 секунд, до 3 записей. Необязательно: модель возьмёт голос и манеру речи из записи. Баллы за запись не списываются.' }
             },
@@ -1113,19 +1092,41 @@ const modelConfigs = {
                 maxFiles: 1,
                 refHint: 'Загрузите фото: оно станет первым кадром ролика. Без фото генерация не начнётся.',
                 aspectRatios: [ {value:'auto',icon:'▢'} ],
-                defaultAspect: 'auto',
-                resolutions: [
-                    {value:'540p', label:'540p'}, {value:'720p', label:'720p'}, {value:'1080p', label:'1080p'},
-                    {value:'2K', label:'2K'}, {value:'4K', label:'4K'}
-                ],
-                durations: [
-                    {value:'3s', label:'3s'}, {value:'4s', label:'4s'}, {value:'5s', label:'5s'}, {value:'6s', label:'6s'},
-                    {value:'7s', label:'7s'}, {value:'8s', label:'8s'}, {value:'9s', label:'9s'}, {value:'10s', label:'10s'},
-                    {value:'11s', label:'11s'}, {value:'12s', label:'12s'}, {value:'13s', label:'13s'}, {value:'14s', label:'14s'},
-                    {value:'15s', label:'15s'}, {value:'16s', label:'16s'}
-                ]
+                defaultAspect: 'auto'
             }
         },
+        aspectRatios: [ {value:'16:9',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'1:1',icon:'▢'}, {value:'3:4',icon:'▯'}, {value:'9:16',icon:'▯'} ],
+        resolutions: [
+            {value:'540p', label:'540p'}, {value:'720p', label:'720p'}, {value:'1080p', label:'1080p'},
+            {value:'2K', label:'2K'}, {value:'4K', label:'4K'}
+        ],
+        durations: [
+            {value:'3s', label:'3s'}, {value:'4s', label:'4s'}, {value:'5s', label:'5s'}, {value:'6s', label:'6s'},
+            {value:'7s', label:'7s'}, {value:'8s', label:'8s'}, {value:'9s', label:'9s'}, {value:'10s', label:'10s'},
+            {value:'11s', label:'11s'}, {value:'12s', label:'12s'}, {value:'13s', label:'13s'}, {value:'14s', label:'14s'},
+            {value:'15s', label:'15s'}, {value:'16s', label:'16s'}
+        ],
+        defaultAspect: '16:9',
+        defaultRes: '720p',
+        defaultDuration: '5s',
+        // Витрина пока прежняя (ролик владельца на Q3 Mix, подпись честная); после проверочных роликов Q4 заменить примером Q4.
+        showcase: { logo: 'vidu.png?v=20260827a', video: 'vidu-preview.mp4?v=20260828a', sub: 'Пример: ролик владельца на Vidu Q3 Mix, 15 с в 720p по одному фото, звук из модели' }
+    },
+    'vidu-q3': {
+        // [DOC platform.vidu.com/docs/reference-to-video] Vidu Q3 прямым API. 09.10.2026: Mix ушёл (его место заняла вкладка Vidu Q4),
+        // Ad и Turbo остаются на Q3 и подняты к полу 45 % (Balance Cost Check PTS_VIDU: Ad 8,7/10,4, Turbo 4,4/5,7 б/с).
+        // Вход как раньше: 1–7 фото, 720p/1080p, 4–15 с, 16:9 / 1:1 / 9:16; Drama только на сайте. Версия уходит полем variant.
+        apiSlug: 'vidu-q3',
+        provider: 'vidu',
+        audioToggle: false,
+        maxFiles: 7,
+        requiresReference: true,
+        refHint: 'Загрузите от 1 до 7 фото персонажа, предмета или места: модель соберёт сцену по ним. Без фото генерация не начнётся.',
+        variants: [
+            { value: 'ad', label: 'Ad', hint: 'Vidu Q3 Ad: рекламный ролик с монтажными склейками, лучше всего 5–8 секунд.' },
+            { value: 'turbo', label: 'Turbo', hint: 'Vidu Q3 Turbo: быстрее и дешевле, для черновиков и подбора промпта.' }
+        ],
+        variantHint: 'Vidu Q3: Ad для рекламы, Turbo для черновиков.',
         aspectRatios: [
             {value:'16:9',icon:'▬'}, {value:'1:1',icon:'▢'}, {value:'9:16',icon:'▯'}
         ],
@@ -1142,7 +1143,6 @@ const modelConfigs = {
         defaultAspect: '16:9',
         defaultRes: '720p',
         defaultDuration: '5s',
-        // Витрина пока прежняя (ролик владельца на Q3 Mix, подпись честная); после проверочных роликов Q4 заменить примером Q4.
         showcase: { logo: 'vidu.png?v=20260827a', video: 'vidu-preview.mp4?v=20260828a', sub: 'Пример: ролик владельца на Vidu Q3 Mix, 15 с в 720p по одному фото, звук из модели' }
     },
     'veo-31': {
@@ -1398,10 +1398,7 @@ function updateModelParams(model, keepVariant) {
     // 09.10.2026: версия модели выбирается ДО сборки пульта, чтобы её поправки (variantConfigs) попали в config.
     const _baseCfg = modelConfigs[model] || modelConfigs['nano-banana-pro'];
     const _vars = Array.isArray(_baseCfg.variants) ? _baseCfg.variants : [];
-    // 09.10: у версии могут быть режимы (Vidu Q4); выбирается всегда конечное значение, по умолчанию первое (Q4 «Сцена по фото»).
-    const _vals = [];
-    _vars.forEach((v) => { if (Array.isArray(v.modes) && v.modes.length) v.modes.forEach((mm) => _vals.push(mm.value)); else _vals.push(v.value); });
-    if (!keepVariant || !_vals.includes(selectedVariant)) selectedVariant = _vals.length ? _vals[0] : '';
+    if (!keepVariant || !_vars.some((v) => v.value === selectedVariant)) selectedVariant = _vars.length ? _vars[0].value : '';
     const config = cfgOf(model);
 
     // --- Per-model notice (e.g. Grok high-demand warning) ---
@@ -1638,50 +1635,25 @@ function updateModelParams(model, keepVariant) {
     const variantChips = document.getElementById('variantChips');
     if (variantSection && variantChips) {
         const variants = Array.isArray(config.variants) ? config.variants : [];
-        // 09.10.2026: у версии могут быть режимы (Vidu Q4: «Сцена по фото» / «Оживить фото»); чип версии горит при любом её режиме.
-        const modesOf = (v) => (Array.isArray(v.modes) ? v.modes : []);
-        const isOn = (v) => v.value === selectedVariant || modesOf(v).some((mm) => mm.value === selectedVariant);
         variantChips.innerHTML = '';
+        // 09.10: кнопки версий ровными долями ряда (сетка в index.html), две кнопки стоят симметрично, а не прижаты влево.
+        variantChips.style.setProperty('--vc', String(Math.max(1, variants.length)));
         variants.forEach((v) => {
             const chip = document.createElement('div');
-            chip.className = 'chip' + (isOn(v) ? ' active' : '');
+            chip.className = 'chip' + (v.value === selectedVariant ? ' active' : '');
             chip.dataset.value = v.value;
             chip.textContent = v.label || v.value;
             if (v.hint) chip.title = v.hint;
             chip.addEventListener('click', () => {
-                if (isOn(v)) return;
-                selectedVariant = modesOf(v).length ? modesOf(v)[0].value : v.value;
+                if (selectedVariant === v.value) return;
+                selectedVariant = v.value;
                 // 09.10.2026: у версий свои лимиты фото, разрешения, длины и голос — пульт пересобирается под версию.
                 updateModelParams(selectedModel, true);
             });
             variantChips.appendChild(chip);
         });
-        // Второй ряд «Как снять»: режимы выбранной версии, у прочих версий скрыт.
-        const curVar = variants.find(isOn);
-        const modes = curVar ? modesOf(curVar) : [];
-        const modeBox = document.getElementById('variantModeBox');
-        const modeChips = document.getElementById('variantModeChips');
-        if (modeBox && modeChips) {
-            modeChips.innerHTML = '';
-            modes.forEach((mm) => {
-                const chip = document.createElement('div');
-                chip.className = 'chip' + (mm.value === selectedVariant ? ' active' : '');
-                chip.dataset.value = mm.value;
-                chip.textContent = mm.label;
-                chip.addEventListener('click', () => {
-                    if (selectedVariant === mm.value) return;
-                    selectedVariant = mm.value;
-                    updateModelParams(selectedModel, true);
-                });
-                modeChips.appendChild(chip);
-            });
-            const modeTitle = document.getElementById('variantModeTitle');
-            if (modeTitle) modeTitle.textContent = config.variantModesTitle || 'Как снять';
-            modeBox.classList.toggle('hidden', modes.length === 0);
-        }
         const variantHint = document.getElementById('variantHint');
-        const curMode = modes.find((mm) => mm.value === selectedVariant);
-        const vHint = (curMode && curMode.hint) || (curVar && curVar.hint) || config.variantHint || '';
+        const vHint = (variants.find((v) => v.value === selectedVariant) || {}).hint || config.variantHint || '';
         if (variantHint) { variantHint.textContent = vHint; variantHint.style.display = vHint ? '' : 'none'; }
         variantSection.classList.toggle('hidden', variants.length === 0);
     }
@@ -2425,7 +2397,7 @@ generateBtn.addEventListener('click', async () => {
                             // 16.08 (заказ владельца): мульти-референсы у линейки Seedance — Mini, старшая 2.0
                             // и 2.5. 17.08: + minimax-h3 (фронт обещал 5 фото, уезжало 1; бэкенд 53-prep/55-convert
                             // к 5 фото готов с 01.08). Остальные видео-модели: первое фото и только оно (их API так хочет).
-                            const MULTI_REF_MODELS = ['seedance-2-mini', 'seedance-2', 'seedance-25', 'minimax-h3', 'wan-3', 'vidu-q3']; // 09.10: Vidu Q4 по фото до 15, с кадра 1 (cfgOf); 25.08: Wan 3.0 — до 10 образцов; 27.08: Vidu Q3 Mix — до 7
+                            const MULTI_REF_MODELS = ['seedance-2-mini', 'seedance-2', 'seedance-25', 'minimax-h3', 'wan-3', 'vidu-q4', 'vidu-q3']; // 09.10: Vidu Q4 «Сцена по фото» до 15, «Оживить фото» 1 (cfgOf); 25.08: Wan 3.0 — до 10 образцов; 27.08: Vidu Q3 Mix — до 7
                             const multiRef = MULTI_REF_MODELS.indexOf(selectedModel) !== -1 && !cfg.requiresVideoRef;
                             if (multiRef) {
                                 const mfv = Math.max(1, Number(cfg.maxFiles) || 1);
