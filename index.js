@@ -460,7 +460,7 @@ const modelConfigs = {
     'nano-banana-21': {
         // 09.10.2026 (слово владельца): Nano-Banana 2.1 (Google) через CometAPI, формат Gemini generateContent (в боте ветка Nano Comet *).
         // Только после покупки пакета: на бесплатных баллах бэкенд отвечает отказом по тарифу, бесплатные генерации остаются на Nano-Banana 2.
-        // Веса 1K / 2K / 4K = 2 / 3 / 4 балла (Gen Weight 'nano-banana-21'), пол 45 % чистыми. Форматы: палитра 2.1 (14 и auto, с 1:4, 4:1, 1:8, 8:1).
+        // Веса 1K / 2K / 4K = 4 / 5 / 10 б по чекам журнала CometAPI 09.10 вечер (Gen Weight 'nano-banana-21'), пол 45 % чистыми. Форматы: палитра 2.1 (14 и auto, с 1:4, 4:1, 1:8, 8:1).
         // До 14 фото (CometAPI: «up to 14 reference images»). Витрина: картинка владельца после первой генерации, до неё заглушка в палитре фронта.
         aspectRatios: [
             {value:'auto',icon:'▢'}, {value:'8:1',icon:'▬'}, {value:'4:1',icon:'▬'}, {value:'21:9',icon:'▬'}, {value:'16:9',icon:'▬'},
