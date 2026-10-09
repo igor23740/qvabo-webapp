@@ -1110,8 +1110,8 @@ const modelConfigs = {
         defaultAspect: '16:9',
         defaultRes: '720p',
         defaultDuration: '5s',
-        // Витрина пока прежняя (ролик владельца на Q3 Mix, подпись честная); после проверочных роликов Q4 заменить примером Q4.
-        showcase: { logo: 'vidu.png?v=20260827a', video: 'vidu-preview.mp4?v=20260828a', sub: 'Пример: ролик владельца на Vidu Q3 Mix, 15 с в 720p по одному фото, звук из модели' }
+        // 09.10 вечер: витрина = первый ролик владельца на Q4 с сайта («Сцена по фото», 2 фото, 8 с, 720p), сжат до 720×406.
+        showcase: { logo: 'vidu.png?v=20260827a', video: 'vidu-q4-preview.mp4?v=20261009', sub: 'Пример: ролик владельца на Vidu Q4, сцена по 2 фото, 8 с в 720p, звук из модели' }
     },
     'vidu-q3': {
         // [DOC platform.vidu.com/docs/reference-to-video] Vidu Q3 прямым API. 09.10.2026: Mix ушёл (его место заняла вкладка Vidu Q4),
