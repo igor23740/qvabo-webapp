@@ -477,7 +477,8 @@ const modelConfigs = {
         defaultRes: '1K',
         maxFiles: 14,
         notice: 'Nano-Banana 2.1 открывается после покупки любого пакета баллов. На бесплатных баллах работает Nano-Banana 2.',
-        showcase: { logo: 'gemini.png?v=1', image: 'nano-banana-21-placeholder.svg?v=20261009', sub: 'Пример появится после первой генерации' }
+        // 09.10 вечер: витрина = первая генерация владельца в боте (2K), слово владельца «Закинь его в placeholder. В боте».
+        showcase: { logo: 'gemini.png?v=1', image: 'nano-banana-21-preview.webp?v=20261009', sub: 'Пример: коллаж-обложка с русским заголовком, Nano-Banana 2.1 (2K)' }
     },
     'gpt-image-25': {
         // [DOC replicate.com/openai/gpt-image-2.5-sunburst] GPT Image 2.5 Sunburst через Replicate (08.09.2026).
