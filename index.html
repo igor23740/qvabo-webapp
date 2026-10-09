@@ -1332,7 +1332,7 @@
             <h1 id="headerTitle">🎨 AI Image Generator</h1>
             <p id="headerDesc">Создавайте потрясающие изображения с помощью передовых технологий искусственного интеллекта. Превращайте свои идеи в визуальные шедевры.</p>
             <div class="header-links">
-                <a href="faq.html?v=20261009a" class="faq-btn">❓ FAQ</a>
+                <a href="faq.html?v=20261009b" class="faq-btn">❓ FAQ</a>
                 <a href="cabinet.html?v=20260709b" class="cabinet-btn">💰 Баланс</a>
                 <a href="tariffs.html?v=20261009a" class="tariffs-btn">💎 Тарифы</a>
             </div>
@@ -1580,12 +1580,12 @@
                     </div>
                     -->
 
-                    <div class="dropdown-option" data-value="vidu-q3" data-name="Vidu Q4" data-desc="Vidu · Q4 по фото и с кадра, Ad и Turbo: персонаж говорит и двигается, со звуком" data-icon="vidu" data-mode="video" style="display:none;">
+                    <div class="dropdown-option" data-value="vidu-q3" data-name="Vidu Q4" data-desc="Vidu · Q4: сцена по фото или оживить фото, Ad и Turbo. Персонаж говорит и двигается, со звуком" data-icon="vidu" data-mode="video" style="display:none;">
                         <div class="model-option-content">
                             <div class="model-icon vidu">V</div>
                             <div class="model-info">
                                 <div class="model-name">Vidu Q4</div>
-                                <div class="model-desc">Vidu · Q4 по фото и с кадра, Ad и Turbo: персонаж говорит и двигается, со звуком</div>
+                                <div class="model-desc">Vidu · Q4: сцена по фото или оживить фото, Ad и Turbo. Персонаж говорит и двигается, со звуком</div>
                             </div>
                         </div>
                     </div>
@@ -1684,6 +1684,20 @@
 
         <!-- Per-model notice (e.g. Grok high-demand warning) -->
         <div id="modelNotice" style="display:none; margin:0 0 24px; font-size:13px; color:#f0a020; padding:12px 14px; background:rgba(240,160,32,0.08); border:1px solid rgba(240,160,32,0.35); border-radius:10px; line-height:1.5;"></div>
+
+        <!-- Модификация модели (27.08): одна вкладка, несколько версий одной модели. Чипы рендерятся из modelConfigs[model].variants;
+             секция скрыта, если у модели вариантов нет. В запрос уходит поле variant. 09.10 после показа: секция сразу под моделью
+             (версия решает, сколько фото, есть ли голос, какие форматы и длины), у Vidu три чипа Q4 / Ad / Turbo и у Q4 второй ряд
+             «Как снять» (режимы modes: «Сцена по фото» = q4, «Оживить фото» = q4frame). -->
+        <div class="section hidden" id="variantSection">
+            <h2 class="section-title" id="variantTitle">Версия модели</h2>
+            <p id="variantHint" style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;"></p>
+            <div class="chips-container" id="variantChips"></div>
+            <div class="hidden" id="variantModeBox" style="margin-top: 16px;">
+                <h2 class="section-title" id="variantModeTitle">Как снять</h2>
+                <div class="chips-container" id="variantModeChips"></div>
+            </div>
+        </div>
 
         <!-- Image Description -->
         <div class="section" id="promptSection">
@@ -1785,14 +1799,6 @@
                 <div class="chip" data-value="2:3"><span class="chip-icon">▯</span> 2:3</div>
                 <div class="chip" data-value="9:16"><span class="chip-icon">▯</span> 9:16</div>
             </div>
-        </div>
-
-        <!-- Модификация модели (27.08): одна вкладка, несколько версий одной модели (09.10: Vidu — Q4 по фото, Q4 с кадра, Ad и Turbo на Q3).
-             Чипы рендерятся из modelConfigs[model].variants; секция скрыта, если у модели вариантов нет. В запрос уходит поле variant. -->
-        <div class="section hidden" id="variantSection">
-            <h2 class="section-title" id="variantTitle">Версия модели</h2>
-            <p id="variantHint" style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;"></p>
-            <div class="chips-container" id="variantChips"></div>
         </div>
 
         <!-- Resolution -->
@@ -1913,6 +1919,6 @@
         </div>
     </div>
 
-    <script src="index.js?v=20261009a"></script>
+    <script src="index.js?v=20261009b"></script>
 </body>
 </html>

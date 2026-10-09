@@ -1079,13 +1079,18 @@ const modelConfigs = {
         maxFiles: 7,
         requiresReference: true,
         refHint: 'Загрузите от 1 до 7 фото персонажа, предмета или места: модель соберёт сцену по ним. Без фото генерация не начнётся.',
+        // 09.10 после показа (слово владельца: кнопки как были, второй ряд устраивает): три чипа Q4 / Ad / Turbo, как Mix / Ad / Turbo
+        // до 09.10; у Q4 второй ряд «Как снять» (modes): «Сцена по фото» = q4, «Оживить фото» = q4frame. В запрос уходит значение режима.
         variants: [
-            { value: 'q4', label: 'Q4 · по фото', hint: 'Vidu Q4: сцена по 1–15 фото, можно добавить до 3 записей голоса героя. До 4K, от 3 до 16 секунд.' },
-            { value: 'q4frame', label: 'Q4 · с кадра', hint: 'Vidu Q4: ваше фото станет первым кадром, модель его оживит. Формат ролика берётся с фото. До 4K, от 3 до 16 секунд.' },
-            { value: 'ad', label: 'Ad · Q3', hint: 'Vidu Q3 Ad: рекламный ролик с монтажными склейками, лучше всего 5–8 секунд.' },
-            { value: 'turbo', label: 'Turbo · Q3', hint: 'Vidu Q3 Turbo: быстрее и дешевле, для черновиков и подбора промпта.' }
+            { value: 'q4', label: 'Q4', modes: [
+                { value: 'q4', label: 'Сцена по фото', hint: 'Vidu Q4: сцена по 1–15 фото, можно добавить до 3 записей голоса героя. До 4K, от 3 до 16 секунд.' },
+                { value: 'q4frame', label: 'Оживить фото', hint: 'Vidu Q4: ваше фото станет первым кадром, модель его оживит. Формат ролика берётся с фото. До 4K, от 3 до 16 секунд.' }
+            ] },
+            { value: 'ad', label: 'Ad', hint: 'Vidu Q3 Ad: рекламный ролик с монтажными склейками, лучше всего 5–8 секунд.' },
+            { value: 'turbo', label: 'Turbo', hint: 'Vidu Q3 Turbo: быстрее и дешевле, для черновиков и подбора промпта.' }
         ],
-        variantHint: 'Q4 — новая версия Vidu. Ad и Turbo остаются на Q3.',
+        variantModesTitle: 'Как снять',
+        variantHint: 'Q4: новая версия Vidu. Ad и Turbo работают на Vidu Q3.',
         variantConfigs: {
             q4: {
                 maxFiles: 15,
@@ -1393,7 +1398,10 @@ function updateModelParams(model, keepVariant) {
     // 09.10.2026: версия модели выбирается ДО сборки пульта, чтобы её поправки (variantConfigs) попали в config.
     const _baseCfg = modelConfigs[model] || modelConfigs['nano-banana-pro'];
     const _vars = Array.isArray(_baseCfg.variants) ? _baseCfg.variants : [];
-    if (!keepVariant || !_vars.some((v) => v.value === selectedVariant)) selectedVariant = _vars.length ? _vars[0].value : '';
+    // 09.10: у версии могут быть режимы (Vidu Q4); выбирается всегда конечное значение, по умолчанию первое (Q4 «Сцена по фото»).
+    const _vals = [];
+    _vars.forEach((v) => { if (Array.isArray(v.modes) && v.modes.length) v.modes.forEach((mm) => _vals.push(mm.value)); else _vals.push(v.value); });
+    if (!keepVariant || !_vals.includes(selectedVariant)) selectedVariant = _vals.length ? _vals[0] : '';
     const config = cfgOf(model);
 
     // --- Per-model notice (e.g. Grok high-demand warning) ---
@@ -1630,23 +1638,50 @@ function updateModelParams(model, keepVariant) {
     const variantChips = document.getElementById('variantChips');
     if (variantSection && variantChips) {
         const variants = Array.isArray(config.variants) ? config.variants : [];
+        // 09.10.2026: у версии могут быть режимы (Vidu Q4: «Сцена по фото» / «Оживить фото»); чип версии горит при любом её режиме.
+        const modesOf = (v) => (Array.isArray(v.modes) ? v.modes : []);
+        const isOn = (v) => v.value === selectedVariant || modesOf(v).some((mm) => mm.value === selectedVariant);
         variantChips.innerHTML = '';
         variants.forEach((v) => {
             const chip = document.createElement('div');
-            chip.className = 'chip' + (v.value === selectedVariant ? ' active' : '');
+            chip.className = 'chip' + (isOn(v) ? ' active' : '');
             chip.dataset.value = v.value;
             chip.textContent = v.label || v.value;
             if (v.hint) chip.title = v.hint;
             chip.addEventListener('click', () => {
-                if (selectedVariant === v.value) return;
-                selectedVariant = v.value;
+                if (isOn(v)) return;
+                selectedVariant = modesOf(v).length ? modesOf(v)[0].value : v.value;
                 // 09.10.2026: у версий свои лимиты фото, разрешения, длины и голос — пульт пересобирается под версию.
                 updateModelParams(selectedModel, true);
             });
             variantChips.appendChild(chip);
         });
+        // Второй ряд «Как снять»: режимы выбранной версии, у прочих версий скрыт.
+        const curVar = variants.find(isOn);
+        const modes = curVar ? modesOf(curVar) : [];
+        const modeBox = document.getElementById('variantModeBox');
+        const modeChips = document.getElementById('variantModeChips');
+        if (modeBox && modeChips) {
+            modeChips.innerHTML = '';
+            modes.forEach((mm) => {
+                const chip = document.createElement('div');
+                chip.className = 'chip' + (mm.value === selectedVariant ? ' active' : '');
+                chip.dataset.value = mm.value;
+                chip.textContent = mm.label;
+                chip.addEventListener('click', () => {
+                    if (selectedVariant === mm.value) return;
+                    selectedVariant = mm.value;
+                    updateModelParams(selectedModel, true);
+                });
+                modeChips.appendChild(chip);
+            });
+            const modeTitle = document.getElementById('variantModeTitle');
+            if (modeTitle) modeTitle.textContent = config.variantModesTitle || 'Как снять';
+            modeBox.classList.toggle('hidden', modes.length === 0);
+        }
         const variantHint = document.getElementById('variantHint');
-        const vHint = (variants.find((v) => v.value === selectedVariant) || {}).hint || config.variantHint || '';
+        const curMode = modes.find((mm) => mm.value === selectedVariant);
+        const vHint = (curMode && curMode.hint) || (curVar && curVar.hint) || config.variantHint || '';
         if (variantHint) { variantHint.textContent = vHint; variantHint.style.display = vHint ? '' : 'none'; }
         variantSection.classList.toggle('hidden', variants.length === 0);
     }
