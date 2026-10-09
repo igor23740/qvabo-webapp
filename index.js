@@ -1280,7 +1280,7 @@ const modelConfigs = {
         promptOptional: true,
         maxFiles: 1,
         promptLimit: 2500,
-        refHint: 'Kling Motion Control переносит движение из вашего видео на персонажа с фото. Нужны 1 фото (голова, плечи и корпус в кадре) и видео с движением 3–30 секунд.',
+        refHint: 'Kling Motion Control переносит движение из вашего видео на персонажа с фото. Нужны 1 фото человека или человекоподобного персонажа (голова, плечи и корпус в кадре) и видео с движением 3–30 секунд.',
         noAspect: true,
         aspectRatios: [],
         resolutions: [
