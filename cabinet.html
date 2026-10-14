@@ -203,6 +203,9 @@
         }
         .balance-breakdown b { color: var(--text-primary); font-weight: 700; }
         .balance-breakdown .dot { color: var(--border-light); margin: 0 2px; }
+        /* 14.10.2026: реферальные бонусные, цифра акцентным фиолетовым */
+        .balance-bonus { margin-top: 10px; font-size: 13px; line-height: 1.4; color: var(--text-secondary); }
+        .balance-bonus b { color: var(--accent-hover); font-weight: 700; }
         .balance-note {
             margin-top: 14px;
             font-size: 11.5px;
@@ -531,6 +534,10 @@
                     <div class="balance-empty-cta hidden" id="balanceEmpty">
                         Баланс пуст — пополни или забери бесплатные 👇
                     </div>
+                    <!-- 14.10.2026 (владелец): реферальные бонусные отдельной цифрой другим цветом, как на сайте -->
+                    <div class="balance-bonus hidden" id="balanceBonusWrap">
+                        ✨ бонусных: <b id="balanceBonus">0</b><span id="balanceBonusUntil"></span>, тратятся первыми на Ideogram V4 «Лайт» или меняются 3 к 1 во вкладке «Рефералы» на сайте
+                    </div>
                     <div class="balance-note">
                         Списание зависит от модели: простые — 1, премиум — до 5 за картинку.
                     </div>
@@ -579,6 +586,6 @@
 
     <div class="toast" id="toast"></div>
 
-    <script src="cabinet.js?v=20260609"></script>
+    <script src="cabinet.js?v=20261014a"></script>
 </body>
 </html>

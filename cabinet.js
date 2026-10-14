@@ -155,6 +155,18 @@
                 hide($('balanceEmpty'));
             }
 
+            // 14.10.2026 (владелец): реферальные бонусные отдельной цифрой, видны и при пустом основном балансе
+            var rf = d.referral || {};
+            var bonus = Number(rf.bonus) || 0;
+            if (bonus > 0) {
+                $('balanceBonus').textContent = bonus;
+                var bu = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(rf.bonus_until || ''));
+                $('balanceBonusUntil').textContent = bu ? ' до ' + bu[3] + '.' + bu[2] : '';
+                show($('balanceBonusWrap'));
+            } else {
+                hide($('balanceBonusWrap'));
+            }
+
             $('totalSpent').textContent = (typeof d.total_spent === 'number') ? d.total_spent : 0;
 
             if (d.free_claimed) {
