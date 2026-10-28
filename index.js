@@ -1239,6 +1239,25 @@ const modelConfigs = {
         defaultDuration: '5s',
         showcase: { logo: 'grok.png', video: 'grok-preview.mp4', sub: 'Пример — оживление раскадровки в видео' }
     },
+    'kling-4': {
+        // 28.10.2026 Kling 4.0 (kie: kling-4.0/reference-to-video и keyframe-to-video), над Kling 3.0 (как сайт, sort 239).
+        // Материалы — своя панель k4.js (каждый файл спрашивает «кто или что это», персонажи с голосом, голоса, до 5 видео,
+        // ключевые кадры); заказ как у сайта: image_uploads/video_uploads/audio_uploads (tus) + pult. Бот: ветка K4 (K4 Prep),
+        // списание PTS_K4 по таблице. Звук стерео всегда (тумблера нет); 4K и 480p kie отбивает. Витрины пока нет: ждёт первый ролик.
+        apiSlug: 'kling-4',
+        provider: 'kie',
+        audioToggle: false,
+        k4Panel: true,
+        promptLimit: 8000,
+        aspectRatios: [
+            {value:'auto',icon:'▢'}, {value:'16:9',icon:'▬'}, {value:'9:16',icon:'▯'}, {value:'1:1',icon:'▢'}, {value:'21:9',icon:'▬'}
+        ],
+        resolutions: [ {value:'720p', label:'720p'}, {value:'1080p', label:'1080p'} ],
+        durations: Array.from({ length: 28 }, (_, i) => ({ value: (i + 3) + 's', label: (i + 3) + 's' })),
+        defaultAspect: 'auto',
+        defaultRes: '1080p',
+        defaultDuration: '5s'
+    },
     'kling-video': {
         // [DOC docs.kie.ai/market/kling/kling-3-0] kling-3.0/video: t2v + i2v (1 фото = первый кадр),
         // duration '3'..'15' (строка), mode std/pro/4K, sound bool, aspect_ratio 16:9|9:16|1:1.
@@ -1589,9 +1608,20 @@ function updateModelParams(model, keepVariant) {
     // --- Image upload visibility: hide for text-only models ---
     // Ideogram 4.0: Фаза 1 без референсов (у прямого API i2i есть, заводим по спросу):
     // hide the upload block and drop any already-picked photos so nothing goes to i2i.
+    // 28.10.2026 Kling 4.0: своя панель материалов вместо общей загрузки (k4.js); новый заход на модель = пустая панель.
+    const k4Sec = document.getElementById('k4Section');
+    if (k4Sec) {
+        const wasK4 = !k4Sec.classList.contains('hidden');
+        k4Sec.classList.toggle('hidden', !config.k4Panel);
+        if (config.k4Panel && window.K4MiniApp) {
+            if (!wasK4) window.K4MiniApp.reset();
+            window.K4MiniApp.mount(document.getElementById('k4Panel'), k4PanelOpts());
+        }
+    }
+
     const uploadSectionEl = document.getElementById('uploadSection');
     if (uploadSectionEl) {
-        uploadSectionEl.classList.toggle('hidden', !!config.textOnly);
+        uploadSectionEl.classList.toggle('hidden', !!config.textOnly || !!config.k4Panel);
         // Подписи блока загрузки — по конфигу модели (кол-во фото + обязательность),
         // иначе остаётся дефолт «изображения (Optional) / до 10», что противоречит Grok i2v (ровно 1 фото, обязательно).
         const ut = uploadSectionEl.querySelector('.section-title');
@@ -1796,7 +1826,11 @@ function updateCountWarning(val) {
     }
 }
 setupDropdown('countDropdown', 'countValue', updateCountWarning);
-setupDropdown('durationDropdown', 'durationValue', (val) => selectedDuration = val);
+setupDropdown('durationDropdown', 'durationValue', (val) => {
+    selectedDuration = val;
+    // 28.10.2026 Kling 4.0: предел кадров и причина блокировки зависят от длины ролика
+    if ((cfgOf(selectedModel) || {}).k4Panel && window.K4MiniApp) { window.K4MiniApp.mount(document.getElementById('k4Panel'), k4PanelOpts()); updateValidation(); }
+});
 
 // Audio toggle
 const audioToggleEl = document.getElementById('audioToggle');
@@ -1887,8 +1921,15 @@ document.addEventListener('click', (e) => {
 });
 
 // Validation
+// 28.10.2026 Kling 4.0: параметры панели k4.js (поле описания для вставки меток, длина ролика для предела кадров, перепроверка формы).
+function k4PanelOpts() {
+    return { prompt: promptInput, getDurationSec: () => parseInt(selectedDuration, 10) || 5, onChange: updateValidation };
+}
+
 function updateValidation() {
     const cfg = cfgOf(selectedModel) || {};
+    // Kling 4.0: та же причина блокировки, что у сайта и бота (метка без материала, персонажу 2–4 фото, кадры без прочего…)
+    const k4Reason = cfg.k4Panel && window.K4MiniApp ? window.K4MiniApp.blockReason(promptInput.value, parseInt(selectedDuration, 10) || 5) : null;
     const noPrompt = !!cfg.noPrompt;          // утилиты (recraft) — промпт не нужен
     const needsRef = !!cfg.requiresReference; // обязательно фото
     const needsVideoRef = !!cfg.requiresVideoRef; // обязательно видео с движением (Kling Motion Control)
@@ -1909,11 +1950,14 @@ function updateValidation() {
     } else if (!videoRefOk) {
         document.getElementById('validationText').textContent = '⚠️ Загрузите видео с движением — без него генерация не начнётся.';
         validationMessage.classList.add('show');
+    } else if (k4Reason) {
+        document.getElementById('validationText').textContent = '⚠️ ' + k4Reason;
+        validationMessage.classList.add('show');
     } else {
         validationMessage.classList.remove('show');
     }
 
-    generateBtn.disabled = !(promptOk && refOk && videoRefOk);
+    generateBtn.disabled = !(promptOk && refOk && videoRefOk && !k4Reason);
 }
 
 // Ужатая копия первого референса для «Улучшить промпт»: до 512px по большей
@@ -2579,6 +2623,19 @@ generateBtn.addEventListener('click', async () => {
             return;
         }
 
+        // 28.10.2026 Kling 4.0: файлы панели на tus по порядку заказа, поля как у сайта (image_uploads, video_uploads,
+        // audio_uploads, pult, keep_original_sound); K4 Prep бота читает их из тела вебхука.
+        if ((cfgOf(selectedModel) || {}).k4Panel && window.K4MiniApp) {
+            try {
+                const k4 = await window.K4MiniApp.buildPayload(tusUploadBlob, (pct) => { generateBtn.innerHTML = '<div class="spinner"></div><span>Отправка файлов… ' + pct + '%</span>'; });
+                Object.assign(data, k4);
+                data.images = [];
+            } catch (e) {
+                showToast('Файлы не загрузились, попробуйте ещё раз', 'error');
+                resetButton();
+                return;
+            }
+        }
         sendData(data);
     } catch (error) {
         showToast('Не удалось отправить запрос, попробуйте ещё раз', 'error');
