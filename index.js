@@ -1243,7 +1243,7 @@ const modelConfigs = {
         // 28.10.2026 Kling 4.0 (kie: kling-4.0/reference-to-video и keyframe-to-video), над Kling 3.0 (как сайт, sort 239).
         // Материалы — своя панель k4.js (каждый файл спрашивает «кто или что это», персонажи с голосом, голоса, до 5 видео,
         // ключевые кадры); заказ как у сайта: image_uploads/video_uploads/audio_uploads (tus) + pult. Бот: ветка K4 (K4 Prep),
-        // списание PTS_K4 по таблице. Звук стерео всегда (тумблера нет); 4K и 480p kie отбивает. Витрины пока нет: ждёт первый ролик.
+        // списание PTS_K4 по таблице. Звук стерео всегда (тумблера нет); 4K и 480p kie отбивает.
         apiSlug: 'kling-4',
         provider: 'kie',
         audioToggle: false,
@@ -1256,7 +1256,10 @@ const modelConfigs = {
         durations: Array.from({ length: 28 }, (_, i) => ({ value: (i + 3) + 's', label: (i + 3) + 's' })),
         defaultAspect: 'auto',
         defaultRes: '1080p',
-        defaultDuration: '5s'
+        defaultDuration: '5s',
+        // Placeholder-витрина (паттерн Seedance 2.5, 10.08): без ключа video блок остаётся заставкой на логотипе.
+        // Демо-ролик владельца станет витриной: video: 'kling4-preview.mp4?v=<дата>' + файл в корень репо.
+        showcase: { logo: 'kling.png', sub: 'Пример работы модели появится совсем скоро' }
     },
     'kling-video': {
         // [DOC docs.kie.ai/market/kling/kling-3-0] kling-3.0/video: t2v + i2v (1 фото = первый кадр),

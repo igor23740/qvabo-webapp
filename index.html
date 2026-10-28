@@ -1357,6 +1357,9 @@
         .k4-ask-ops { display: flex; gap: 8px; margin-top: 16px; }
         .k4-ask-ops .chip { flex: 1; justify-content: center; }
         .k4-panel .chip:disabled, .k4-ask .chip:disabled { opacity: 0.45; pointer-events: none; }
+        /* 28.10: кнопки панели сделаны <button>, а чипы остальных моделей <div>: у <button> цвет и шрифт системные (чёрный, Arial), берём как у страницы */
+        .k4-panel button.chip, .k4-ask button.chip { font-family: inherit; }
+        .k4-panel button.chip:not(.active), .k4-ask button.chip:not(.active) { color: var(--text-primary); }
     </style>
 </head>
 <body>
@@ -1977,6 +1980,6 @@
 
     <script src="k4-logic.js?v=20261028a"></script>
     <script src="k4.js?v=20261028a"></script>
-    <script src="index.js?v=20261028a"></script>
+    <script src="index.js?v=20261028b"></script>
 </body>
 </html>
