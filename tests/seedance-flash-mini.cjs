@@ -1,0 +1,16 @@
+const {readFileSync}=require('node:fs');
+const assert=require('node:assert/strict');
+const vm=require('node:vm');
+const path=require('node:path');
+const html=readFileSync(path.join(__dirname,'../index.html'),'utf8'),js=readFileSync(path.join(__dirname,'../index.js'),'utf8');
+assert.match(html,/data-value="seedance-25-flash"[^>]+data-mode="video"/);
+assert.match(html,/form-action 'self' https:\/\/qvabo\.studio/);
+const start=js.indexOf("modelOptions.forEach(option => {",js.indexOf("modelDropdown.classList.toggle('open')"));
+const end=js.indexOf('// Close dropdowns on outside click',start);
+assert.ok(start>=0 && end>start);
+let click,submitted=0,field,form;
+const document={createElement(tag){if(tag==='input')return field={};if(tag==='form')return form={append(){},submit(){submitted++},remove(){}};},body:{append(){}}};
+vm.runInNewContext(js.slice(start,end),{modelOptions:[{dataset:{value:'seedance-25-flash'},addEventListener(_,fn){click=fn;}}],tg:{initData:'signed-test-data'},document});
+click();assert.equal(submitted,1);assert.equal(form.method,'POST');assert.equal(form.action,'https://qvabo.studio/api/cabinet/auth/flash-mini');
+assert.equal(field.name,'initData');assert.equal(field.value,'signed-test-data');
+console.log('Flash Mini App selection and POST verified');

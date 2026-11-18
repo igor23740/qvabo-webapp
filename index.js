@@ -1896,6 +1896,24 @@ modelSelected.addEventListener('click', () => {
 
 modelOptions.forEach(option => {
     option.addEventListener('click', () => {
+        if (option.dataset.value === 'seedance-25-flash') {
+            if (!tg?.initData) {
+                window.alert('Чтобы открыть пульт Flash, откройте Mini App из Telegram.');
+                return;
+            }
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = 'https://qvabo.studio/api/cabinet/auth/flash-mini';
+            const field = document.createElement('input');
+            field.type = 'hidden';
+            field.name = 'initData';
+            field.value = tg.initData;
+            form.append(field);
+            document.body.append(form);
+            form.submit();
+            form.remove();
+            return;
+        }
         modelOptions.forEach(o => o.classList.remove('active'));
         option.classList.add('active');
 
