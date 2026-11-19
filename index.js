@@ -1387,7 +1387,7 @@ function switchMode(mode) {
     if (isVideo) {
         selectedModel = 'seedance-25'; // 10.08: дефолт видео-режима = СТАРШАЯ, теперь это Seedance 2.5 (та же логика, что 16.07 для 2.0; поправка владельца по скрину 10.08)
         document.getElementById('modelName').textContent = 'Seedance 2.5';
-        document.getElementById('modelDesc').textContent = 'ByteDance · Новое поколение, до 15 секунд со звуком';
+        document.getElementById('modelDesc').textContent = '4–30 секунд · до 4K';
         const iconEl = document.querySelector('#modelDropdown .dropdown-selected .model-icon');
         iconEl.className = 'model-icon seedance';
         iconEl.textContent = 'S';
@@ -1404,7 +1404,7 @@ function switchMode(mode) {
 
     // Generate button text
     generateBtn.innerHTML = isVideo
-        ? '<span>🎬</span><span>Generate Video</span>'
+        ? '<span>Открыть пульт Seedance 2.5</span>'
         : '<span>✨</span><span>Generate</span>';
 
     // Validation text
@@ -1419,6 +1419,13 @@ document.querySelectorAll('.mode-tab').forEach(tab => {
 });
 
 function updateModelParams(model, keepVariant) {
+    const standardConsole = model === 'seedance-25';
+    document.getElementById('mainWork').classList.toggle('seedance-console', standardConsole);
+    if (standardConsole) {
+        generateBtn.disabled = false;
+        return;
+    }
+    generateBtn.innerHTML = currentMode === 'video' ? '<span>🎬</span><span>Generate Video</span>' : '<span>✨</span><span>Generate</span>';
     // 09.10.2026: версия модели выбирается ДО сборки пульта, чтобы её поправки (variantConfigs) попали в config.
     const _baseCfg = modelConfigs[model] || modelConfigs['nano-banana-pro'];
     const _vars = Array.isArray(_baseCfg.variants) ? _baseCfg.variants : [];
@@ -1894,24 +1901,28 @@ modelSelected.addEventListener('click', () => {
     modelDropdown.classList.toggle('open');
 });
 
+function openSeedanceConsole(slug) {
+    if (!tg?.initData) {
+        window.alert('Чтобы открыть пульт, откройте Mini App из Telegram.');
+        return;
+    }
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'https://qvabo.studio/api/cabinet/auth/flash-mini' + (slug === 'seedance-25' ? '?model=seedance-25' : '');
+    const field = document.createElement('input');
+    field.type = 'hidden';
+    field.name = 'initData';
+    field.value = tg.initData;
+    form.append(field);
+    document.body.append(form);
+    form.submit();
+    form.remove();
+}
+
 modelOptions.forEach(option => {
     option.addEventListener('click', () => {
-        if (option.dataset.value === 'seedance-25-flash') {
-            if (!tg?.initData) {
-                window.alert('Чтобы открыть пульт Flash, откройте Mini App из Telegram.');
-                return;
-            }
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = 'https://qvabo.studio/api/cabinet/auth/flash-mini';
-            const field = document.createElement('input');
-            field.type = 'hidden';
-            field.name = 'initData';
-            field.value = tg.initData;
-            form.append(field);
-            document.body.append(form);
-            form.submit();
-            form.remove();
+        if (option.dataset.value === 'seedance-25-flash' || option.dataset.value === 'seedance-25') {
+            openSeedanceConsole(option.dataset.value);
             return;
         }
         modelOptions.forEach(o => o.classList.remove('active'));
@@ -1948,6 +1959,10 @@ function k4PanelOpts() {
 }
 
 function updateValidation() {
+    if (selectedModel === 'seedance-25') {
+        generateBtn.disabled = false;
+        return;
+    }
     const cfg = cfgOf(selectedModel) || {};
     // Kling 4.0: та же причина блокировки, что у сайта и бота (метка без материала, персонажу 2–4 фото, кадры без прочего…)
     const k4Reason = cfg.k4Panel && window.K4MiniApp ? window.K4MiniApp.blockReason(promptInput.value, parseInt(selectedDuration, 10) || 5) : null;
@@ -2386,6 +2401,10 @@ improveBtn.addEventListener('click', async () => {
 
 // Generate button
 generateBtn.addEventListener('click', async () => {
+    if (selectedModel === 'seedance-25') {
+        openSeedanceConsole(selectedModel);
+        return;
+    }
     const genCfg = cfgOf(selectedModel) || {};
     if (!genCfg.noPrompt && !promptInput.value.trim()) {
         showToast('Please enter a description', 'error');

@@ -5,7 +5,7 @@ const path=require('node:path');
 const html=readFileSync(path.join(__dirname,'../index.html'),'utf8'),js=readFileSync(path.join(__dirname,'../index.js'),'utf8');
 assert.match(html,/data-value="seedance-25-flash"[^>]+data-mode="video"/);
 assert.match(html,/form-action 'self' https:\/\/qvabo\.studio/);
-const start=js.indexOf("modelOptions.forEach(option => {",js.indexOf("modelDropdown.classList.toggle('open')"));
+const start=js.indexOf("function openSeedanceConsole(",js.indexOf("modelDropdown.classList.toggle('open')"));
 const end=js.indexOf('// Close dropdowns on outside click',start);
 assert.ok(start>=0 && end>start);
 let click,submitted=0,field,form;
