@@ -1420,12 +1420,16 @@ document.querySelectorAll('.mode-tab').forEach(tab => {
 
 function updateModelParams(model, keepVariant) {
     const standardConsole = model === 'seedance-25';
-    document.getElementById('mainWork').classList.toggle('seedance-console', standardConsole);
+    const workArea = document.getElementById('mainWork');
+    const leavingConsole = workArea.classList.contains('seedance-console') && !standardConsole;
+    workArea.classList.toggle('seedance-console', standardConsole);
     if (standardConsole) {
         generateBtn.disabled = false;
         return;
     }
-    generateBtn.innerHTML = currentMode === 'video' ? '<span>🎬</span><span>Generate Video</span>' : '<span>✨</span><span>Generate</span>';
+    if (leavingConsole) {
+        generateBtn.innerHTML = currentMode === 'video' ? '<span>🎬</span><span>Generate Video</span>' : '<span>✨</span><span>Generate</span>';
+    }
     // 09.10.2026: версия модели выбирается ДО сборки пульта, чтобы её поправки (variantConfigs) попали в config.
     const _baseCfg = modelConfigs[model] || modelConfigs['nano-banana-pro'];
     const _vars = Array.isArray(_baseCfg.variants) ? _baseCfg.variants : [];
