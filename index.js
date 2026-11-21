@@ -536,6 +536,7 @@ const modelConfigs = {
     'qwen-image-30': {
         showcase: { logo: 'qwen.png?v=20260926', image: 'qwen30-forest-preview.webp', sub: 'Странник в туманном лесу · Qwen Image 3.0, 2K' },
         qwenOptions: true,
+        pointsPerImage: 3,
         aspectRatios: ['1:1','16:9','9:16','4:3','3:4','3:2','2:3','21:9'].map(value => ({
             value, icon: value === '1:1' ? '▢' : Number(value.split(':')[0]) > Number(value.split(':')[1]) ? '▬' : '▯'
         })),
@@ -1818,6 +1819,7 @@ setupDropdown('resolutionDropdown', 'resolutionValue', (val) => selectedResoluti
 // so nobody mistakes this for a resolution setting and gets charged multiple times.
 function updateCountWarning(val) {
     selectedCount = val;
+    if (cfgOf(selectedModel)?.qwenOptions) updateValidation();
     const w = document.getElementById('countWarning');
     const n = parseInt(val, 10) || 1;
     if (n > 1) {
@@ -1851,7 +1853,6 @@ function qwenFileIssue(file) {
     return '';
 }
 function qwenIssue() {
-    if (Number(tg?.initDataUnsafe?.user?.id) !== 371324849) return 'Идёт проверка владельцем. Цена появится после пробной генерации.';
     if (uploadedImages.length > 3) return 'Оставьте не больше трёх фото.';
     for (const ref of uploadedImages) {
         const issue = qwenFileIssue(ref.file);
@@ -1962,6 +1963,7 @@ function updateValidation() {
     const refOk = !needsRef || hasRef;
     const videoRefOk = !needsVideoRef || !!uploadedVideoRef;
 
+    if (cfg.qwenOptions) document.getElementById('qwenPrice').textContent = 'Стоимость заказа: ⚡ ' + (cfg.pointsPerImage * Number(selectedCount));
     const qwenError = cfg.qwenOptions ? qwenIssue() : '';
     if (qwenError) {
         document.getElementById('validationText').textContent = qwenError;
@@ -2623,6 +2625,7 @@ generateBtn.addEventListener('click', async () => {
             };
             if (imageConfig.provider) data.provider = imageConfig.provider;
             if (imageConfig.qwenOptions) {
+                data.qwen_price_points = imageConfig.pointsPerImage * Number(data.count);
                 data.output_format = document.getElementById('qwenFormat').value;
                 data.prompt_extend = document.getElementById('qwenExtend').checked;
                 const negative = document.getElementById('qwenNegative').value.trim();
