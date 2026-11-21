@@ -534,7 +534,7 @@ const modelConfigs = {
         maxFiles: 16          // 17.08: потолок разработчика (kie input_urls ≤16)
     },
     'qwen-image-30': {
-        showcase: { logo: 'qwen.png?v=20260926', sub: 'Qwen Image 3.0 · создание и правка изображений' },
+        showcase: { logo: 'qwen.png?v=20260926', image: 'qwen30-forest-preview.webp', sub: 'Странник в туманном лесу · Qwen Image 3.0, 2K' },
         qwenOptions: true,
         aspectRatios: ['1:1','16:9','9:16','4:3','3:4','3:2','2:3','21:9'].map(value => ({
             value, icon: value === '1:1' ? '▢' : Number(value.split(':')[0]) > Number(value.split(':')[1]) ? '▬' : '▯'
