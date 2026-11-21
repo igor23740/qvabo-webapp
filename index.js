@@ -112,6 +112,10 @@ function handleFiles(files) {
     const toAdd = Array.from(files).slice(0, Math.max(0, remaining));
 
     toAdd.forEach(file => {
+        if (selectedModel === 'qwen-image-30') {
+            const issue = qwenFileIssue(file);
+            if (issue) { showToast(issue, 'error'); return; }
+        }
         if (!file.type.startsWith('image/')) {
             return;
         }
@@ -529,31 +533,15 @@ const modelConfigs = {
         defaultRes: '1K',
         maxFiles: 16          // 17.08: потолок разработчика (kie input_urls ≤16)
     },
-    'qwen-image-21': {
-        // [DOC docs.kie.ai/market/qwen2-1/text-to-image | image-to-image] Qwen Image 2.1 (Alibaba) через kie, 26.09.2026.
-        // Схема: 9 соотношений (+auto у правки по фото; без фото бэкенд отдаёт auto как 1:1), 1K/2K (4K у модели нет),
-        // промпт ≤5000, до 10 референсов (kie советует ≤4, если важна точность). Вес 1K 2 / 2K 3 (Gen Weight).
-        // Фильтр по тарифу решает бэкенд (nsfw_off с «Промо», админы всегда без фильтра). Результат приходит файлом.
-        // qwenOptions: тумблеры «Прозрачный фон» и «Детализация сцены» (секция qwenOptionsSection).
-        // Витрина: боевой кадр владельца 26.09 (exec 156309, 2K 16:9, 2752×1536 → 1280×720 webp): постер «Байкал зовёт»,
-        // антиква + русская рукописная пропись без ошибок. Исходник — docs/assets/qwen21/QVABO_156309_source.png.
-        // Открыта всем 26.09 после прогонов владельца (data-owner-only снят).
-        showcase: { logo: 'qwen.png?v=20260926', image: 'qwen21-preview.webp?v=20260926', sub: 'Пример: постер с русской каллиграфией, Qwen Image 2.1 (2K)' },
+    'qwen-image-30': {
+        showcase: { logo: 'qwen.png?v=20260926', sub: 'Qwen Image 3.0 · создание и правка изображений' },
         qwenOptions: true,
-        aspectRatios: [
-            {value:'auto',icon:'▢'}, {value:'21:9',icon:'▬'}, {value:'16:9',icon:'▬'},
-            {value:'3:2',icon:'▬'}, {value:'4:3',icon:'▬'}, {value:'1:1',icon:'▢'},
-            {value:'3:4',icon:'▯'}, {value:'2:3',icon:'▯'}, {value:'9:16',icon:'▯'},
-            {value:'9:21',icon:'▯'}
-        ],
-        resolutions: [
-            {value:'1K', label:'1K'},
-            {value:'2K', label:'2K'}
-        ],
-        resHint: '2K: вчетверо больше пикселей, ждать дольше, около минуты',
-        defaultAspect: '1:1',
-        defaultRes: '1K',
-        maxFiles: 10
+        aspectRatios: ['1:1','16:9','9:16','4:3','3:4','3:2','2:3','21:9'].map(value => ({
+            value, icon: value === '1:1' ? '▢' : Number(value.split(':')[0]) > Number(value.split(':')[1]) ? '▬' : '▯'
+        })),
+        resolutions: [{value:'1K', label:'1K'}, {value:'2K', label:'2K'}],
+        defaultAspect: '1:1', defaultRes: '1K', promptLimit: 5000, maxFiles: 3,
+        uploadHint: 'До трёх фото по 10 МБ: JPEG, PNG, WebP, BMP, GIF или TIFF.'
     },
     'flux-2-pro': {
         aspectRatios: [
@@ -1538,7 +1526,7 @@ function updateModelParams(model, keepVariant) {
 
     // --- Audio toggle visibility (only for models that support audio on/off) ---
     document.getElementById('audioSection').classList.toggle('hidden', !config.audioToggle);
-    // --- 26.09: тумблеры Qwen Image 2.1 (прозрачный фон, детализация сцены) ---
+    // Параметры Qwen Image 3.0.
     document.getElementById('qwenOptionsSection').classList.toggle('hidden', !config.qwenOptions);
 
     // --- Utility models (recraft remove-bg / upscale): photo in -> file out.
@@ -1644,7 +1632,7 @@ function updateModelParams(model, keepVariant) {
         const mandatory = !!config.requiresReference;
         const noun = mf === 1 ? 'изображение' : 'изображения';
         if (ut) ut.textContent = 'Загрузить ' + noun + (mandatory ? '' : ' (Optional)');
-        if (up) up.textContent = mandatory
+        if (up) up.textContent = config.qwenOptions ? config.uploadHint : mandatory
             ? (mf === 1 ? 'Нужно 1 фото или раскадровку.' : 'Нужно загрузить фото.')
             : (mf === 1 ? 'Можно загрузить 1 изображение.' : 'Можно загрузить до ' + mf + ' изображений.');
         const imgMax = document.getElementById('imageMax');
@@ -1856,29 +1844,24 @@ function toggleAudio() {
 audioToggleEl.addEventListener('click', toggleAudio);
 audioToggleEl.addEventListener('keydown', onActivateKey(toggleAudio));
 
-// 26.09: тумблеры Qwen Image 2.1 (config.qwenOptions) — «Прозрачный фон» (kie background) и
-// «Детализация сцены» (kie enhance_prompt). Оба по умолчанию выключены. Прозрачный фон гасит детализацию:
-// по доке kie фон или сцена в описании срывают прозрачность, а детализация как раз дописывает сцену.
-// Бэкенд (Kie Mapper) повторяет то же правило, клиенту не доверяем.
-let qwenTransparent = false;
-let qwenEnhance = false;
-const qwenTransparentEl = document.getElementById('qwenTransparentToggle');
-const qwenEnhanceEl = document.getElementById('qwenEnhanceToggle');
-const qwenEnhanceRowEl = document.getElementById('qwenEnhanceRow');
-function syncQwenToggles() {
-    qwenTransparentEl.classList.toggle('active', qwenTransparent);
-    qwenTransparentEl.setAttribute('aria-checked', qwenTransparent ? 'true' : 'false');
-    qwenEnhanceEl.classList.toggle('active', qwenEnhance && !qwenTransparent);
-    qwenEnhanceEl.setAttribute('aria-checked', (qwenEnhance && !qwenTransparent) ? 'true' : 'false');
-    qwenEnhanceEl.setAttribute('aria-disabled', qwenTransparent ? 'true' : 'false');
-    qwenEnhanceRowEl.classList.toggle('toggle-disabled', qwenTransparent);
+const qwenPhotoTypes = ['image/jpeg','image/png','image/webp','image/bmp','image/gif','image/tiff'];
+function qwenFileIssue(file) {
+    if (!file || !qwenPhotoTypes.includes(file.type)) return 'Поддерживаются JPEG, PNG, WebP, BMP, GIF и TIFF.';
+    if (file.size > 10 * 1024 * 1024) return 'Для Qwen каждое фото должно быть до 10 МБ.';
+    return '';
 }
-function toggleQwenTransparent() { qwenTransparent = !qwenTransparent; syncQwenToggles(); }
-function toggleQwenEnhance() { if (qwenTransparent) return; qwenEnhance = !qwenEnhance; syncQwenToggles(); }
-qwenTransparentEl.addEventListener('click', toggleQwenTransparent);
-qwenTransparentEl.addEventListener('keydown', onActivateKey(toggleQwenTransparent));
-qwenEnhanceEl.addEventListener('click', toggleQwenEnhance);
-qwenEnhanceEl.addEventListener('keydown', onActivateKey(toggleQwenEnhance));
+function qwenIssue() {
+    if (Number(tg?.initDataUnsafe?.user?.id) !== 371324849) return 'Идёт проверка владельцем. Цена появится после пробной генерации.';
+    if (uploadedImages.length > 3) return 'Оставьте не больше трёх фото.';
+    for (const ref of uploadedImages) {
+        const issue = qwenFileIssue(ref.file);
+        if (issue) return issue;
+    }
+    const seed = document.getElementById('qwenSeed').value.trim();
+    if (seed && (!/^[0-9]{1,10}$/.test(seed) || Number(seed) > 2147483647)) return 'Seed должен быть целым числом от 0 до 2147483647.';
+    return '';
+}
+document.getElementById('qwenSeed').addEventListener('input', () => updateValidation());
 
 // 26.09: мягкий запуск. Вкладки с data-owner-only видят только два админских аккаунта (VIDEO_WHITELIST);
 // остальным опция удаляется из DOM ДО навешивания обработчиков ниже, поэтому переключение режимов её не вернёт.
@@ -1979,7 +1962,11 @@ function updateValidation() {
     const refOk = !needsRef || hasRef;
     const videoRefOk = !needsVideoRef || !!uploadedVideoRef;
 
-    if (!promptOk) {
+    const qwenError = cfg.qwenOptions ? qwenIssue() : '';
+    if (qwenError) {
+        document.getElementById('validationText').textContent = qwenError;
+        validationMessage.classList.add('show');
+    } else if (!promptOk) {
         document.getElementById('validationText').textContent = currentMode === 'video'
             ? 'Пожалуйста, предоставьте описание видео для генерации'
             : 'Пожалуйста, предоставьте описание изображения для генерации';
@@ -1997,7 +1984,7 @@ function updateValidation() {
         validationMessage.classList.remove('show');
     }
 
-    generateBtn.disabled = !(promptOk && refOk && videoRefOk && !k4Reason);
+    generateBtn.disabled = !(promptOk && refOk && videoRefOk && !k4Reason && !qwenError);
 }
 
 // Ужатая копия первого референса для «Улучшить промпт»: до 512px по большей
@@ -2410,6 +2397,7 @@ generateBtn.addEventListener('click', async () => {
         return;
     }
     const genCfg = cfgOf(selectedModel) || {};
+    if (genCfg.qwenOptions && qwenIssue()) { showToast(qwenIssue(), 'error'); return; }
     if (!genCfg.noPrompt && !promptInput.value.trim()) {
         showToast('Please enter a description', 'error');
         return;
@@ -2634,10 +2622,13 @@ generateBtn.addEventListener('click', async () => {
                 images: uploadedImages.map(img => img.dataUrl)
             };
             if (imageConfig.provider) data.provider = imageConfig.provider;
-            // 26.09: Qwen Image 2.1 — тумблеры строго boolean (Kie Mapper включает только по === true)
             if (imageConfig.qwenOptions) {
-                data.transparent = qwenTransparent === true;
-                data.enhance = qwenEnhance === true && qwenTransparent !== true;
+                data.output_format = document.getElementById('qwenFormat').value;
+                data.prompt_extend = document.getElementById('qwenExtend').checked;
+                const negative = document.getElementById('qwenNegative').value.trim();
+                const seed = document.getElementById('qwenSeed').value.trim();
+                if (negative) data.negative_prompt = negative;
+                if (seed) data.seed = Number(seed);
             }
             // Topaz: ужать вход до 2048px (см. shrinkForTopaz), бэкенд берёт только 1-е фото
             if (selectedModel === 'topaz-upscale' && data.images.length) {

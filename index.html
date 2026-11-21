@@ -1361,6 +1361,16 @@
         /* 28.10: кнопки панели сделаны <button>, а чипы остальных моделей <div>: у <button> цвет и шрифт системные (чёрный, Arial), берём как у страницы */
         .k4-panel button.chip, .k4-ask button.chip { font-family: inherit; }
         .k4-panel button.chip:not(.active), .k4-ask button.chip:not(.active) { color: var(--text-primary); }
+        #qwenOptionsSection label { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; font-size: 14px; }
+        #qwenOptionsSection .toggle-row { flex-direction: row; justify-content: space-between; align-items: center; }
+        #qwenOptionsSection select, #qwenSeed, #qwenNegative { box-sizing: border-box; width: 100%; padding: 10px 12px; background: #202039; color: inherit; font: inherit; border: 1px solid #45415e; border-radius: 8px; }
+        #qwenOptionsSection .qwen-switch { appearance: none; flex: none; width: 48px; height: 26px; margin: 0; }
+        #qwenOptionsSection .qwen-switch:checked { background: var(--accent, #7c3aed); }
+        #qwenOptionsSection .qwen-switch:checked::after { transform: translateX(22px); }
+        #qwenOptionsSection .qwen-switch:focus-visible, #qwenOptionsSection summary:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+        #qwenOptionsSection details { margin-top: 16px; }
+        #qwenOptionsSection summary { cursor: pointer; font-weight: 600; }
+        #qwenOptionsSection .toggle-row { cursor: pointer; }
     </style>
 </head>
 <body>
@@ -1449,14 +1459,14 @@
                             </div>
                         </div>
                     </div>
-                    <!-- 26.09.2026: Qwen Image 2.1 (Alibaba через kie). Между GPT Image 2 и FLUX.2 MAX по слову владельца.
+                    <!-- 26.09.2026: Qwen Image 3.0 (Alibaba через kie). Между GPT Image 2 и FLUX.2 MAX по слову владельца.
                          Мягкий запуск (data-owner-only) снят 26.09 после прогонов владельца: вкладка открыта всем. -->
-                    <div class="dropdown-option" data-value="qwen-image-21" data-name="Qwen Image 2.1" data-desc="Alibaba · Прозрачный фон и правка фото" data-icon="qwen" data-mode="image">
+                    <div class="dropdown-option" data-value="qwen-image-30" data-name="Qwen Image 3.0" data-desc="Alibaba · Постеры и текст, до трёх фото" data-icon="qwen" data-mode="image">
                         <div class="model-option-content">
                             <div class="model-icon qwen">Q</div>
                             <div class="model-info">
-                                <div class="model-name">Qwen Image 2.1</div>
-                                <div class="model-desc">Alibaba · Прозрачный фон и правка фото</div>
+                                <div class="model-name">Qwen Image 3.0</div>
+                                <div class="model-desc">Alibaba · Постеры и текст, до трёх фото</div>
                             </div>
                         </div>
                     </div>
@@ -1889,19 +1899,15 @@
             </p>
         </div>
 
-        <!-- 26.09: Qwen Image 2.1 — прозрачный фон и детализация сцены (config.qwenOptions), оба по умолчанию выкл -->
+        <!-- Qwen Image 3.0 -->
         <div class="section hidden" id="qwenOptionsSection">
-            <h2 class="section-title">Дополнительно</h2>
-            <div class="toggle-row">
-                <span class="toggle-label" id="qwenTransparentLabel">Прозрачный фон</span>
-                <div class="toggle-switch" id="qwenTransparentToggle" role="switch" tabindex="0" aria-checked="false" aria-labelledby="qwenTransparentLabel"></div>
-            </div>
-            <p class="toggle-hint">PNG без фона: для стикеров, логотипов и товаров. Опишите только сам объект, без окружения.</p>
-            <div class="toggle-row" id="qwenEnhanceRow">
-                <span class="toggle-label" id="qwenEnhanceLabel">Детализация сцены</span>
-                <div class="toggle-switch" id="qwenEnhanceToggle" role="switch" tabindex="0" aria-checked="false" aria-labelledby="qwenEnhanceLabel"></div>
-            </div>
-            <p class="toggle-hint">Модель сама допишет описание перед генерацией: кадр обычно богаче, но может отойти от вашего текста. С прозрачным фоном выключается.</p>
+            <label class="toggle-row"><span class="toggle-label">Улучшить описание</span><input type="checkbox" role="switch" class="toggle-switch qwen-switch" id="qwenExtend"></label>
+            <p class="toggle-hint">На тарифах от «Сцены» фильтр отключён.</p>
+            <details><summary>Дополнительно</summary>
+            <label>Формат файла <select id="qwenFormat"><option value="png">PNG</option><option value="jpeg">JPEG</option></select></label>
+            <label>Что исключить <textarea id="qwenNegative" rows="3" maxlength="5000" placeholder="Например, размытые надписи и блики"></textarea></label>
+            <label>Seed <input id="qwenSeed" type="text" inputmode="numeric" maxlength="10" placeholder="Случайный"></label>
+            </details>
         </div>
 
         <!-- Number of Images -->
@@ -1987,6 +1993,6 @@
 
     <script src="k4-logic.js?v=20261028a"></script>
     <script src="k4.js?v=20261028a"></script>
-    <script src="index.js?v=20261120-sd25"></script>
+    <script src="index.js?v=20261121-qwen30"></script>
 </body>
 </html>
